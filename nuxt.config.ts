@@ -120,8 +120,9 @@ export default defineNuxtConfig({
     '/auth/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/subscription/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
 
-    // Coming-soon placeholder — nothing to index until the shop ships.
-    '/shop': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    // Shop is hidden until there is something to sell. Temporary redirect so
+    // the path can come back later without a cached 301 in people's browsers.
+    '/shop': { redirect: { to: '/', statusCode: 302 } },
 
     // TASK-142/143 — the loqholder queue became Discover, and user search
     // moved into Messages. Both old URLs are in people's history and in

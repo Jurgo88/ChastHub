@@ -11,7 +11,6 @@
           <NuxtLink :to="dashboardLink" class="app-nav__link" active-class="app-nav__link--active">Dashboard</NuxtLink>
           <NuxtLink to="/keydrop" class="app-nav__link" active-class="app-nav__link--active">Key Drop</NuxtLink>
           <NuxtLink to="/stats" class="app-nav__link" active-class="app-nav__link--active">Stats</NuxtLink>
-          <NuxtLink to="/shop" class="app-nav__link" active-class="app-nav__link--active">Shop</NuxtLink>
           <NuxtLink to="/messages" class="app-nav__link" active-class="app-nav__link--active">Messages<span v-if="dmUnread" class="app-nav__badge">{{ dmUnread > 9 ? '9+' : dmUnread }}</span></NuxtLink>
           <NuxtLink v-if="authStore.isLoqee && !authStore.hasAccess" to="/subscription/upgrade" class="app-nav__link app-nav__link--cta">Upgrade</NuxtLink>
           <NuxtLink v-if="authStore.isAdmin" to="/admin" class="app-nav__link" active-class="app-nav__link--active">Admin</NuxtLink>
@@ -63,7 +62,6 @@
             <NuxtLink :to="dashboardLink" class="app-nav__drawer-link">Dashboard</NuxtLink>
             <NuxtLink to="/keydrop" class="app-nav__drawer-link">Key Drop</NuxtLink>
             <NuxtLink to="/stats" class="app-nav__drawer-link">Stats</NuxtLink>
-            <NuxtLink to="/shop" class="app-nav__drawer-link">Shop</NuxtLink>
             <NuxtLink to="/messages" class="app-nav__drawer-link">Messages<span v-if="dmUnread" class="app-nav__badge">{{ dmUnread > 9 ? '9+' : dmUnread }}</span></NuxtLink>
             <NuxtLink to="/profile" class="app-nav__drawer-link">Profile</NuxtLink>
             <NuxtLink v-if="authStore.isLoqee && !authStore.hasAccess" to="/subscription/upgrade" class="app-nav__drawer-link app-nav__drawer-link--cta">Upgrade to Premium</NuxtLink>
