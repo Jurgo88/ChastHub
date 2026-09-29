@@ -1,0 +1,47 @@
+name: Backup restore test
+
+# Weekly proof that the newest backup restores (TASK-157): decrypts it,
+# restores it into a throwaway Supabase database and compares row counts.
+# Also fails when the newest backup is over 36 h old, i.e. the nightly job
+# stopped. Runs two hours after Monday's backup. See docs/BACKUPS.md.
+
+on:
+  # Schedule disabled until R2 backup secrets are configured (docs/BACKUPS.md).
+  # Re-enable by restoring:
+  #   schedule:
+  #     - cron: '0 10 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: backup-restore-test
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  restore-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: supabase/setup-cli@v2
+        with:
+          version: latest
+
+      - name: Install rclone
+        run: bash scripts/backup/install-rclone.sh
+
+      - name: Restore newest backup and verify
+        env:
+          BACKUP_R2_ACCOUNT_ID: ${{ secrets.BACKUP_R2_ACCOUNT_ID }}
+          BACKUP_R2_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
+          BACKUP_R2_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
+          BACKUP_R2_BUCKET: ${{ secrets.BACKUP_R2_BUCKET }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+          # The CLI pulls from public.ecr.aws first, which rate-limits runners
+          # ("toomanyrequests") and only then falls back to ghcr.io.
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: ghcr.io
+        run: bash scripts/backup/restore-test.sh

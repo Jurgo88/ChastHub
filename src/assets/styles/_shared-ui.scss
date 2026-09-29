@@ -1,0 +1,107 @@
+// Shared UI primitives used across many pages/components.
+//
+// @use this inside each page's <style scoped> block — the rules compile into
+// each component (so they stay scoped), but the source lives here once.
+// Companion to _loq-card.scss (which covers loq-specific card/status UI);
+// this file covers generic controls: buttons, role badges, toggle switches.
+//
+// TASK-077: consolidates 17 near-duplicate .btn blocks, 2 duplicate
+// .role-badge definitions, and 2 slightly different .toggle switches that
+// had drifted across pages.
+
+// ── Button ───────────────────────────────────────────────────────────────────
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  &--sm { padding: 0.375rem 0.875rem; font-size: 0.875rem; }
+
+  &--primary {
+    background: var(--color-accent);
+    color: #fff;
+    &:hover:not(:disabled) { opacity: 0.88; }
+  }
+
+  &--ghost {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    &:hover:not(:disabled) { background: var(--color-border); }
+  }
+
+  &--danger {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.45);
+    &:hover:not(:disabled) { background: rgba(239, 68, 68, 0.12); }
+  }
+}
+
+// ── Role badge ───────────────────────────────────────────────────────────────
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &__icon {
+    width: 0.8rem;
+    height: 0.8rem;
+    object-fit: contain;
+  }
+
+  &--loqee { background: rgba(var(--color-accent-rgb), 0.15); color: var(--color-accent); }
+  &--loqholder { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+  &--admin { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+}
+
+// ── Toggle switch ────────────────────────────────────────────────────────────
+
+.toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: none;
+  background: var(--color-border);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s;
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  &--on {
+    background: var(--color-accent);
+  }
+
+  &__knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+
+    .toggle--on & {
+      transform: translateX(20px);
+    }
+  }
+}

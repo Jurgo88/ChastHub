@@ -1,0 +1,12 @@
+# ChastHub — bezpečnostný kontakt / security contact
+# https://chasthub.com/.well-known/security.txt
+
+Contact: https://chasthub.com/security
+Expires: 2027-09-24T00:00:00.000Z
+Preferred-Languages: sk, en, cs
+Canonical: https://chasthub.com/.well-known/security.txt
+
+# Nahláste zraniteľnosti cez formulár vyššie. Riešime ich bez zbytočného
+# odkladu — prosím, dajte nám čas na opravu pred zverejnením. Ďakujeme.
+# Report vulnerabilities via the form above. We fix them promptly — please
+# allow time before public disclosure. Thank you for reporting responsibly.

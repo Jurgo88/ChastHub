@@ -1,0 +1,341 @@
+.admin-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.admin-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+  }
+}
+
+.admin-search {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+
+  &__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    margin-right: 0.15rem;
+  }
+}
+
+.admin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+
+  input {
+    accent-color: var(--color-accent);
+    cursor: pointer;
+    margin: 0;
+  }
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+.admin-input {
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  outline: none;
+  width: 100%;
+
+  &:focus {
+    border-color: var(--color-accent);
+  }
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  // Opt-in density for the long listings. Applied per table rather than
+  // globally so the shorter admin pages keep the roomier rows.
+  &--compact td {
+    padding: 0.4rem 0.75rem;
+  }
+}
+
+.th-sort {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &__arrow {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+}
+
+.admin-empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 2rem !important;
+}
+
+.admin-error {
+  text-align: center;
+  color: #fc8181;
+  padding: 2rem 0;
+}
+
+.admin-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 0;
+  color: var(--color-text-muted);
+
+  &__spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: admin-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes admin-spin { to { transform: rotate(360deg); } }
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &--active   { background: rgba(72, 187, 120, 0.15); color: #68d391; }
+  &--inactive { background: var(--color-border); color: var(--color-text-muted); }
+  &--banned   { background: rgba(229, 62, 62, 0.15); color: #fc8181; }
+  &--past_due { background: rgba(237, 137, 54, 0.15); color: #f6ad55; }
+  &--pending  { background: rgba(66, 153, 225, 0.15); color: #63b3ed; }
+  &--ended    { background: var(--color-border); color: var(--color-text-muted); }
+  &--draft    { background: var(--color-border); color: var(--color-text-muted); }
+  &--paused   { background: rgba(237, 137, 54, 0.15); color: #f6ad55; }
+  &--cancelled{ background: var(--color-border); color: var(--color-text-muted); }
+  &--deleted  { background: var(--color-border); color: var(--color-text-muted); }
+  &--cancelling { background: rgba(237, 137, 54, 0.15); color: #f6ad55; }
+  &--lapsed   { background: var(--color-border); color: var(--color-text-muted); }
+  &--none     { background: transparent; color: var(--color-text-muted); }
+  &--open     { background: rgba(66, 153, 225, 0.15); color: #63b3ed; }
+  &--dismissed{ background: var(--color-border); color: var(--color-text-muted); }
+  &--resolved { background: rgba(72, 187, 120, 0.15); color: #68d391; }
+  &--keyholder{ background: rgba(159, 122, 234, 0.15); color: #b794f4; }
+  &--self     { background: rgba(159, 122, 234, 0.15); color: #b794f4; }
+  &--lockee   { background: rgba(237, 137, 54, 0.15); color: #f6ad55; }
+  &--admin    { background: rgba(229, 62, 62, 0.15); color: #fc8181; }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: opacity 0.15s;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &-sm { padding: 0.25rem 0.625rem; font-size: 0.8rem; }
+
+  &-primary {
+    background: var(--color-accent);
+    color: #fff;
+    &:hover:not(:disabled) { opacity: 0.9; }
+  }
+
+  &-outline {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    &:hover:not(:disabled) { background: var(--color-border); }
+  }
+
+  &-danger {
+    background: var(--color-danger, #e53e3e);
+    color: #fff;
+    &:hover:not(:disabled) { opacity: 0.9; }
+  }
+}
+
+.text-muted { color: var(--color-text-muted); font-size: 0.875rem; }
+.error-text { color: var(--color-danger, #e53e3e); font-size: 0.875rem; margin: 0; }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // Keeps the modal off the screen edges on a phone.
+  padding: 1rem;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--color-text); }
+}
+
+.modal-note {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  padding: 0.35rem 0.875rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+
+  &--active, &:hover {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+  }
+}
+
+// KPI tiles — the dashboard and its super-admin product panel
+// (components/admin/AdminKpiPanel.vue) share them.
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+
+  &__label {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  &__value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  &__sub {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+}

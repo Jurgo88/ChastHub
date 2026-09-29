@@ -1,0 +1,49 @@
+[build]
+  command = "npm run build && mkdir -p dist"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Redirects live here rather than in _redirects because Nitro regenerates
+# dist/_redirects on every build and would overwrite anything placed there.
+# Netlify evaluates these in order, first match wins.
+
+# The *.netlify.app subdomain cannot be removed and Netlify does not redirect it
+# to the primary domain on its own. Without this rule the site is reachable on two
+# hostnames, which splits ranking signals between them (refs #304).
+[[redirects]]
+  from = "https://chasthub.netlify.app/*"
+  to = "https://chasthub.com/:splat"
+  status = 301
+  force = true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Bezpečnostné hlavičky (reakcia na incident 2026-09-24).
+#
+# Anon kľúč sa z prehliadača skryť nedá a netreba — hranicou je RLS (migrácia
+# 063). Tieto hlavičky chránia to druhé: používateľský token pred krádežou cez
+# XSS, a stránku pred clickjackingom, downgrade útokmi a únikom referreru.
+#
+# CSP je zámerne v Report-Only režime: enforcnutá zle by rozbila appku
+# (Realtime, Stripe redirect, analytics). Necháaj ju pár dní bežať, sleduj v
+# DevTools konzole „Content-Security-Policy-Report-Only" hlásenia; keď žiadne
+# legitímne requesty neblokuje, premenuj hlavičku na `Content-Security-Policy`
+# (bez `-Report-Only`) — tým sa stane vynútenou. Nič iné netreba meniť.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Vynútené hneď — tieto nič nerozbijú:
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=(), interest-cohort=()"
+    Cross-Origin-Opener-Policy = "same-origin"
+    # CSP — najprv Report-Only (viď komentár vyššie). Origins pochádzajú z
+    # reálnych integrácií: Supabase (REST+Realtime), Google Analytics/Tag
+    # Manager, Microsoft Clarity, Stripe. Fonty sú self-hostované, preto
+    # font-src 'self'. 'unsafe-inline' v script/style je nutné pre Nuxt
+    # hydratáciu a Vue scoped štýly; blokuje ale načítanie CUDZÍCH skriptov,
+    # čo je proti XSS to podstatné.
+    Content-Security-Policy-Report-Only = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms https://*.clarity.ms; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co https://www.google-analytics.com https://*.clarity.ms https://c.bing.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://*.clarity.ms https://c.bing.com https://c.clarity.ms; frame-src https://js.stripe.com https://hooks.stripe.com; worker-src 'self' blob:; manifest-src 'self'; form-action 'self' https://checkout.stripe.com"

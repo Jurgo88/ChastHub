@@ -1,0 +1,55 @@
+name: Backup
+
+# Nightly encrypted off-site backup of the database and Storage to
+# Cloudflare R2 (TASK-157). Setup and restore: docs/BACKUPS.md.
+# GitHub emails whoever last edited the cron line when a scheduled run fails.
+
+on:
+  # Schedule disabled until the R2 backup secrets are configured (docs/BACKUPS.md).
+  # Uncomment the block below to re-enable nightly runs.
+  # schedule:
+  # # 08:00 UTC = 04:00 EDT / 01:00 PDT / 10:00 CEST: the deepest US night.
+  # # Measured 2026-09-25, activity peaks 17:00–23:00 UTC. The dump takes
+  # # seconds and does not block writes, so this is courtesy, not necessity.
+  #   - cron: '0 8 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # Latest CLI on purpose: its pg_dump image tracks the Postgres version
+      # Supabase currently runs, which a pinned version would drift from.
+      - uses: supabase/setup-cli@v2
+        with:
+          version: latest
+
+      - name: Install rclone
+        run: bash scripts/backup/install-rclone.sh
+
+      - name: Back up database and Storage
+        env:
+          BACKUP_DB_URL: ${{ secrets.BACKUP_DB_URL }}
+          SUPABASE_URL: ${{ secrets.BACKUP_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.BACKUP_SUPABASE_ANON_KEY }}
+          BACKUP_STORAGE_ACCESS_KEY_ID: ${{ secrets.BACKUP_STORAGE_ACCESS_KEY_ID }}
+          BACKUP_STORAGE_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_STORAGE_SECRET_ACCESS_KEY }}
+          BACKUP_STORAGE_REGION: ${{ secrets.BACKUP_STORAGE_REGION }}
+          BACKUP_STORAGE_ENDPOINT: ${{ secrets.BACKUP_STORAGE_ENDPOINT }}
+          BACKUP_R2_ACCOUNT_ID: ${{ secrets.BACKUP_R2_ACCOUNT_ID }}
+          BACKUP_R2_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
+          BACKUP_R2_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
+          BACKUP_R2_BUCKET: ${{ secrets.BACKUP_R2_BUCKET }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: bash scripts/backup/backup.sh

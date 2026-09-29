@@ -1,0 +1,105 @@
+// Global styles – feature-specific styles live in component <style> blocks
+
+// Inter, self-hosted (TASK-115). It used to load from Google Fonts via a
+// <link> on the landing page only — so /auth/* declared `font-family: 'Inter'`
+// and silently fell back to sans-serif, because nothing there ever fetched it.
+// Defining it globally fixes that, and removes a third-party request from the
+// critical path (and from the GDPR surface: Google Fonts sends the visitor's
+// IP to Google).
+//
+// One variable file per subset covers every weight from 400 to 800 in a single
+// request, instead of the six static weights the old <link> asked for — one of
+// which (300) nothing used. `unicode-range` means latin-ext is only fetched
+// when a character actually needs it, so English pages never pay for it.
+//
+// Files are Inter v20 from Google Fonts, SIL OFL 1.1 — see public/fonts/OFL.txt.
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-primary: #111111;
+  // Accessible accent: pure #0000ff has ~2:1 contrast on --color-bg (WCAG
+  // needs 4.5:1). This indigo is the value components were already getting
+  // through the rgba(var(--color-accent-rgb, 99, 102, 241), …) fallback.
+  //
+  // TASK-061 (client feedback, 2026-08-04): "overall blue color more
+  // saturated." Bumped saturation/lightness slightly (was #6366f1,
+  // ~3.9:1 contrast on --color-bg) rather than pushing toward pure blue —
+  // that direction *lowers* contrast against a dark background (blue has
+  // low perceptual luminance), the opposite of what a "more saturated"
+  // ask should do here. This value: ~4.3:1. Tentative pending visual
+  // sign-off — swap both lines together if the client wants a different
+  // shade, keep the rgb one in sync (used as the rgba(var(...), alpha)
+  // fallback throughout the codebase).
+  --color-accent: #6d6ffb;
+  --color-accent-rgb: 109, 111, 251;
+  --color-danger: #ff6b6b;
+  --color-danger-rgb: 255, 107, 107;
+  // TASK-061: neon orange for Remove/End actions specifically (time
+  // removal, ending a loq) — distinct from --color-danger (red), which
+  // stays for other destructive-but-different actions (ban, decline,
+  // reject). ~6:1 contrast on --color-bg.
+  --color-remove: #ff6a00;
+  --color-remove-rgb: 255, 106, 0;
+  --color-bg: #1a1a1a;
+  --color-surface: #242424;
+  --color-text: #e8e8e8;
+  --color-muted: #888888;
+  --color-text-muted: #888888;
+  --color-border: #2e2e2e;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, monospace;
+}
+
+html,
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  min-height: 100vh;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+
+  &:hover {
+    color: #818cf8;
+    text-decoration: underline;
+  }
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-text);
+}

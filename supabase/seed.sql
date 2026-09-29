@@ -1,0 +1,7 @@
+-- ChastHub seed data
+--
+-- Intentionally empty. The inherited seed inserted into the V1 `locks` table
+-- (dropped in 026) and created test accounts with a shared password, so it
+-- was both broken and unsafe to run against a real project.
+--
+-- Never run a seed that creates accounts against production.

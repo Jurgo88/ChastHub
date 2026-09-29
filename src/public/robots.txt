@@ -1,0 +1,24 @@
+# ChastHub — https://chasthub.com
+
+User-agent: *
+Allow: /
+
+# Authenticated application areas. No public content, and crawling them only
+# burns crawl budget on pages that redirect to the login screen.
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /messages
+Disallow: /search
+Disallow: /discover
+Disallow: /auth
+Disallow: /subscription
+Disallow: /api/
+
+# Placeholder page — nothing to index until the shop actually ships.
+Disallow: /shop
+
+# /loq/ is deliberately left crawlable: those are the public share pages and
+# they need to be fetchable for link previews and search results.
+
+Sitemap: https://chasthub.com/sitemap.xml

@@ -1,0 +1,62 @@
+name: API Tests
+
+on:
+  push:
+    branches: [main, 'release/**']
+  pull_request:
+    # TASK-167 — task PRs into a release branch get tested too, not only the
+    # final release -> main PR.
+    branches: [main, 'release/**']
+
+jobs:
+  test:
+    # Runs only once the Supabase secrets exist. Set the repository variable
+    # API_TESTS_ENABLED=true (Settings > Secrets and variables > Actions > Variables).
+    if: ${{ vars.API_TESTS_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and start server
+        env:
+          NITRO_PRESET: node-server
+          # Names must match what nuxt.config.ts actually reads at build time:
+          # NUXT_SUPABASE_URL and NUXT_SUPABASE_ANON_KEY. These were set as
+          # NUXT_PUBLIC_SUPABASE_URL / NUXT_PUBLIC_SUPABASE_KEY, and the latter
+          # matched nothing at all, so the anon key never reached the build.
+          # The secret names on the GitHub side are unchanged.
+          # (The test step below keeps NUXT_PUBLIC_SUPABASE_URL — that is the
+          # name test-api.sh itself reads.)
+          NUXT_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          NUXT_SUPABASE_SERVICE_KEY: ${{ secrets.NUXT_SUPABASE_SERVICE_KEY }}
+          NUXT_SESSION_PASSWORD: ${{ secrets.NUXT_SESSION_PASSWORD }}
+        run: |
+          npm run build
+          node .output/server/index.mjs &
+          echo "SERVER_PID=$!" >> $GITHUB_ENV
+          # Wait up to 30s for server to be ready
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/api/health && break
+            sleep 1
+          done
+
+      - name: Run API tests
+        env:
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_SUPABASE_SERVICE_KEY: ${{ secrets.NUXT_SUPABASE_SERVICE_KEY }}
+        run: bash test-api.sh
+
+      - name: Stop server
+        if: always()
+        run: kill $SERVER_PID 2>/dev/null || true

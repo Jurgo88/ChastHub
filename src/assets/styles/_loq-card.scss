@@ -1,0 +1,377 @@
+// Shared loq-card styles for the loqee + loqholder dashboards.
+//
+// @use this inside each page's <style scoped> block — the rules compile into
+// each component (so they stay scoped), but the source lives here once.
+// Page-specific layout (summary grid, expand/collapse, extra .loq-act
+// modifiers) stays in the page files.
+
+// ── Bordered field-group with a floating label ──────────────────────────────
+
+@mixin field-group($label) {
+  border: 1.5px solid var(--color-border);
+  border-radius: 0.875rem;
+  padding: 0.875rem 0.75rem 0.75rem;
+  position: relative;
+
+  &::before {
+    content: $label;
+    position: absolute;
+    top: -0.55rem;
+    left: 0.875rem;
+    background: var(--color-surface);
+    padding: 0 0.375rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-muted);
+  }
+}
+
+// ── Page shell ───────────────────────────────────────────────────────────────
+
+// TASK-153 — was `min-height: 100dvh`, which dates from before there was a
+// layout shell: each page had to stretch itself to the viewport because
+// nothing above it would. layouts/default.vue is that shell now and owns the
+// viewport height, so a page claiming 100dvh of its own pushes the footer a
+// full screen down — on an empty dashboard you had to scroll past nothing to
+// reach it. `flex: 1` fills whatever the layout gives instead, which is the
+// viewport minus the footer.
+.dash {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+.dash-body {
+  flex: 1;
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+// ── Page header (loqee + loqholder dashboards) ───────────────────────────────
+
+.dash-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &__title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  &__sub {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    margin: 0.25rem 0 0;
+  }
+}
+
+// TASK-151 — every icon slot in these components was sized by `font-size`,
+// because every one of them held an emoji: .dash-state__icon at 3rem,
+// .empty-state__icon and .loq-card__self-icon smaller. Sizing the replacement
+// artwork in `em` keeps that single knob working, so the slots did not have to
+// be rewritten to take images.
+.state-icon {
+  width: 1em;
+  height: 1em;
+  object-fit: contain;
+  display: block;
+}
+
+.dash-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  text-align: center;
+
+  &__icon { font-size: 3rem; }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  &__hint {
+    font-size: 0.9375rem;
+    color: var(--color-muted);
+    margin: 0;
+    max-width: 360px;
+  }
+}
+
+// ── Loq card core ────────────────────────────────────────────────────────────
+// Summary-row grid layout is page-specific and lives in the page files.
+
+.loq-card {
+  background: var(--color-surface, #242424);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  position: relative;
+  overflow: hidden;
+
+  // Top accent stripe
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 1rem 1rem 0 0;
+    background: var(--color-muted);
+  }
+
+  &--active {
+    &::before { background: var(--color-accent); }
+  }
+
+  &--paused {
+    border-color: rgba(255, 170, 0, 0.2);
+    &::before { background: #ffaa00; }
+  }
+
+  &--request {
+    border-color: rgba(255, 170, 0, 0.2);
+    background: rgba(255, 170, 0, 0.04);
+    &::before { background: #ffaa00; }
+  }
+
+  &--draft {
+    &::before { background: var(--color-border); }
+  }
+
+  &__summary-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  &__identity {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  &__avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.15);
+    color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.9375rem;
+    flex-shrink: 0;
+  }
+
+  &__name  { font-size: 0.9375rem; font-weight: 600; color: var(--color-text); margin: 0; }
+  &__since { font-size: 0.75rem; color: var(--color-muted); margin: 0; }
+
+  &__detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  &__hint {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    margin: 0;
+    line-height: 1.45;
+  }
+
+  &__link {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 500;
+    &:hover { text-decoration: underline; }
+  }
+
+  &__error {
+    font-size: 0.8125rem;
+    color: var(--color-danger, #ff6b6b);
+    margin: 0;
+  }
+}
+
+// ── Status pills ─────────────────────────────────────────────────────────────
+
+.loq-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.3rem 0.625rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &--active {
+    background: rgba(0, 200, 100, 0.12);
+    color: #00c864;
+    .loq-status-pill__dot { background: #00c864; box-shadow: 0 0 4px #00c864; }
+  }
+
+  &--paused {
+    background: rgba(255, 170, 0, 0.12);
+    color: #ffaa00;
+    .loq-status-pill__dot { background: #ffaa00; }
+  }
+
+  &--draft {
+    background: rgba(107, 114, 128, 0.12);
+    color: #9ca3af;
+    .loq-status-pill__dot { background: #9ca3af; }
+  }
+
+  &--request {
+    background: rgba(255, 170, 0, 0.12);
+    color: #ffaa00;
+    .loq-status-pill__dot { background: #ffaa00; animation: pulse-dot 1.5s ease-in-out infinite; }
+  }
+
+  &--public {
+    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.1);
+    color: var(--color-accent);
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+// ── Duration hero (request/draft cards) ──────────────────────────────────────
+
+.request-dur {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+
+  &__val {
+    font-family: var(--font-mono);
+    font-size: 1.75rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+    color: #ffaa00;
+    text-shadow: 0 0 16px rgba(255, 170, 0, 0.3);
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--color-muted);
+  }
+}
+
+.loq-card--draft .request-dur__val {
+  color: var(--color-accent);
+  text-shadow: 0 0 16px rgba(var(--color-accent-rgb, 99, 102, 241), 0.3);
+}
+
+// ── Reason field ─────────────────────────────────────────────────────────────
+
+.reason-wrap {
+  @include field-group('Reason');
+}
+
+.card-reason {
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--color-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+// ── Action buttons (base + shared modifiers) ─────────────────────────────────
+
+.loq-act {
+  min-height: 44px;
+  padding: 0 1rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-muted);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  // TASK-061: neon orange, not red — End is a normal loq-lifecycle action
+  // (cancel a draft, end an active loq), not a moderation/danger action.
+  &--end {
+    padding: 0 0.875rem;
+    color: var(--color-remove, #ff6a00);
+    border-color: rgba(var(--color-remove-rgb, 255, 106, 0), 0.3);
+    &:hover:not(:disabled) {
+      background: rgba(var(--color-remove-rgb, 255, 106, 0), 0.08);
+      border-color: var(--color-remove, #ff6a00);
+    }
+  }
+}
+
+// ── Spinner ──────────────────────────────────────────────────────────────────
+
+.spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+
+  &--sm {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 2px;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
