@@ -2,7 +2,7 @@
   <div class="find-page">
 
     <header class="find-nav">
-      <NuxtLink to="/dashboard/loqee" class="find-nav__back">← Back</NuxtLink>
+      <NuxtLink to="/dashboard/wearer" class="find-nav__back">← Back</NuxtLink>
       <h1 class="find-nav__title">Find a Keyholder</h1>
       <span />
     </header>
@@ -165,7 +165,7 @@ async function sendRequest() {
       method: 'POST',
       body: { loqholder_id: selected.value },
     })
-    await router.push('/dashboard/loqee')
+    await router.push('/dashboard/wearer')
   }
   catch (err: unknown) {
     const e = err as { data?: { message?: string }; message?: string }

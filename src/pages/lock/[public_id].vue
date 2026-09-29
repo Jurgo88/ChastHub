@@ -61,7 +61,7 @@ useSeoMeta({
   ogTitle: headline,
   ogDescription: shareDescription,
   ogType: 'website',
-  ogUrl: `${siteUrl}/loq/${publicId}`,
+  ogUrl: `${siteUrl}/lock/${publicId}`,
   ogImage: `${siteUrl}/images/og-default.png`,
   ogImageWidth: 1200,
   ogImageHeight: 630,

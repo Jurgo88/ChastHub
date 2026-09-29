@@ -10,7 +10,7 @@
     </div>
 
     <div v-if="!loqId && !conversationId" class="admin-empty-state">
-      <p>Open this page from the <NuxtLink to="/admin/loqs">Locks</NuxtLink> table or a <NuxtLink to="/admin/reports">report</NuxtLink>.</p>
+      <p>Open this page from the <NuxtLink to="/admin/locks">Locks</NuxtLink> table or a <NuxtLink to="/admin/reports">report</NuxtLink>.</p>
     </div>
 
     <div v-else-if="loading" class="admin-loading"><span class="admin-loading__spinner" />Loading…</div>

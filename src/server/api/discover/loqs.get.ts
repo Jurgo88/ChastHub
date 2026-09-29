@@ -2,7 +2,7 @@ import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 
 // TASK-142 — the Discover listing. Signed-in only for now (client may open it
-// up later); the individual loq page at /loq/[public_id] stays public either
+// up later); the individual lock page at /lock/[public_id] stays public either
 // way, since that is the link people share outside the app.
 //
 // Paired loqs are never listed. The client asked for a count of them instead,

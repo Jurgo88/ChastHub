@@ -10,7 +10,8 @@ PWA that pairs **wearers** and **keyholders** around timed **locks**. [chasthub.
 
 > **Terminology.** The UI says *lock / wearer / keyholder / lock timer*. The code, routes,
 > API and database keep the inherited names (`loq`, `loqee`, `loqholder`, `loqs` table,
-> `/loq/...` URLs). Change user-facing text only; do not rename identifiers.
+> `/api/loq...`). Page URLs are user-facing and use the new words: `/lock/...`,
+> `/dashboard/wearer`, `/dashboard/keyholder` (old `/loq/...` URLs 301 to `/lock/...`).
 
 Platform is **18+ only**.
 
@@ -87,7 +88,7 @@ The build does **not** need production secrets. The Supabase client plugins are 
 
 ```
 src/
-├── pages/            # file-based routes (auth, dashboard, loq, discover, messages,
+├── pages/            # file-based routes (auth, dashboard, lock, discover, messages,
 │                     #   profile, user/[username], leaderboard, subscription, admin, legal)
 ├── components/       # loq/, dm/, leaderboard/ + shared UI
 ├── composables/      # useAuth, useLoq, useLoqholder, usePublicLoq, useDiscoverFeed,
@@ -115,7 +116,7 @@ Defined in `routeRules` in `nuxt.config.ts`.
 | Routes | Mode |
 |---|---|
 | `/`, `/install`, `/privacy`, `/terms`, `/faq` | Prerendered at build |
-| `/loq/**` (public loq page) | SSR, 60 s CDN cache, so OG tags carry the real loq |
+| `/lock/**` (public lock page) | SSR, 60 s CDN cache, so OG tags carry the real loq |
 | `/dashboard`, `/admin`, `/profile`, `/messages`, `/discover`, `/auth`, `/subscription`, `/leaderboard`, `/shop` | Client-only, `noindex` |
 
 ---

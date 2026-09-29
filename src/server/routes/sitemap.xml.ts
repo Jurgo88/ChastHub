@@ -5,7 +5,7 @@
 //   /shop        — "coming soon" placeholder; submitting it would put a thin page
 //                  in front of Google while the site is establishing trust
 //   /demo        — a 301 redirect, never a canonical destination (see netlify.toml)
-//   /loq/<id>    — user-generated and time-limited. They stay crawlable and carry
+//   /lock/<id>   — user-generated and time-limited. They stay crawlable and carry
 //                  Open Graph tags for sharing, but listing them here would fill
 //                  the index with thin, short-lived pages.
 //   /leaderboard — noindex (TASK-119). Its rows load client-side, so a crawler

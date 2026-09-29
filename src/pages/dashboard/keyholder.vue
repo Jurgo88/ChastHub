@@ -882,7 +882,7 @@ function formatHours(hours: number): string {
 
 function visitorLinkUrl(loq: ActiveLoq): string {
   if (!loq.public_link_id || !import.meta.client) return ''
-  return `${window.location.origin}/loq/${loq.public_link_id}`
+  return `${window.location.origin}/lock/${loq.public_link_id}`
 }
 
 async function handleGenerateLink(loqId: string) {

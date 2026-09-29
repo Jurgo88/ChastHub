@@ -68,7 +68,7 @@ export default defineNuxtConfig({
     //
     // Only the CDN caches it — the browser is told not to, so a visitor
     // returning to the page still sees their own adjustment reflected.
-    '/loq/**': {
+    '/lock/**': {
       headers: {
         'Cache-Control': 'public, max-age=0, must-revalidate',
         'Netlify-CDN-Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
@@ -108,7 +108,8 @@ export default defineNuxtConfig({
     // TASK-142/143 — the loqholder queue became Discover, and user search
     // moved into Messages. Both old URLs are in people's history and in
     // links we have already sent out.
-    '/loq/public-loqs': { redirect: { to: '/discover', statusCode: 301 } },
+    // Public URLs say "lock"; the inherited /loq/ paths redirect for safety.
+    '/loq/**': { redirect: { to: '/lock/**', statusCode: 301 } },
     '/search': { redirect: { to: '/messages', statusCode: 301 } },
   },
 

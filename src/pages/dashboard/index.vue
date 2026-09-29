@@ -11,10 +11,10 @@ const authStore = useAuthStore()
 
 onMounted(() => {
   if (authStore.isLoqee) {
-    navigateTo('/dashboard/loqee', { replace: true })
+    navigateTo('/dashboard/wearer', { replace: true })
   }
   else if (authStore.isLoqholder) {
-    navigateTo('/dashboard/loqholder', { replace: true })
+    navigateTo('/dashboard/keyholder', { replace: true })
   }
 })
 </script>

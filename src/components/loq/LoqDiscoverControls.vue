@@ -164,7 +164,7 @@ async function pickPermission(value: VisitorPermission) {
   }
 }
 
-// Lifted from dashboard/loqee.vue, where these controls used to live inline.
+// Lifted from dashboard/wearer.vue, where these controls used to live inline.
 // Its styles are scoped, so they do not reach a child component.
 .visitor-amount {
   &__caption {

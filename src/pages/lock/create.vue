@@ -2,7 +2,7 @@
   <div class="create-page">
 
     <header class="create-nav">
-      <NuxtLink to="/dashboard/loqee" class="create-nav__back">← Back</NuxtLink>
+      <NuxtLink to="/dashboard/wearer" class="create-nav__back">← Back</NuxtLink>
       <div class="step-dots">
         <span
           v-for="i in TOTAL_STEPS"
@@ -427,7 +427,7 @@ async function submit() {
       reason: form.reason || undefined,
       self: startMode.value === 'self',
     })
-    await router.push('/dashboard/loqee')
+    await router.push('/dashboard/wearer')
   }
   catch (err: unknown) {
     const e = err as import('~/composables/useLoq').LoqApiError

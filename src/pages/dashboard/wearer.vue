@@ -36,7 +36,7 @@
         <p v-if="authStore.isOnTrial" class="dash-state__trial">
           Free trial · {{ authStore.trialDays }} {{ authStore.trialDays === 1 ? 'day' : 'days' }} left
         </p>
-        <NuxtLink to="/loq/create" class="btn btn--primary">Create Lock</NuxtLink>
+        <NuxtLink to="/lock/create" class="btn btn--primary">Create Lock</NuxtLink>
       </template>
     </div>
 
@@ -130,7 +130,7 @@
               :disabled="cancellingRequest"
               @click="handleCancelRequest"
             >{{ cancellingRequest ? 'Cancelling…' : 'Cancel request' }}</button>
-            <NuxtLink v-else :to="`/loq/${loq.id}/find-loqholder`" class="loq-act loq-act--ghost">
+            <NuxtLink v-else :to="`/lock/${loq.id}/find-keyholder`" class="loq-act loq-act--ghost">
               {{ loq.status === 'pending' ? 'Choose another keyholder' : 'Find a Keyholder' }}
             </NuxtLink>
             <button
@@ -541,7 +541,7 @@ function applyLoqPatch(patch: Partial<Loq>) {
 
 const visitorLinkUrl = computed(() => {
   if (!loq.value?.public_link_id || !import.meta.client) return ''
-  return `${window.location.origin}/loq/${loq.value.public_link_id}`
+  return `${window.location.origin}/lock/${loq.value.public_link_id}`
 })
 
 async function handleSelfPauseToggle() {

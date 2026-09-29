@@ -33,7 +33,7 @@
         <NuxtLink to="/admin/links" class="admin-nav-link">Links</NuxtLink>
         <template v-if="canModerate">
           <NuxtLink to="/admin/users" class="admin-nav-link">Users</NuxtLink>
-          <NuxtLink to="/admin/loqs" class="admin-nav-link">Locks</NuxtLink>
+          <NuxtLink to="/admin/locks" class="admin-nav-link">Locks</NuxtLink>
           <NuxtLink to="/admin/messages" class="admin-nav-link">Messages</NuxtLink>
           <NuxtLink to="/admin/reports" class="admin-nav-link">Reports</NuxtLink>
         </template>

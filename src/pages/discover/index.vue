@@ -57,7 +57,7 @@
 
             <!-- Clock -->
             <NuxtLink
-              :to="`/loq/${item.public_link_id}`"
+              :to="`/lock/${item.public_link_id}`"
               class="q-card__clock"
               :class="flashing[item.id] && `q-card__clock--${flashing[item.id]}`"
             >

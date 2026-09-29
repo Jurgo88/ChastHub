@@ -124,7 +124,7 @@ onBeforeUnmount(() => {
 watch(() => route.fullPath, () => { accountMenuOpen.value = false })
 
 const dashboardLink = computed(() =>
-  authStore.isLoqholder ? '/dashboard/loqholder' : '/dashboard/loqee'
+  authStore.isLoqholder ? '/dashboard/keyholder' : '/dashboard/wearer'
 )
 
 const brandLink = computed(() =>
