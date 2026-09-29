@@ -873,7 +873,7 @@ ALTER TABLE ONLY public.loqs REPLICA IDENTITY FULL;
 
 CREATE VIEW public.loqee_leaderboard AS
  SELECT p.id,
-    COALESCE(p.display_name, 'Loqsy user'::text) AS display_name,
+    COALESCE(p.display_name, 'ChastHub user'::text) AS display_name,
     round(max((EXTRACT(epoch FROM (l.loqed_until - l.created_at)) / (3600)::numeric)), 1) AS longest_loq_hours,
     p.avatar_url,
     p.username
@@ -888,7 +888,7 @@ CREATE VIEW public.loqee_leaderboard AS
 
 CREATE VIEW public.loqee_leaderboard_all AS
  SELECT p.id,
-    COALESCE(p.display_name, 'Loqsy user'::text) AS display_name,
+    COALESCE(p.display_name, 'ChastHub user'::text) AS display_name,
     round(max((EXTRACT(epoch FROM (l.loqed_until - l.created_at)) / (3600)::numeric)), 1) AS longest_loq_hours,
     p.avatar_url,
     p.username,
@@ -902,7 +902,7 @@ CREATE VIEW public.loqee_leaderboard_all AS
 
 CREATE VIEW public.loqholder_leaderboard AS
  SELECT p.id,
-    COALESCE(p.display_name, 'Loqsy user'::text) AS display_name,
+    COALESCE(p.display_name, 'ChastHub user'::text) AS display_name,
     (count(l.id))::integer AS controlled_loqs,
     p.avatar_url,
     p.username
@@ -917,7 +917,7 @@ CREATE VIEW public.loqholder_leaderboard AS
 
 CREATE VIEW public.loqholder_leaderboard_all AS
  SELECT p.id,
-    COALESCE(p.display_name, 'Loqsy user'::text) AS display_name,
+    COALESCE(p.display_name, 'ChastHub user'::text) AS display_name,
     (count(l.id))::integer AS controlled_loqs,
     p.avatar_url,
     p.username,
@@ -1639,8 +1639,6 @@ GRANT USAGE ON SCHEMA public TO service_role;
 
 -- acl: FUNCTION adjust_visitor_time(p_loq_id uuid, p_delta_hours numeric, p_min_until timestamp with time zone, p_max_until timestamp with time zone)
 
-GRANT ALL ON FUNCTION public.adjust_visitor_time(p_loq_id uuid, p_delta_hours numeric, p_min_until timestamp with time zone, p_max_until timestamp with time zone) TO anon;
-GRANT ALL ON FUNCTION public.adjust_visitor_time(p_loq_id uuid, p_delta_hours numeric, p_min_until timestamp with time zone, p_max_until timestamp with time zone) TO authenticated;
 GRANT ALL ON FUNCTION public.adjust_visitor_time(p_loq_id uuid, p_delta_hours numeric, p_min_until timestamp with time zone, p_max_until timestamp with time zone) TO service_role;
 
 -- acl: FUNCTION admin_activity_days()
@@ -1712,8 +1710,6 @@ GRANT ALL ON FUNCTION public.auth_is_super_admin() TO service_role;
 
 -- acl: FUNCTION check_rate_limit(p_key text, p_max integer, p_window_ms bigint)
 
-GRANT ALL ON FUNCTION public.check_rate_limit(p_key text, p_max integer, p_window_ms bigint) TO anon;
-GRANT ALL ON FUNCTION public.check_rate_limit(p_key text, p_max integer, p_window_ms bigint) TO authenticated;
 GRANT ALL ON FUNCTION public.check_rate_limit(p_key text, p_max integer, p_window_ms bigint) TO service_role;
 
 -- acl: FUNCTION record_user_activity(p_user_id uuid)
@@ -1842,27 +1838,6 @@ GRANT ALL ON TABLE public.security_reports TO service_role;
 -- acl: TABLE user_activity_days
 
 GRANT ALL ON TABLE public.user_activity_days TO service_role;
-
--- default acl: DEFAULT PRIVILEGES FOR SEQUENCES
-
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
-
--- default acl: DEFAULT PRIVILEGES FOR FUNCTIONS
-
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO authenticated;
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO service_role;
-
--- default acl: DEFAULT PRIVILEGES FOR TABLES
-
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO service_role;
-
---
---
 
 -- Server-only RPCs. adjust_visitor_time is SECURITY DEFINER and takes the
 -- bounds as arguments, so anyone able to call it could set any lock's end
