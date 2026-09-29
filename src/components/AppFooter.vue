@@ -20,7 +20,7 @@
           <span class="ft__head">Help</span>
           <!-- TASK-172: bugs and security issues, one form. -->
           <NuxtLink to="/report" class="ft__link">Report an issue</NuxtLink>
-          <a href="mailto:founder@chasthub.com" class="ft__link">Contact us</a>
+          <a href="mailto:support@chasthub.com" class="ft__link">Contact us</a>
         </div>
         <div class="ft__col">
           <span class="ft__head">Legal</span>

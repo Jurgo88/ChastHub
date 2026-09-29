@@ -204,7 +204,7 @@ useHead({
         </div>
         <div class="faqp__cta-actions">
           <NuxtLink to="/auth/signup?role=wearer" class="faqp__btn faqp__btn--cta">Start your lock for free</NuxtLink>
-          <a href="mailto:founder@chasthub.com" class="faqp__btn faqp__btn--ghost">Ask us</a>
+          <a href="mailto:support@chasthub.com" class="faqp__btn faqp__btn--ghost">Ask us</a>
         </div>
       </aside>
     </main>

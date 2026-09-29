@@ -14,7 +14,7 @@
         <p>This policy explains what personal data ChastHub collects, why, and what rights you have over it.</p>
 
         <h2>Data Controller</h2>
-        <p>ChastHub is operated from Slovakia, European Union. Full details of the data controller will be published on this page. Until then, contact us about anything related to your data at <a href="mailto:founder@chasthub.com">founder@chasthub.com</a>.</p>
+        <p>ChastHub is operated from Slovakia, European Union. Full details of the data controller will be published on this page. Until then, contact us about anything related to your data at <a href="mailto:support@chasthub.com">support@chasthub.com</a>.</p>
 
         <h2>Information We Collect</h2>
         <p>We collect and process the following personal data:</p>
@@ -88,7 +88,7 @@
         <!-- TASK-178 — what survives an account deletion, and for how long.
              The 12 months must be enforced, not just promised (see TASK-179). -->
         <p>When you delete your account, your profile, display name and avatar are erased. To understand why people leave and to improve the service, we keep your email address, the reason you gave for leaving (and any note you added), the approximate location you signed up from, and any report you chose to send while leaving, for <strong>12 months</strong> after the deletion. After that it is deleted.</p>
-        <p>If you want it deleted straight away, email <a href="mailto:founder@chasthub.com">founder@chasthub.com</a> from the address you used on ChastHub and we will delete it.</p>
+        <p>If you want it deleted straight away, email <a href="mailto:support@chasthub.com">support@chasthub.com</a> from the address you used on ChastHub and we will delete it.</p>
 
         <h2>Your Rights (GDPR)</h2>
         <p>You have the right to:</p>
@@ -100,7 +100,7 @@
           <li>Data portability</li>
           <li>Withdraw consent</li>
         </ul>
-        <p>You can exercise these rights by contacting us at <a href="mailto:founder@chasthub.com">founder@chasthub.com</a>.</p>
+        <p>You can exercise these rights by contacting us at <a href="mailto:support@chasthub.com">support@chasthub.com</a>.</p>
 
         <h2>Data Security</h2>
         <p>We implement reasonable technical and organisational measures to protect your data.</p>
@@ -113,7 +113,7 @@
         <p>We may update this Privacy Policy from time to time. Updates will be published on this page.</p>
 
         <h2>Contact</h2>
-        <p>If you have questions about this Privacy Policy, contact us at <a href="mailto:founder@chasthub.com">founder@chasthub.com</a>.</p>
+        <p>If you have questions about this Privacy Policy, contact us at <a href="mailto:support@chasthub.com">support@chasthub.com</a>.</p>
       </div>
     </div>
   </div>
