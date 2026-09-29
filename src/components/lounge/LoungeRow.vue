@@ -75,23 +75,36 @@ onBeforeUnmount(() => document.removeEventListener('click', close))
 }
 
 .m {
-  position: relative;
   display: flex;
-  gap: 12px;
-  padding: 8px 10px;
-  border-radius: 14px;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 5px 0;
 
-  &:hover, &--menu { background: rgba(79, 23, 135, 0.3); }
   &:hover .act, &--menu .act { opacity: 1; }
 
-  &--team {
-    background: rgba(var(--color-brand-rgb), 0.07);
-    box-shadow: inset 3px 0 0 var(--color-brand);
+  &__av { flex-shrink: 0; width: 36px; height: 36px; margin-top: 2px; }
+  &__img { display: block; width: 36px; height: 36px; border-radius: 50%; }
+
+  // The message itself: a card as wide as its text, capped for long lines.
+  &__body {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: min(620px, 100%);
+    padding: 8px 14px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px 16px 16px 16px;
+    background: rgba(24, 1, 97, 0.55);
+    transition: border-color 0.12s;
   }
 
-  &__av { flex-shrink: 0; width: 38px; height: 38px; }
-  &__img { display: block; width: 38px; height: 38px; border-radius: 50%; }
-  &__body { min-width: 0; flex: 1; }
+  &:hover &__body, &--menu &__body { border-color: rgba(var(--color-accent-rgb), 0.35); }
+
+  &--own &__body { background: rgba(79, 23, 135, 0.35); }
+
+  &--team &__body {
+    border-color: rgba(var(--color-brand-rgb), 0.5);
+    background: rgba(var(--color-brand-rgb), 0.08);
+  }
 
   &__top {
     display: flex;
@@ -143,9 +156,9 @@ onBeforeUnmount(() => document.removeEventListener('click', close))
 }
 
 .act {
-  position: absolute;
-  right: 8px;
-  top: 6px;
+  position: relative;
+  flex-shrink: 0;
+  align-self: center;
   display: flex;
   gap: 6px;
   opacity: 0;
@@ -196,10 +209,9 @@ onBeforeUnmount(() => document.removeEventListener('click', close))
 }
 
 // Touch screens have no hover: keep the actions visible but quiet.
-@media (hover: none) {
-  .act { opacity: 1; }
+@media (hover: none), (max-width: 700px) {
+  .act { opacity: 1; align-self: flex-start; }
   .act > button:first-child { display: none; }
-  .act > button { padding: 2px 8px; background: none; border-color: transparent; }
-  .m__top { padding-right: 34px; }
+  .act > button { padding: 2px 6px; background: none; border-color: transparent; }
 }
 </style>
