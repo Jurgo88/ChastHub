@@ -92,6 +92,9 @@
   // Remove time / end a lock. Amber so it never reads as the orange CTA. 9.4:1
   --color-remove: #FFB020;
   --color-remove-rgb: 255, 176, 32;
+  // Waiting / paused states (requests, paused timers). Same amber as remove.
+  --color-warn: #FFB020;
+  --color-warn-rgb: 255, 176, 32;
 
   --radius-sm: 4px;
   --radius-md: 8px;

@@ -14,7 +14,7 @@
         <div class="dash-header">
           <div class="dash-header__text">
             <h1 class="dash-header__title">Your Locks</h1>
-            <p class="dash-header__sub">Manage and control active lock sessions</p>
+            <p class="dash-header__sub">Every key you hold, in one place.</p>
           </div>
           <!-- Stat cards double as filters: click to filter, click again for all.
                Paused loqs are active sessions, so they live under "Loqs"
@@ -154,10 +154,10 @@
                     >+ Add {{ adjLabel(loq.id) }}</button>
                   </div>
 
-                  <p v-if="loq.status === 'paused'" class="time-adjust__hint">⏸ Resume to adjust the timer</p>
+                  <p v-if="loq.status === 'paused'" class="time-adjust__hint">Resume the lock to adjust the timer.</p>
 
                   <Transition name="flash">
-                    <p v-if="cardFlash(loq.id)" class="time-adjust__flash">✓ {{ cardFlash(loq.id) }}</p>
+                    <p v-if="cardFlash(loq.id)" class="time-adjust__flash">{{ cardFlash(loq.id) }}</p>
                   </Transition>
                 </div>
 
@@ -168,7 +168,7 @@
                     :class="{ 'loq-act--resume': loq.status === 'paused' }"
                     :disabled="isPending(loq.id)"
                     @click="togglePause(loq.id)"
-                  >{{ loq.status === 'paused' ? '▶ Resume' : '⏸ Pause' }}</button>
+                  >{{ loq.status === 'paused' ? 'Resume' : 'Pause' }}</button>
                   <button
                     class="loq-act loq-act--chat"
                     :class="{ 'loq-act--chat-open': openChatId === loq.id }"
@@ -176,7 +176,7 @@
                     :aria-pressed="openChatId === loq.id"
                     :aria-expanded="openChatId === loq.id"
                     @click="toggleChat(loq.id)"
-                  >💬 Chat</button>
+                  >Chat</button>
                   <button class="loq-act loq-act--end" :disabled="isPending(loq.id)" @click="endLoq(loq.id)">End</button>
                 </div>
 
@@ -187,7 +187,7 @@
                   <div v-if="loq.combination_text" class="combo-row">
                     <code class="combo-row__val">{{ loq.combination_text }}</code>
                     <button class="loq-act loq-act--copy" @click="copyCombo(loq.id, loq.combination_text!)">
-                      {{ copiedIds.has(loq.id) ? '✓' : 'Copy' }}
+                      {{ copiedIds.has(loq.id) ? 'Copied' : 'Copy' }}
                     </button>
                   </div>
                   <div v-else-if="loq.combination_photo_url" class="combo-photo">
@@ -211,7 +211,7 @@
                       </svg>
                       <code class="visitor-link__url">{{ visitorLinkUrl(loq) }}</code>
                       <button class="visitor-link__copy" :class="{ 'visitor-link__copy--done': copiedLinkIds.has(loq.id) }" @click="copyVisitorLink(loq)">
-                        {{ copiedLinkIds.has(loq.id) ? '✓ Copied' : 'Copy' }}
+                        {{ copiedLinkIds.has(loq.id) ? 'Copied' : 'Copy' }}
                       </button>
                     </div>
                     <p class="visitor-count">{{ loq.visitor_count ?? 0 }} visitor{{ (loq.visitor_count ?? 0) !== 1 ? 's' : '' }} interacted</p>
@@ -363,7 +363,7 @@
                     class="loq-act loq-act--accept"
                     :disabled="pendingAction === req.loq.id"
                     @click="acceptRequest(req.loq.id)"
-                  >{{ pendingAction === req.loq.id ? 'Accepting…' : '✓ Accept lock' }}</button>
+                  >{{ pendingAction === req.loq.id ? 'Accepting…' : 'Accept lock' }}</button>
                 </div>
               </div>
             </article>
@@ -470,7 +470,7 @@ function adjLabel(loqId: string): string {
   if (a.days) parts.push(`${a.days}d`)
   if (a.hours) parts.push(`${a.hours}h`)
   if (a.minutes) parts.push(`${a.minutes}m`)
-  return parts.join(' ') || '—'
+  return parts.join(' ')
 }
 
 // Time changes are only allowed on active loqs (the server rejects paused
@@ -965,21 +965,22 @@ function patchLoq(id: string, patch: Partial<Loq>) {
 
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 // Stat cards double as filter toggles (aria-pressed reflects the state)
 .stat-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 0.625rem;
-  padding: 0.875rem;
+  border-radius: 20px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
+  align-items: flex-start;
+  gap: 4px;
   font: inherit;
+  text-align: left;
   cursor: pointer;
   transition: border-color 0.12s, background 0.12s;
 
@@ -992,27 +993,34 @@ function patchLoq(id: string, patch: Partial<Loq>) {
 
   &--selected {
     border-color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb), 0.08);
+    background: linear-gradient(160deg, rgba(var(--color-brand-rgb), 0.18) 0%, var(--color-surface) 70%);
   }
 
   &__value {
-    font-size: 1.5rem;
+    font-family: var(--font-display);
+    font-size: 40px;
     font-weight: 700;
-    color: var(--color-accent);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   &__label {
-    font-size: 0.6875rem;
-    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
   }
 
   // Paused sub-count: keep the pause orange the client likes
   &__sub {
     font-size: 0.625rem;
     font-weight: 600;
-    color: #ffaa00;
+    color: var(--color-warn);
     margin-top: 0.125rem;
   }
 }
@@ -1022,7 +1030,7 @@ function patchLoq(id: string, patch: Partial<Loq>) {
 .loq-list {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 16px;
 }
 
 .loq-card {
@@ -1074,10 +1082,14 @@ function patchLoq(id: string, patch: Partial<Loq>) {
       border-color 0.28s ease;
   }
 
+  // Collapsed cards: no gap under the summary for the hidden detail.
+  gap: 0;
+
   &.loq-card--expanded {
     .loq-card__detail {
-      max-height: 1200px;
-      padding-top: 0.875rem;
+      max-height: 1600px;
+      margin-top: 20px;
+      padding-top: 20px;
       border-top-color: var(--color-border);
     }
     .loq-card__chevron svg { transform: rotate(180deg); }
@@ -1096,6 +1108,16 @@ function patchLoq(id: string, patch: Partial<Loq>) {
       .loq-card__hero-timer  { grid-column: 2; grid-row: 1; }
       .loq-card__summary-meta { grid-column: 3; grid-row: 1; justify-self: end; align-self: center; }
     }
+
+    // Expanded card: the timer tiles get their own full-width row.
+    &.loq-card--expanded .loq-card__summary {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+
+      .loq-card__identity     { grid-column: 1; grid-row: 1; }
+      .loq-card__summary-meta { grid-column: 2; grid-row: 1; }
+      .loq-card__hero-timer   { grid-column: 1 / -1; grid-row: 2; }
+    }
   }
 }
 
@@ -1111,16 +1133,16 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     flex: 1;
     color: var(--color-muted);
     &:hover:not(:disabled) {
-      border-color: #ffaa00;
-      color: #ffaa00;
-      background: rgba(255, 170, 0, 0.06);
+      border-color: var(--color-warn);
+      color: var(--color-warn);
+      background: rgba(var(--color-warn-rgb), 0.06);
     }
   }
 
   &--resume {
     flex: 1;
     border-color: var(--color-accent);
-    color: var(--color-accent);
+    color: var(--color-text);
     background: rgba(var(--color-accent-rgb), 0.08);
     &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.15); }
   }
@@ -1147,18 +1169,17 @@ function patchLoq(id: string, patch: Partial<Loq>) {
   &--remove {
     flex: 1;
     color: var(--color-remove);
-    border-color: rgba(var(--color-remove-rgb), 0.3);
-    font-size: 0.8125rem;
+    border-color: rgba(var(--color-remove-rgb), 0.35);
     &:hover:not(:disabled) { background: rgba(var(--color-remove-rgb), 0.08); border-color: var(--color-remove); }
   }
 
   &--add {
     flex: 1;
-    background: var(--color-accent);
+    background: var(--gradient-brand);
     color: var(--color-on-accent);
-    border-color: var(--color-accent);
-    font-size: 0.8125rem;
-    &:hover:not(:disabled) { opacity: 0.88; }
+    border-color: transparent;
+    font-weight: 700;
+    &:hover:not(:disabled) { filter: brightness(1.06); }
   }
 
   &--copy {
@@ -1182,10 +1203,12 @@ function patchLoq(id: string, patch: Partial<Loq>) {
 
   &--accept {
     flex: 2;
-    background: var(--color-accent);
+    background: var(--color-cta);
     color: var(--color-on-accent);
-    border-color: var(--color-accent);
-    &:hover:not(:disabled) { opacity: 0.88; }
+    border-color: var(--color-cta);
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(var(--color-cta-rgb), 0.3);
+    &:hover:not(:disabled) { filter: brightness(1.06); }
   }
 
   &--ghost {
@@ -1425,7 +1448,7 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     text-align: center;
     font-size: 0.8125rem;
     font-weight: 600;
-    color: #00c864;
+    color: var(--color-accent);
   }
 
   &__hint {
@@ -1433,7 +1456,7 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     text-align: center;
     font-size: 0.75rem;
     font-weight: 600;
-    color: #ffaa00;
+    color: var(--color-warn);
   }
 
   // Paused: dim the (disabled) spinners so the hint reads as the active element
@@ -1498,7 +1521,8 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.625rem;
+    font-family: var(--font-display);
+    font-size: 30px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--color-text);
@@ -1533,9 +1557,10 @@ function patchLoq(id: string, patch: Partial<Loq>) {
   padding: 0.5rem 0.75rem;
 
   &__val {
-    font-family: var(--font-mono);
-    font-size: 0.9375rem;
-    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text);
     flex: 1;
     word-break: break-all;
   }
@@ -1567,24 +1592,25 @@ function patchLoq(id: string, patch: Partial<Loq>) {
   padding: 3rem 1rem;
   text-align: center;
 
-  &__icon { font-size: 2.5rem; opacity: 0.5; }
-  &__title { font-size: 1rem; font-weight: 600; color: var(--color-text); }
-  &__hint { font-size: 0.875rem; color: var(--color-muted); }
+  &__icon { font-size: 64px; }
+  &__title { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--color-text); }
+  &__hint { font-size: 16px; color: var(--color-text-muted); }
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.625rem 1.25rem;
-  border-radius: 0.5rem;
-  font-size: 0.9375rem;
-  font-weight: 600;
+  min-height: 50px;
+  padding: 0 26px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
   border: none;
   text-decoration: none;
-  transition: opacity 0.15s;
+  transition: filter 0.15s;
 
-  &--primary { background: var(--color-accent); color: var(--color-on-accent); &:hover { opacity: 0.9; } }
+  &--primary { background: var(--color-cta); color: var(--color-on-accent); &:hover { filter: brightness(1.06); color: var(--color-on-accent); text-decoration: none; } }
 }
 </style>

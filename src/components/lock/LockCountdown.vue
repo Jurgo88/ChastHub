@@ -101,7 +101,7 @@ onUnmounted(() => {
           <span class="lc-seg__label">Sec</span>
         </div>
       </div>
-      <span v-if="pausedAt" class="lc-bubble__paused-label">⏸ Paused</span>
+      <span v-if="pausedAt" class="lc-bubble__paused-label">Paused</span>
     </template>
     <span v-else class="lc-bubble__unlocked"><img :src="unloqedIcon" class="lc-icon" alt="" width="128" height="128" decoding="async"> Unlocked</span>
   </div>
@@ -130,7 +130,7 @@ onUnmounted(() => {
           <span class="lc-seg__label">Sec</span>
         </div>
       </div>
-      <span v-if="pausedAt" class="lc-hero__paused-label">⏸ Paused</span>
+      <span v-if="pausedAt" class="lc-hero__paused-label">Paused</span>
     </template>
     <span v-else class="lc-hero__unlocked"><img :src="unloqedIcon" class="lc-icon" alt="" width="128" height="128" decoding="async"> Unlocked</span>
   </div>
@@ -138,7 +138,7 @@ onUnmounted(() => {
   <!-- Compact: single line for card lists -->
   <div v-else-if="compact" class="lc-compact">
     <span class="lc-compact__time" :class="{ 'lc-compact__time--paused': pausedAt }">{{ countdown }}</span>
-    <span v-if="pausedAt" class="lc-compact__paused">⏸ paused</span>
+    <span v-if="pausedAt" class="lc-compact__paused">paused</span>
   </div>
 
   <!-- Full: centred block for single-loq views -->
@@ -149,7 +149,7 @@ onUnmounted(() => {
         {{ countdown }}
       </div>
       <div class="lock-countdown__meta">
-        <template v-if="pausedAt">⏸ Paused</template>
+        <template v-if="pausedAt">Paused</template>
         <template v-else>Until {{ localTime }} <span class="lock-countdown__tz">({{ timezone }})</span></template>
       </div>
     </template>
@@ -160,233 +160,126 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-// ── Bubble (loqholder cards) ────────────────────────────────────────────────
+// Timer tiles: one rounded tile per unit, digits in the display face with the
+// brand gradient; amber while paused. Shared by the bubble (keyholder cards)
+// and the hero (wearer card) variants.
 
-.lc-bubble {
-  width: 100%;
-  background: rgba(var(--color-accent-rgb), 0.05);
-  border: 1.5px solid rgba(var(--color-accent-rgb), 0.18);
-  border-radius: 0.875rem;
-  padding: 1.5rem 1rem 1.25rem;
+@mixin tiles {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  box-sizing: border-box;
-
-  &--paused {
-    background: rgba(255, 170, 0, 0.04);
-    border-color: rgba(255, 170, 0, 0.2);
-  }
-
-  &__segments {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.375rem;
-  }
-
-  &__sep {
-    font-size: 2.25rem;
-    font-weight: 300;
-    color: var(--color-border);
-    line-height: 1;
-    margin-top: 0.375rem;
-    user-select: none;
-
-    &--sm {
-      font-size: 1.5rem;
-      margin-top: 0.75rem;
-    }
-  }
-
-  &__paused-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #ffaa00;
-    letter-spacing: 0.03em;
-  }
-
-  &__unlocked {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: #22c55e;
-  }
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
 }
 
 .lc-seg {
+  flex: 1 1 0;
+  max-width: 108px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 6px;
+  padding: 16px 6px 12px;
+  border-radius: 18px;
+  background: rgba(14, 0, 51, 0.55);
+  border: 1px solid var(--color-border);
 
   &__val {
-    font-family: var(--font-mono);
-    font-size: 2.75rem;
-    font-weight: 900;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 8vw, 46px);
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -2px;
+    letter-spacing: -0.03em;
     line-height: 1;
-    color: var(--color-accent);
-    text-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.35);
-
-    .lc-bubble--paused & {
-      color: #ffaa00;
-      text-shadow: 0 0 16px rgba(255, 170, 0, 0.3);
-    }
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   &__label {
-    font-size: 0.625rem;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.09em;
-    color: var(--color-muted);
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
   }
 
   &--sm &__val {
-    font-size: 1.5rem;
-    letter-spacing: -0.5px;
-    color: var(--color-muted);
-
-    .lc-bubble--paused & { color: var(--color-border); }
-  }
-
-  &--sm &__label {
-    font-size: 0.5625rem;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    color: var(--color-text);
   }
 }
 
-// ── Hero (morphing timer) ────────────────────────────────────────────────────
-
-@mixin hero-expanded-state {
-  padding: 1.5rem 1rem 1.25rem;
-  background: rgba(var(--color-accent-rgb), 0.05);
-  border-color: rgba(var(--color-accent-rgb), 0.18);
-
-  .lc-hero__sep {
-    font-size: 2.25rem;
-    margin-top: 0.375rem;
-
-    &--sm { font-size: 1.5rem; margin-top: 0.75rem; }
-  }
-
-  .lc-seg__val {
-    font-size: 2.75rem;
-    letter-spacing: -2px;
-    text-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.35);
-  }
-
-  .lc-seg__label { max-height: 2rem; opacity: 1; font-size: 0.625rem; }
-  .lc-seg--sm .lc-seg__label { max-height: 2rem; opacity: 1; }
-
-  .lc-seg--sm .lc-seg__val {
-    font-size: 1.5rem;
-    color: var(--color-muted);
-    text-shadow: none;
-  }
-}
-
+.lc-bubble,
 .lc-hero {
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.125rem 0.5rem;
-  border-radius: 0.875rem;
-  border: 1.5px solid transparent;
-  background: transparent;
-  box-sizing: border-box;
-  transition:
-    padding 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-    background 0.38s ease,
-    border-color 0.38s ease;
+  gap: 12px;
 
-  &__segs {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.375rem;
-  }
+  &__segments,
+  &__segs { @include tiles; }
 
-  &__sep {
-    font-size: 1.5rem;
-    font-weight: 300;
-    color: var(--color-border);
-    line-height: 1;
-    margin-top: 0.2rem;
-    user-select: none;
-    transition: font-size 0.38s cubic-bezier(0.4, 0, 0.2, 1), margin-top 0.38s ease;
-
-    &--sm { font-size: 1rem; margin-top: 0.45rem; }
-  }
+  // The ":" separators give way to the tiles themselves.
+  &__sep { display: none; }
 
   &__paused-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #ffaa00;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(var(--color-warn-rgb), 0.14);
+    color: var(--color-warn);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   &__unlocked {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: #22c55e;
-  }
-
-  // Segment overrides for compact state
-  .lc-seg__val {
-    font-size: 1.75rem;
-    font-weight: 900;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.5px;
-    line-height: 1;
-    color: var(--color-accent);
-    text-shadow: none;
-    transition:
-      font-size 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-      letter-spacing 0.38s ease,
-      text-shadow 0.38s ease;
-  }
-
-  .lc-seg__label {
-    max-height: 1.5rem;
-    overflow: hidden;
-    opacity: 0.6;
-    font-size: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 20px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
-    color: var(--color-muted);
-    transition: max-height 0.3s ease 0.05s, opacity 0.25s ease 0.05s, font-size 0.3s ease;
-  }
-
-  .lc-seg--sm .lc-seg__label {
-    max-height: 0;
-    opacity: 0;
-  }
-
-  .lc-seg--sm .lc-seg__val {
-    font-size: 1.125rem;
-    color: var(--color-muted);
-    transition:
-      font-size 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-      letter-spacing 0.38s ease;
-  }
-
-  &--paused .lc-seg__val { color: #ffaa00; }
-  &--paused .lc-seg--sm .lc-seg__val { color: var(--color-muted); }
-
-  // Expanded state (desktop when card is open)
-  &--expanded { @include hero-expanded-state; }
-  @at-root .lc-hero--paused.lc-hero--expanded .lc-seg__val {
-    color: #ffaa00;
-    text-shadow: 0 0 16px rgba(255, 170, 0, 0.3);
+    color: var(--color-accent);
   }
 }
 
-// Mobile: always show expanded style regardless of --expanded class
-@media (max-width: 767px) {
-  .lc-hero {
-    @include hero-expanded-state;
-    width: 100%;
+.lc-hero__paused-label { display: none !important; } // the card's status pill already says it
+
+.lc-bubble--paused .lc-seg,
+.lc-hero--paused .lc-seg { border-color: rgba(var(--color-warn-rgb), 0.3); }
+.lc-bubble--paused .lc-seg__val,
+.lc-hero--paused .lc-seg__val {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: var(--color-warn);
+}
+
+// Collapsed keyholder card on desktop: an inline, tile-less read-out that
+// fits the summary row. Expanded cards and mobile always get the tiles.
+@media (min-width: 768px) {
+  .lc-hero:not(.lc-hero--expanded) {
+    .lc-hero__segs { gap: 4px; align-items: baseline; }
+    .lc-hero__sep { display: block; font-family: var(--font-display); font-size: 22px; color: var(--color-text-muted); }
+    .lc-seg {
+      flex: 0 0 auto;
+      padding: 0;
+      background: none;
+      border: 0;
+      max-width: none;
+    }
+    .lc-seg__val { font-size: 28px; }
+    .lc-seg__label { display: none; }
   }
 }
 
@@ -395,71 +288,74 @@ onUnmounted(() => {
 .lc-compact {
   display: flex;
   align-items: baseline;
-  gap: 0.625rem;
+  gap: 10px;
 
   &__time {
-    font-family: var(--font-mono);
-    font-size: 1.75rem;
-    font-weight: 900;
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.5px;
-    color: var(--color-accent);
-    text-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.25);
+    letter-spacing: -0.02em;
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 
-    &--paused { color: var(--color-muted); text-shadow: none; }
+    &--paused { background: none; color: var(--color-warn); }
   }
 
   &__paused {
-    font-size: 0.75rem;
-    color: #ffaa00;
-    font-weight: 600;
+    font-size: 12px;
+    color: var(--color-warn);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
 }
 
-// ── Full (single-loq view) ──────────────────────────────────────────────────
+// ── Full (single-lock view) ─────────────────────────────────────────────────
 
 .lock-countdown {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1.5rem;
+  gap: 10px;
+  padding: 24px;
   text-align: center;
 
   &__badge {
-    display: inline-block;
-    padding: 0.25rem 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
     border-radius: 999px;
-    font-size: 0.875rem;
+    font-size: 14px;
     font-weight: 600;
 
-    &--locked { background: rgba(220, 38, 38, 0.12); color: #ef4444; border: 1px solid rgba(220,38,38,0.25); }
-    &--unlocked { background: rgba(22, 163, 74, 0.12); color: #22c55e; border: 1px solid rgba(22,163,74,0.25); }
+    &--locked { background: rgba(var(--color-accent-rgb), 0.14); color: var(--color-accent); }
+    &--unlocked { background: rgba(var(--color-cta-rgb), 0.14); color: var(--color-cta); }
   }
 
   &__remaining {
-    font-size: 2.25rem;
+    font-family: var(--font-display);
+    font-size: 40px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.5px;
-    font-family: var(--font-mono);
-    color: var(--color-accent);
+    letter-spacing: -0.02em;
+    color: var(--color-text);
 
-    &--paused { color: var(--color-muted); }
+    &--paused { color: var(--color-warn); }
   }
 
   &__meta {
-    font-size: 0.8125rem;
-    color: var(--color-muted);
+    font-size: 14px;
+    color: var(--color-text-muted);
   }
 
   &__tz { font-style: italic; }
 }
 
-// TASK-151 — sized in `em` so one rule serves every variant: these labels run
-// from 0.875rem in the compact badge to 1.75rem in the hero, and the icon has
-// to track the text in each. The negative vertical-align seats it on the
-// baseline in the inline-block badges; it is inert in the flex ones.
+// TASK-151: sized in `em` so the icon tracks the label in every variant.
 .lc-icon {
   width: 1.15em;
   height: 1.15em;

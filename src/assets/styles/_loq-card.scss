@@ -1,86 +1,86 @@
-// Shared loq-card styles for the loqee + loqholder dashboards.
+// Shared lock-card styles for the wearer + keyholder dashboards (and the other
+// in-app pages that @use this file for the page shell).
 //
-// @use this inside each page's <style scoped> block — the rules compile into
+// @use this inside each page's <style scoped> block: the rules compile into
 // each component (so they stay scoped), but the source lives here once.
-// Page-specific layout (summary grid, expand/collapse, extra .loq-act
-// modifiers) stays in the page files.
+// Page-specific layout stays in the page files.
 
 // ── Bordered field-group with a floating label ──────────────────────────────
 
 @mixin field-group($label) {
   border: 1.5px solid var(--color-border);
-  border-radius: 0.875rem;
-  padding: 0.875rem 0.75rem 0.75rem;
+  border-radius: 16px;
+  padding: 16px 14px 14px;
   position: relative;
 
   &::before {
     content: $label;
     position: absolute;
-    top: -0.55rem;
-    left: 0.875rem;
+    top: -9px;
+    left: 14px;
     background: var(--color-surface);
-    padding: 0 0.375rem;
-    font-size: 0.625rem;
+    padding: 0 6px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-muted);
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
   }
 }
 
 // ── Page shell ───────────────────────────────────────────────────────────────
 
-// TASK-153 — was `min-height: 100dvh`, which dates from before there was a
-// layout shell: each page had to stretch itself to the viewport because
-// nothing above it would. layouts/default.vue is that shell now and owns the
-// viewport height, so a page claiming 100dvh of its own pushes the footer a
-// full screen down — on an empty dashboard you had to scroll past nothing to
-// reach it. `flex: 1` fills whatever the layout gives instead, which is the
-// viewport minus the footer.
+// TASK-153: `flex: 1` fills what layouts/default.vue gives (viewport minus
+// footer) instead of claiming 100dvh and pushing the footer off screen.
 .dash {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg);
+  background:
+    radial-gradient(900px 500px at 85% -120px, rgba(var(--color-brand-rgb), 0.16) 0%, rgba(var(--color-brand-rgb), 0) 70%),
+    var(--color-bg);
 }
 
 .dash-body {
   flex: 1;
-  max-width: 700px;
+  max-width: 760px;
   width: 100%;
+  box-sizing: border-box;
   margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+  padding: 40px 20px 64px;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 24px;
 }
 
-// ── Page header (loqee + loqholder dashboards) ───────────────────────────────
+// ── Page header ──────────────────────────────────────────────────────────────
 
 .dash-header {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 16px;
 
   &__title {
-    font-size: 1.375rem;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 5vw, 40px);
     font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
     color: var(--color-text);
     margin: 0;
   }
 
   &__sub {
-    font-size: 0.8125rem;
-    color: var(--color-muted);
-    margin: 0.25rem 0 0;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+    margin: 8px 0 0;
   }
 }
 
-// TASK-151 — every icon slot in these components was sized by `font-size`,
-// because every one of them held an emoji: .dash-state__icon at 3rem,
-// .empty-state__icon and .loq-card__self-icon smaller. Sizing the replacement
-// artwork in `em` keeps that single knob working, so the slots did not have to
-// be rewritten to take images.
+// TASK-151: icon slots are sized by font-size (they used to hold emoji), so
+// the artwork is sized in `em` and the single knob keeps working.
 .state-icon {
   width: 1em;
   height: 1em;
@@ -94,87 +94,93 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 2rem 1rem;
+  gap: 16px;
+  padding: 56px 20px;
   text-align: center;
 
-  &__icon { font-size: 3rem; }
+  &__icon {
+    font-size: 72px;
+    filter: drop-shadow(0 16px 40px rgba(var(--color-brand-rgb), 0.4));
+  }
 
   &__title {
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     color: var(--color-text);
     margin: 0;
   }
 
   &__hint {
-    font-size: 0.9375rem;
-    color: var(--color-muted);
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--color-text-muted);
     margin: 0;
-    max-width: 360px;
+    max-width: 420px;
   }
 }
 
-// ── Loq card core ────────────────────────────────────────────────────────────
-// Summary-row grid layout is page-specific and lives in the page files.
+// ── Lock card core ───────────────────────────────────────────────────────────
 
 .loq-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  padding: 1rem;
+  border-radius: 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 20px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
 
   // Top accent stripe
   &::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: 1rem 1rem 0 0;
-    background: var(--color-muted);
+    height: 4px;
+    background: var(--color-elevated);
   }
 
   &--active {
-    &::before { background: var(--color-accent); }
+    border-color: rgba(var(--color-accent-rgb), 0.35);
+    &::before { background: var(--gradient-brand); }
   }
 
   &--paused {
-    border-color: rgba(255, 170, 0, 0.2);
-    &::before { background: #ffaa00; }
+    border-color: rgba(var(--color-warn-rgb), 0.3);
+    &::before { background: var(--color-warn); }
   }
 
   &--request {
-    border-color: rgba(255, 170, 0, 0.2);
-    background: rgba(255, 170, 0, 0.04);
-    &::before { background: #ffaa00; }
+    border-color: rgba(var(--color-warn-rgb), 0.3);
+    background: linear-gradient(160deg, rgba(var(--color-warn-rgb), 0.06) 0%, var(--color-surface) 50%);
+    &::before { background: var(--color-warn); }
   }
 
   &--draft {
-    &::before { background: var(--color-border); }
+    &::before { background: var(--gradient-brand); }
   }
 
   &__summary-meta {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.5rem;
+    gap: 8px;
     flex-shrink: 0;
   }
 
   &__identity {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
+    gap: 12px;
   }
 
   &__avatar {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: rgba(var(--color-accent-rgb), 0.15);
     color: var(--color-accent);
@@ -182,41 +188,48 @@
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: 0.9375rem;
+    font-size: 16px;
     flex-shrink: 0;
+    box-shadow: 0 0 0 2px var(--color-elevated);
   }
 
-  &__name  { font-size: 0.9375rem; font-weight: 600; color: var(--color-text); margin: 0; }
-  &__since { font-size: 0.75rem; color: var(--color-muted); margin: 0; }
+  &__name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+  }
+  &__since { font-size: 13px; color: var(--color-text-muted); margin: 2px 0 0; }
 
   &__detail {
     display: flex;
     flex-direction: column;
-    gap: 0.875rem;
+    gap: 16px;
   }
 
   &__actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 10px;
     flex-wrap: wrap;
   }
 
   &__hint {
-    font-size: 0.8125rem;
-    color: var(--color-muted);
+    font-size: 14px;
+    color: var(--color-text-muted);
     margin: 0;
-    line-height: 1.45;
+    line-height: 1.55;
   }
 
   &__link {
     color: var(--color-accent);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     &:hover { text-decoration: underline; }
   }
 
   &__error {
-    font-size: 0.8125rem;
+    font-size: 14px;
     color: var(--color-danger);
     margin: 0;
   }
@@ -227,54 +240,58 @@
 .loq-status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  font-size: 0.6875rem;
+  gap: 7px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 0.3rem 0.625rem;
+  letter-spacing: 0.08em;
+  padding: 6px 12px;
   border-radius: 999px;
   flex-shrink: 0;
 
   &__dot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     flex-shrink: 0;
   }
 
   &--active {
-    background: rgba(0, 200, 100, 0.12);
-    color: #00c864;
-    .loq-status-pill__dot { background: #00c864; box-shadow: 0 0 4px #00c864; }
+    background: rgba(var(--color-accent-rgb), 0.14);
+    color: var(--color-accent);
+    .loq-status-pill__dot {
+      background: var(--color-accent);
+      box-shadow: 0 0 8px var(--color-accent);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
   }
 
   &--paused {
-    background: rgba(255, 170, 0, 0.12);
-    color: #ffaa00;
-    .loq-status-pill__dot { background: #ffaa00; }
+    background: rgba(var(--color-warn-rgb), 0.14);
+    color: var(--color-warn);
+    .loq-status-pill__dot { background: var(--color-warn); }
   }
 
   &--draft {
-    background: rgba(107, 114, 128, 0.12);
+    background: rgba(169, 156, 214, 0.14);
     color: var(--color-text-muted);
     .loq-status-pill__dot { background: var(--color-text-muted); }
   }
 
   &--request {
-    background: rgba(255, 170, 0, 0.12);
-    color: #ffaa00;
-    .loq-status-pill__dot { background: #ffaa00; animation: pulse-dot 1.5s ease-in-out infinite; }
+    background: rgba(var(--color-warn-rgb), 0.14);
+    color: var(--color-warn);
+    .loq-status-pill__dot { background: var(--color-warn); animation: pulse-dot 1.5s ease-in-out infinite; }
   }
 
   &--public {
-    background: rgba(var(--color-accent-rgb), 0.1);
-    color: var(--color-accent);
+    background: rgba(var(--color-cta-rgb), 0.14);
+    color: var(--color-cta);
   }
 }
 
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
+  50%       { opacity: 0.35; }
 }
 
 // ── Duration hero (request/draft cards) ──────────────────────────────────────
@@ -283,73 +300,77 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 4px;
 
   &__val {
-    font-family: var(--font-mono);
-    font-size: 1.75rem;
-    font-weight: 900;
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.5px;
-    color: #ffaa00;
-    text-shadow: 0 0 16px rgba(255, 170, 0, 0.3);
+    letter-spacing: -0.02em;
+    color: var(--color-warn);
     line-height: 1;
   }
 
   &__label {
-    font-size: 0.5625rem;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.09em;
-    color: var(--color-muted);
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
   }
 }
 
 .loq-card--draft .request-dur__val {
-  color: var(--color-accent);
-  text-shadow: 0 0 16px rgba(var(--color-accent-rgb), 0.3);
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 // ── Reason field ─────────────────────────────────────────────────────────────
 
 .reason-wrap {
-  @include field-group('Reason');
+  @include field-group('Note');
 }
 
 .card-reason {
-  font-size: 0.8125rem;
+  font-size: 15px;
   font-style: italic;
-  color: var(--color-muted);
+  color: #CFC5F2;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 // ── Action buttons (base + shared modifiers) ─────────────────────────────────
 
 .loq-act {
-  min-height: 44px;
-  padding: 0 1rem;
-  border-radius: 0.625rem;
-  font-size: 0.875rem;
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid var(--color-border);
+  border: 1.5px solid var(--color-border);
   background: none;
-  color: var(--color-muted);
+  color: var(--color-text);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  gap: 8px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
 
-  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:hover:not(:disabled) { border-color: var(--color-elevated); text-decoration: none; }
+  &:active:not(:disabled) { transform: scale(0.98); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
 
-  // TASK-061: neon orange, not red — End is a normal loq-lifecycle action
-  // (cancel a draft, end an active loq), not a moderation/danger action.
+  // Ending a lock or removing time: amber, a normal lifecycle action rather
+  // than a moderation/danger action (TASK-061).
   &--end {
-    padding: 0 0.875rem;
     color: var(--color-remove);
-    border-color: rgba(var(--color-remove-rgb), 0.3);
+    border-color: rgba(var(--color-remove-rgb), 0.35);
     &:hover:not(:disabled) {
       background: rgba(var(--color-remove-rgb), 0.08);
       border-color: var(--color-remove);
@@ -360,16 +381,16 @@
 // ── Spinner ──────────────────────────────────────────────────────────────────
 
 .spinner {
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 3px solid var(--color-border);
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-elevated);
   border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 
   &--sm {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 24px;
+    height: 24px;
     border-width: 2px;
   }
 }

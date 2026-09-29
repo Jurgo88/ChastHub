@@ -45,7 +45,7 @@
       <div class="dash-header">
         <div class="dash-header__text">
           <h1 class="dash-header__title">Your Lock</h1>
-          <p class="dash-header__sub">Your clock is running — find a keyholder to take control</p>
+          <p class="dash-header__sub">Your clock is running. Find a keyholder to take control.</p>
         </div>
       </div>
 
@@ -106,7 +106,7 @@
 
           <!-- Nudge when the loq is stuck: not public and no requests yet -->
           <div v-if="!loq.is_public && (loq.pending_requests ?? 0) === 0" class="publish-nudge">
-            <span class="publish-nudge__icon" aria-hidden="true">📣</span>
+            <svg class="publish-nudge__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="4.5" /><path d="M11.2 11.2 20 20" /><path d="m16 16 2-2" /><path d="m18.5 18.5 2-2" /></svg>
             <p class="publish-nudge__text">No requests yet. Drop your key in Key Drop to reach more keyholders.</p>
           </div>
 
@@ -121,7 +121,7 @@
                 class="loq-act loq-act--primary"
                 :disabled="requestActionPending"
                 @click="handleApproveIncoming"
-              >{{ requestActionPending ? 'Approving…' : '✓ Accept lock' }}</button>
+              >{{ requestActionPending ? 'Approving…' : 'Accept keyholder' }}</button>
             </template>
             <!-- TASK-057: one pending request at a time -->
             <button
@@ -177,7 +177,7 @@
         <div class="combo-reveal__row">
           <code class="combo-reveal__value">{{ loq.combination_text }}</code>
           <button class="btn btn--ghost btn--sm" @click="copyCombination">
-            {{ copiedCombo ? '✓ Copied' : 'Copy' }}
+            {{ copiedCombo ? 'Copied' : 'Copy' }}
           </button>
         </div>
       </div>
@@ -210,7 +210,7 @@
       </div>
 
       <Transition name="visitor-flash">
-        <p v-if="visitorFlash" class="visitor-flash">🔔 {{ visitorFlash }}</p>
+        <p v-if="visitorFlash" class="visitor-flash">{{ visitorFlash }}</p>
       </Transition>
 
       <article class="loq-card" :class="loq.status === 'paused' ? 'loq-card--paused' : 'loq-card--active'">
@@ -221,7 +221,7 @@
             <div class="loq-card__self-icon" aria-hidden="true"><img :src="loqedIcon" class="state-icon" alt="" width="128" height="128" decoding="async"></div>
             <div>
               <p class="loq-card__name">Self-lock</p>
-              <p class="loq-card__since">No keyholder — you're in control</p>
+              <p class="loq-card__since">No keyholder. You're in control.</p>
             </div>
           </div>
           <div v-else class="loq-card__identity">
@@ -253,7 +253,7 @@
         <!-- Detail (always visible) -->
         <div class="loq-card__detail">
 
-          <div v-if="loq.status === 'paused'" class="paused-banner">⏸ {{ isSelfLoq ? 'Paused' : 'Paused by your keyholder' }}</div>
+          <div v-if="loq.status === 'paused'" class="paused-banner">{{ isSelfLoq ? 'Paused' : 'Paused by your keyholder' }}</div>
 
           <div class="mood-wrap">
             <LoqEmotionPicker
@@ -270,7 +270,7 @@
                 class="loq-act loq-act--outline"
                 :disabled="selfActionPending"
                 @click="handleSelfPauseToggle"
-              >{{ loq.status === 'paused' ? '▶ Resume' : '⏸ Pause' }}</button>
+              >{{ loq.status === 'paused' ? 'Resume' : 'Pause' }}</button>
               <button
                 class="loq-act loq-act--end"
                 :disabled="selfActionPending"
@@ -282,7 +282,7 @@
               <div class="visitor-link">
                 <code class="visitor-link__url">{{ visitorLinkUrl }}</code>
                 <button class="visitor-link__copy" :class="{ 'visitor-link__copy--done': copiedVisitorLink }" @click="copySelfVisitorLink">
-                  {{ copiedVisitorLink ? '✓ Copied' : 'Copy' }}
+                  {{ copiedVisitorLink ? 'Copied' : 'Copy' }}
                 </button>
               </div>
               <p class="visitor-count">{{ loq.visitor_count ?? 0 }} visitor{{ (loq.visitor_count ?? 0) !== 1 ? 's' : '' }} interacted</p>
@@ -626,30 +626,22 @@ async function onExpired() {
 // Shared card/pill/spinner/etc. styles come from assets/styles/_loq-card.scss
 
 .loq-card {
-  // Summary row: identity | hero (timer/duration) | meta
+  // Summary: identity + status on the first row, the timer full width below.
   &__summary {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: 1fr auto;
     align-items: center;
-    gap: 0.5rem 0.75rem;
+    gap: 20px 12px;
+
+    .loq-card__identity     { grid-column: 1; grid-row: 1; }
+    .loq-card__summary-meta { grid-column: 2; grid-row: 1; }
+    .loq-card__hero-timer   { grid-column: 1 / -1; grid-row: 2; }
   }
 
-  // Detail is always visible on this page — permanent separator
+  // Detail is always visible on this page: permanent separator
   &__detail {
-    padding-top: 0.875rem;
+    padding-top: 20px;
     border-top: 1px solid var(--color-border);
-  }
-
-  // Mobile: stack identity + meta on row 1, duration on row 2
-  @media (max-width: 767px) {
-    &__summary {
-      grid-template-columns: 1fr auto;
-      grid-template-rows: auto auto;
-
-      .loq-card__identity    { grid-column: 1; grid-row: 1; }
-      .loq-card__summary-meta { grid-column: 2; grid-row: 1; align-self: start; }
-      .loq-card__hero-timer  { grid-column: 1 / -1; grid-row: 2; }
-    }
   }
 }
 
@@ -677,7 +669,7 @@ async function onExpired() {
   }
 }
 
-.loq-card--request .incoming__count { color: #ffaa00; }
+.loq-card--request .incoming__count { color: var(--color-warn); }
 
 .incoming-request-who {
   margin: 0;
@@ -698,7 +690,7 @@ async function onExpired() {
   background: rgba(var(--color-accent-rgb), 0.08);
   border: 1px solid rgba(var(--color-accent-rgb), 0.25);
 
-  &__icon { font-size: 1.125rem; line-height: 1; flex-shrink: 0; }
+  &__icon { width: 22px; height: 22px; flex-shrink: 0; color: var(--color-cta); }
 
   &__text {
     margin: 0;
@@ -715,25 +707,27 @@ async function onExpired() {
     flex: 1;
     &:hover:not(:disabled) {
       border-color: var(--color-accent);
-      color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb), 0.06);
+      color: var(--color-text);
+      background: rgba(var(--color-accent-rgb), 0.08);
     }
   }
 
   &--primary {
     flex: 1;
-    background: var(--color-accent);
+    background: var(--color-cta);
     color: var(--color-on-accent);
-    border-color: var(--color-accent);
-    &:hover:not(:disabled) { opacity: 0.88; }
+    border-color: var(--color-cta);
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(var(--color-cta-rgb), 0.3);
+    &:hover:not(:disabled) { border-color: var(--color-cta); filter: brightness(1.06); }
   }
 
   &--outline {
     flex: 1;
-    border-color: var(--color-accent);
-    color: var(--color-accent);
+    border-color: rgba(var(--color-accent-rgb), 0.6);
+    color: var(--color-text);
     background: rgba(var(--color-accent-rgb), 0.08);
-    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.15); }
+    &:hover:not(:disabled) { border-color: var(--color-accent); background: rgba(var(--color-accent-rgb), 0.15); }
   }
 }
 
@@ -874,8 +868,8 @@ async function onExpired() {
 
   &__value {
     flex: 1;
-    font-family: var(--font-mono);
-    font-size: 1.25rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--color-text);
     word-break: break-all;
@@ -958,9 +952,9 @@ async function onExpired() {
 
 
 .paused-banner {
-  background: rgba(255, 170, 0, 0.08);
-  color: #ffaa00;
-  border: 1px solid rgba(255, 170, 0, 0.2);
+  background: rgba(var(--color-warn-rgb), 0.08);
+  color: var(--color-warn);
+  border: 1px solid rgba(var(--color-warn-rgb), 0.2);
   border-radius: 0.625rem;
   font-size: 0.8125rem;
   font-weight: 600;

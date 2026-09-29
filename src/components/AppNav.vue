@@ -1,8 +1,8 @@
 <template>
   <ClientOnly>
     <header class="app-nav">
-      <NuxtLink :to="brandLink" class="app-nav__brand">
-        <img :src="logoSrc" width="560" height="312" alt="ChastHub" class="app-nav__logo" />
+      <NuxtLink :to="brandLink" class="app-nav__brand" aria-label="ChastHub home">
+        <BrandLogo :size="21" />
       </NuxtLink>
 
       <!-- Desktop links -->
@@ -40,7 +40,9 @@
           </div>
         </template>
         <template v-else>
+          <NuxtLink to="/faq" class="app-nav__link" active-class="app-nav__link--active">FAQ</NuxtLink>
           <NuxtLink to="/auth/login" class="app-nav__link">Log in</NuxtLink>
+          <NuxtLink to="/auth/signup" class="app-nav__link app-nav__link--cta">Sign up free</NuxtLink>
         </template>
       </nav>
 
@@ -68,7 +70,9 @@
             <button class="app-nav__drawer-link app-nav__drawer-link--logout" @click="logout">Log out</button>
           </template>
           <template v-else>
+            <NuxtLink to="/faq" class="app-nav__drawer-link">FAQ</NuxtLink>
             <NuxtLink to="/auth/login" class="app-nav__drawer-link">Log in</NuxtLink>
+            <NuxtLink to="/auth/signup" class="app-nav__drawer-link app-nav__drawer-link--cta">Sign up free</NuxtLink>
           </template>
         </nav>
       </Transition>
@@ -86,8 +90,6 @@
 </template>
 
 <script setup lang="ts">
-import logoSrc from '~/assets/images/logos/chasthub-font-nobg.webp'
-
 const authStore = useAuthStore()
 const { logout: authLogout } = useAuth()
 const route = useRoute()
@@ -155,10 +157,13 @@ async function logout() {
   z-index: 100;
   display: flex;
   align-items: center;
-  height: 3.25rem;
-  padding: 0 1.5rem;
+  gap: 16px;
+  height: 64px;
+  padding: 0 24px;
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg);
+  background: rgba(14, 0, 51, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   flex-shrink: 0;
 
   &__brand {
@@ -166,92 +171,81 @@ async function logout() {
     align-items: center;
     text-decoration: none;
     flex-shrink: 0;
-
-    &:hover { opacity: 0.8; }
-  }
-
-  &__logo {
-    height: 2.75rem;
-    width: auto;
-    display: block;
+    &:hover { text-decoration: none; opacity: 0.9; }
   }
 
   &__links--desktop {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 4px;
     margin-left: auto;
 
-    @media (max-width: 640px) { display: none; }
+    @media (max-width: 760px) { display: none; }
   }
 
   &__link {
-    font-size: 0.875rem;
-    color: var(--color-text);
+    position: relative;
+    font-size: 15px;
+    font-weight: 500;
+    color: #CFC5F2;
     text-decoration: none;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.375rem 0.5rem;
-    border-radius: 0.375rem;
-    transition: background 0.12s, color 0.12s;
+    padding: 8px 12px;
+    border-radius: 999px;
+    transition: background 0.15s, color 0.15s;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--color-accent);
+      color: var(--color-text);
+      background: rgba(244, 240, 255, 0.06);
       text-decoration: none;
     }
 
     &--active {
-      color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb), 0.12);
+      color: var(--color-text);
+      background: rgba(var(--color-accent-rgb), 0.14);
       font-weight: 600;
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -13px;
+        width: 22px;
+        height: 3px;
+        border-radius: 3px;
+        background: var(--gradient-brand);
+        transform: translateX(-50%);
+      }
     }
 
     &--cta {
-      background: var(--color-accent);
+      margin-left: 6px;
+      padding: 9px 18px;
+      background: var(--color-cta);
       color: var(--color-on-accent);
-      font-weight: 600;
-      padding: 0.35rem 0.75rem;
-      border-radius: 999px;
+      font-weight: 700;
 
-      &:hover {
-        background: var(--color-accent);
-        opacity: 0.85;
-        color: var(--color-on-accent);
-      }
+      &:hover { background: var(--color-cta); color: var(--color-on-accent); filter: brightness(1.06); }
     }
   }
 
   &__sep {
     width: 1px;
-    height: 1.125rem;
+    height: 22px;
     background: var(--color-border);
-    margin: 0 0.25rem;
+    margin: 0 8px;
   }
 
   &__avatar {
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     flex-shrink: 0;
   }
 
-  &__drawer-identity {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem 0.5rem;
-    border-bottom: 1px solid var(--color-border);
-    margin-bottom: 0.375rem;
-  }
-
-  // TASK-122 — avatar dropdown
-  &__menu {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
+  &__menu { position: relative; display: flex; align-items: center; }
 
   &__avatar-btn {
     display: flex;
@@ -259,38 +253,37 @@ async function logout() {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.125rem;
+    padding: 2px;
     border-radius: 50%;
-    transition: box-shadow 0.12s;
+    box-shadow: 0 0 0 2px var(--color-elevated);
+    transition: box-shadow 0.15s;
 
     &:hover,
-    &[aria-expanded="true"] {
-      box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.45);
-    }
+    &[aria-expanded="true"] { box-shadow: 0 0 0 2px var(--color-accent); }
   }
 
   &__menu-panel {
     position: absolute;
-    top: calc(100% + 0.5rem);
+    top: calc(100% + 12px);
     right: 0;
-    min-width: 11rem;
-    padding: 0.375rem;
+    min-width: 200px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
-    background: var(--color-bg);
+    gap: 2px;
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 0.5rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
     z-index: 110;
   }
 
   &__menu-name {
-    font-size: 0.75rem;
-    color: var(--color-muted);
-    padding: 0.25rem 0.5rem 0.375rem;
+    font-size: 13px;
+    color: var(--color-text-muted);
+    padding: 6px 10px 10px;
     border-bottom: 1px solid var(--color-border);
-    margin-bottom: 0.125rem;
+    margin-bottom: 4px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -300,36 +293,34 @@ async function logout() {
     display: block;
     width: 100%;
     text-align: left;
-    font-size: 0.875rem;
+    font-size: 15px;
+    font-family: var(--font-sans);
     color: var(--color-text);
     text-decoration: none;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 0.375rem;
-    transition: background 0.12s, color 0.12s;
+    padding: 10px;
+    border-radius: 10px;
+    transition: background 0.15s;
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--color-accent);
-      text-decoration: none;
-    }
-
-    &--logout { color: var(--color-muted); }
+    &:hover { background: rgba(244, 240, 255, 0.06); color: var(--color-text); text-decoration: none; }
+    &--logout { color: var(--color-text-muted); }
   }
 
   &__burger {
     display: none;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     gap: 5px;
+    width: 44px;
+    height: 44px;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.5rem;
     margin-left: auto;
-    border-radius: 0.375rem;
+    border-radius: 12px;
 
     span {
       display: block;
@@ -344,32 +335,42 @@ async function logout() {
     &[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
     &[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-    @media (max-width: 640px) { display: flex; }
+    @media (max-width: 760px) { display: flex; }
   }
 
   &__drawer {
     position: fixed;
-    top: 3.25rem;
+    top: 64px;
     left: 0;
     right: 0;
+    max-height: calc(100dvh - 64px);
+    overflow-y: auto;
     background: var(--color-bg);
     border-bottom: 1px solid var(--color-border);
-    padding: 0.75rem 1.5rem 1rem;
+    padding: 12px 16px 20px;
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
+    gap: 2px;
     z-index: 99;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   }
 
-  &__drawer-name {
-    font-size: 0.8125rem;
-    color: var(--color-muted);
+  &__drawer-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px 14px;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 6px;
   }
+
+  &__drawer-name { font-size: 15px; font-weight: 600; color: var(--color-text); }
 
   &__drawer-link {
     display: block;
-    font-size: 0.9375rem;
+    font-size: 17px;
+    font-family: var(--font-sans);
+    font-weight: 500;
     color: var(--color-text);
     text-decoration: none;
     background: none;
@@ -377,24 +378,28 @@ async function logout() {
     cursor: pointer;
     text-align: left;
     width: 100%;
-    padding: 0.625rem 0.5rem;
-    border-radius: 0.375rem;
-    transition: background 0.12s;
+    padding: 13px 12px;
+    border-radius: 12px;
+    transition: background 0.15s;
 
-    &:hover { background: rgba(255, 255, 255, 0.06); color: var(--color-accent); text-decoration: none; }
+    &:hover { background: rgba(244, 240, 255, 0.06); color: var(--color-text); text-decoration: none; }
 
     &.router-link-active {
-      color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb), 0.12);
+      background: rgba(var(--color-accent-rgb), 0.14);
       font-weight: 600;
     }
 
     &--cta {
-      color: var(--color-accent);
-      font-weight: 600;
+      margin-top: 8px;
+      text-align: center;
+      background: var(--color-cta);
+      color: var(--color-on-accent);
+      font-weight: 700;
+      border-radius: 999px;
+      &:hover { background: var(--color-cta); color: var(--color-on-accent); }
     }
 
-    &--logout { color: var(--color-muted); margin-top: 0.25rem; }
+    &--logout { color: var(--color-text-muted); margin-top: 6px; }
   }
 }
 
