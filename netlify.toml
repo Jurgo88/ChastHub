@@ -12,11 +12,16 @@
 # The *.netlify.app subdomain cannot be removed and Netlify does not redirect it
 # to the primary domain on its own. Without this rule the site is reachable on two
 # hostnames, which splits ranking signals between them (refs #304).
-[[redirects]]
-  from = "https://chasthub.netlify.app/*"
-  to = "https://chasthub.com/:splat"
-  status = 301
-  force = true
+#
+# DISABLED until chasthub.com is connected in Netlify (Domain management) and
+# serves the site. Enabling it earlier sends every visitor to a dead domain.
+# To enable: uncomment the block below and redeploy.
+#
+# [[redirects]]
+#   from = "https://chasthub.netlify.app/*"
+#   to = "https://chasthub.com/:splat"
+#   status = 301
+#   force = true
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Bezpečnostné hlavičky (reakcia na incident 2026-09-24).
