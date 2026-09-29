@@ -1,6 +1,5 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
-import { isValidPresetAvatarUrl } from '~/utils/avatarPresets'
 
 const USERNAME_PATTERN = /^[a-z][a-z0-9_]{2,19}$/
 
@@ -12,7 +11,13 @@ interface ProfilePatchBody {
   leaderboard_opt_out?: boolean
   show_online_status?: boolean
   hide_from_search?: boolean
+  birth_year?: number | null
+  gender?: string | null
+  show_age?: boolean
+  show_gender?: boolean
 }
+
+const GENDERS = ['man', 'woman', 'trans', 'non_binary', 'other']
 
 export default defineEventHandler(async (event) => {
   const { user } = await requireAuth(event)
@@ -38,8 +43,11 @@ export default defineEventHandler(async (event) => {
   }
   if (body.avatar_url !== undefined) {
     const url = body.avatar_url.trim()
-    if (url && !url.startsWith('https://') && !isValidPresetAvatarUrl(url)) {
-      throw createError({ statusCode: 400, message: 'Avatar must be an https:// URL or a valid preset' })
+    // Only a photo from our own avatars bucket: an arbitrary URL would let
+    // anyone make every viewer's browser load a third-party image.
+    const bucket = `${useRuntimeConfig().public.supabaseUrl}/storage/v1/object/public/avatars/${user.id}/`
+    if (url && !url.startsWith(bucket)) {
+      throw createError({ statusCode: 400, message: 'Avatar must be a photo uploaded to ChastHub' })
     }
     allowed.avatar_url = url || null as unknown as string
   }
@@ -54,6 +62,32 @@ export default defineEventHandler(async (event) => {
   if (body.hide_from_search !== undefined) {
     if (typeof body.hide_from_search !== 'boolean') throw createError({ statusCode: 400, message: 'hide_from_search must be boolean' })
     allowed.hide_from_search = body.hide_from_search
+  }
+
+  if (body.birth_year !== undefined) {
+    if (body.birth_year === null) {
+      allowed.birth_year = null
+    }
+    else {
+      const year = Number(body.birth_year)
+      const maxYear = new Date().getUTCFullYear() - 18
+      if (!Number.isInteger(year) || year < 1920 || year > maxYear) {
+        throw createError({ statusCode: 400, message: `Birth year must be between 1920 and ${maxYear}` })
+      }
+      allowed.birth_year = year
+    }
+  }
+  if (body.gender !== undefined) {
+    if (body.gender !== null && !GENDERS.includes(body.gender)) {
+      throw createError({ statusCode: 400, message: 'Unknown gender value' })
+    }
+    allowed.gender = body.gender
+  }
+  for (const key of ['show_age', 'show_gender'] as const) {
+    if (body[key] !== undefined) {
+      if (typeof body[key] !== 'boolean') throw createError({ statusCode: 400, message: `${key} must be boolean` })
+      allowed[key] = body[key]
+    }
   }
 
   if (Object.keys(allowed).length === 0) throw createError({ statusCode: 400, message: 'Nothing to update' })

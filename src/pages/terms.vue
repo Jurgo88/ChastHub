@@ -45,6 +45,7 @@
           <li>Harass, threaten, blackmail or pressure other users, including into payments</li>
           <li>Share another person's private information or intimate images without their consent</li>
           <li>Post content that is illegal, involves minors, or depicts non-consensual acts</li>
+          <li>Use a nude or sexually explicit image as your profile photo. Profile photos are shown across the platform, including to people who have not chosen to see such content, so we remove explicit ones</li>
           <li>Send spam, advertising or scams</li>
           <li>Attempt to access other accounts, data or systems you are not authorised to use, or interfere with the platform's security or operation</li>
           <li>Scrape, copy or resell the platform or its content</li>

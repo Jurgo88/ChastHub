@@ -73,7 +73,7 @@ export default defineEventHandler(async (event) => {
 
   // TASK-124 — without this the profile is created with display_name NULL
   // and every surface falls back to the user's email address.
-  const displayName = await generateUniqueDisplayName(supabase)
+  const displayName = await generateUniqueDisplayName(supabase, role)
 
   // TASK-137 — read before the write, but never allowed to block it: every
   // field is nullable and the helper swallows its own failures.

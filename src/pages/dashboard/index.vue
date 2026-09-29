@@ -10,7 +10,11 @@ definePageMeta({ middleware: 'auth' })
 const authStore = useAuthStore()
 
 onMounted(() => {
-  if (authStore.isLoqee) {
+  // New accounts pick their public name first (see pages/welcome.vue).
+  if (authStore.profile && !authStore.profile.username) {
+    navigateTo('/welcome', { replace: true })
+  }
+  else if (authStore.isLoqee) {
     navigateTo('/dashboard/wearer', { replace: true })
   }
   else if (authStore.isLoqholder) {

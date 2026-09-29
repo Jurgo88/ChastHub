@@ -110,6 +110,9 @@ export default defineNuxtConfig({
     '/admin/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/dashboard/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/profile/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    // Signed-in only (auth middleware), so the same refresh bounce applies.
+    '/user/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/welcome': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/messages/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/keydrop/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/discover': { redirect: { to: '/keydrop', statusCode: 301 } },

@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
   // the user's real name, and display_name is published on public profiles
   // and the leaderboard. They can set it to their real name themselves if
   // that is what they want.
-  const displayName = await generateUniqueDisplayName(supabase)
+  const displayName = await generateUniqueDisplayName(supabase, role)
 
   // TASK-137 — `locale` is Google's own account setting, which lands in
   // user_metadata and was otherwise thrown away. It beats Accept-Language,

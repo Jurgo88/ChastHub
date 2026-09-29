@@ -20,6 +20,10 @@ export interface Profile {
   last_seen_at: string | null
   show_online_status: boolean
   hide_from_search: boolean
+  birth_year: number | null
+  gender: Gender | null
+  show_age: boolean
+  show_gender: boolean
   is_admin: boolean
   admin_level: AdminLevel | null
   terms_accepted_at: string | null
@@ -44,6 +48,29 @@ export interface PublicProfile {
   is_favorited: boolean
   last_seen_at: string | null
   show_online_status?: boolean
+  created_at: string
+  /** Only present when the owner shows it. */
+  age: number | null
+  gender: Gender | null
+  stats: ProfileStats
+}
+
+export type Gender = 'man' | 'woman' | 'trans' | 'non_binary' | 'other'
+
+export interface ProfileStats {
+  role: UserRole
+  /** Wearer: ended locks that had a keyholder. Keyholder: ended locks they held. */
+  locks_completed: number
+  /** Wearer: hours across completed locks. Keyholder: hours they controlled. */
+  total_hours: number
+  /** Wearer only: longest completed lock in hours. */
+  longest_hours: number
+  /** Keyholder only: locks they hold right now. */
+  holding_now: number
+  /** Position on the leaderboard for the user's role, null when unlisted. */
+  rank: number | null
+  /** Wearer only: the running lock, when it is public. */
+  public_lock: { public_id: string; ends_at: string | null; paused: boolean; visitor_permission: string } | null
 }
 
 export interface FavoriteEntry {

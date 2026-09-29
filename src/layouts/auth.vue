@@ -1,13 +1,14 @@
 <script setup lang="ts">
 // Split-screen auth shell: a brand panel on the left (desktop only) and the
 // form on the right. Pages pick the panel's headline with
-// definePageMeta({ authAside: 'login' | 'signup' | 'reset' }).
+// definePageMeta({ authAside: 'login' | 'signup' | 'reset' | 'welcome' }).
 const route = useRoute()
 
 const ASIDES = {
   login: { title: 'Your clock kept running.', accent: 'Welcome back.' },
   signup: { title: 'Hand over', accent: 'the key.' },
   reset: { title: 'Locked out?', accent: "There's a spare key." },
+  welcome: { title: 'One last thing.', accent: 'Pick your name.' },
 } as const
 
 const aside = computed(() => ASIDES[(route.meta.authAside as keyof typeof ASIDES) ?? 'signup'] ?? ASIDES.signup)

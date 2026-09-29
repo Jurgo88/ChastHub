@@ -25,3 +25,20 @@ describe('generateDisplayName', () => {
     expect(names.size).toBeGreaterThan(50)
   })
 })
+
+describe('role-themed names and usernames', () => {
+  it('builds a valid username from every generated name', async () => {
+    const { usernameFromDisplayName } = await import('~/server/utils/displayName')
+    for (let i = 0; i < 500; i++) {
+      for (const role of ['loqee', 'loqholder']) {
+        const u = usernameFromDisplayName(generateDisplayName(role))
+        expect(u).toMatch(/^[a-z][a-z0-9_]{2,19}$/)
+      }
+    }
+  })
+
+  it('splits camel case with an underscore', async () => {
+    const { usernameFromDisplayName } = await import('~/server/utils/displayName')
+    expect(usernameFromDisplayName('CagedPet27')).toBe('caged_pet27')
+  })
+})

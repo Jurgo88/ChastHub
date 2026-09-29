@@ -8,6 +8,8 @@ Allow: /
 Disallow: /admin
 Disallow: /dashboard
 Disallow: /profile
+Disallow: /user
+Disallow: /welcome
 Disallow: /messages
 Disallow: /search
 Disallow: /keydrop
