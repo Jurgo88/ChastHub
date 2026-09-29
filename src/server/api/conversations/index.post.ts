@@ -79,10 +79,10 @@ export default defineEventHandler(async (event) => {
 
   await supabase
     .from('conversations')
-    .update({ last_message_at: message.created_at })
+    .update({ last_message_at: message.created_at, [user.id === userAId ? 'user_a_last_read_at' : 'user_b_last_read_at']: message.created_at })
     .eq('id', conversation.id)
 
-  await sendPushNotification(recipientId, 'New message', content.slice(0, 80), '/messages')
+  await sendPushNotification(recipientId, 'New message', content.slice(0, 80), `/messages/${conversation.id}`)
 
   return {
     conversation_id: conversation.id,

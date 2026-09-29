@@ -48,9 +48,9 @@ export function useMessaging() {
     catch (err) { throw extractError(err) }
   }
 
-  async function fetchMessages(conversationId: string): Promise<{ messages: DmMessage[] }> {
+  async function fetchMessages(conversationId: string, offset = 0): Promise<{ messages: DmMessage[]; total: number }> {
     try {
-      return await authFetch<{ messages: DmMessage[] }>(`/api/conversations/${conversationId}/messages`)
+      return await authFetch<{ messages: DmMessage[]; total: number }>(`/api/conversations/${conversationId}/messages?offset=${offset}`)
     }
     catch (err) { throw extractError(err) }
   }
@@ -79,5 +79,13 @@ export function useMessaging() {
     catch (err) { throw extractError(err) }
   }
 
-  return { fetchConversations, startConversation, fetchMessages, sendMessage, acceptConversation, declineConversation }
+  async function markRead(conversationId: string): Promise<string | null> {
+    try {
+      const res = await authFetch<{ last_read_at: string }>(`/api/conversations/${conversationId}/read`, { method: 'POST' })
+      return res.last_read_at
+    }
+    catch { return null }
+  }
+
+  return { markRead, fetchConversations, startConversation, fetchMessages, sendMessage, acceptConversation, declineConversation }
 }

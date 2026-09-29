@@ -12,7 +12,7 @@
           <NuxtLink to="/keydrop" class="app-nav__link" active-class="app-nav__link--active">Key Drop</NuxtLink>
           <NuxtLink to="/stats" class="app-nav__link" active-class="app-nav__link--active">Stats</NuxtLink>
           <NuxtLink to="/shop" class="app-nav__link" active-class="app-nav__link--active">Shop</NuxtLink>
-          <NuxtLink to="/messages" class="app-nav__link" active-class="app-nav__link--active">Messages</NuxtLink>
+          <NuxtLink to="/messages" class="app-nav__link" active-class="app-nav__link--active">Messages<span v-if="dmUnread" class="app-nav__badge">{{ dmUnread > 9 ? '9+' : dmUnread }}</span></NuxtLink>
           <NuxtLink v-if="authStore.isLoqee && !authStore.hasAccess" to="/subscription/upgrade" class="app-nav__link app-nav__link--cta">Upgrade</NuxtLink>
           <NuxtLink v-if="authStore.isAdmin" to="/admin" class="app-nav__link" active-class="app-nav__link--active">Admin</NuxtLink>
           <span class="app-nav__sep" />
@@ -49,6 +49,7 @@
       <!-- Mobile hamburger -->
       <button class="app-nav__burger" :aria-expanded="menuOpen" aria-label="Toggle menu" @click="menuOpen = !menuOpen">
         <span /><span /><span />
+        <i v-if="dmUnread" class="app-nav__burger-dot" />
       </button>
 
       <!-- Mobile drawer -->
@@ -63,7 +64,7 @@
             <NuxtLink to="/keydrop" class="app-nav__drawer-link">Key Drop</NuxtLink>
             <NuxtLink to="/stats" class="app-nav__drawer-link">Stats</NuxtLink>
             <NuxtLink to="/shop" class="app-nav__drawer-link">Shop</NuxtLink>
-            <NuxtLink to="/messages" class="app-nav__drawer-link">Messages</NuxtLink>
+            <NuxtLink to="/messages" class="app-nav__drawer-link">Messages<span v-if="dmUnread" class="app-nav__badge">{{ dmUnread > 9 ? '9+' : dmUnread }}</span></NuxtLink>
             <NuxtLink to="/profile" class="app-nav__drawer-link">Profile</NuxtLink>
             <NuxtLink v-if="authStore.isLoqee && !authStore.hasAccess" to="/subscription/upgrade" class="app-nav__drawer-link app-nav__drawer-link--cta">Upgrade to Premium</NuxtLink>
             <NuxtLink v-if="authStore.isAdmin" to="/admin" class="app-nav__drawer-link">Admin</NuxtLink>
@@ -113,7 +114,10 @@ function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') accountMenuOpen.value = false
 }
 
+const { count: dmUnread, start: startDmUnread } = useDmUnread()
+
 onMounted(() => {
+  if (authStore.isAuthenticated) startDmUnread()
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onKeydown)
 })
@@ -124,6 +128,7 @@ onBeforeUnmount(() => {
 })
 
 watch(() => route.fullPath, () => { accountMenuOpen.value = false })
+watch(() => authStore.isAuthenticated, (on) => { if (on) startDmUnread() })
 
 const dashboardLink = computed(() =>
   authStore.isLoqholder ? '/dashboard/keyholder' : '/dashboard/wearer'
@@ -308,7 +313,33 @@ async function logout() {
     &--logout { color: var(--color-text-muted); }
   }
 
+  &__badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    margin-left: 6px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--gradient-brand);
+    color: var(--color-on-accent);
+    font: 800 11px var(--font-sans);
+    vertical-align: 1px;
+  }
+
+  &__burger-dot {
+    position: absolute;
+    top: 9px;
+    right: 8px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--color-cta);
+    box-shadow: 0 0 0 2px var(--color-bg, #0E0033);
+  }
+
   &__burger {
+    position: relative;
     display: none;
     flex-direction: column;
     justify-content: center;

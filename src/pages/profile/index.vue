@@ -166,6 +166,15 @@
               <span class="toggle__knob" />
             </button>
           </div>
+          <div class="trow">
+            <div>
+              <span class="trow__label">Show when I have read messages</span>
+              <p class="trow__hint">Others see "Seen" under their message. Turn it off and you will not see theirs either.</p>
+            </div>
+            <button class="toggle" :class="{ 'toggle--on': privacy.show_read_receipts }" type="button" :aria-pressed="privacy.show_read_receipts" @click="togglePrivacy('show_read_receipts')">
+              <span class="toggle__knob" />
+            </button>
+          </div>
           <p v-if="privacyError" class="msg msg--error">{{ privacyError }}</p>
         </section>
 
@@ -507,6 +516,7 @@ const privacy = reactive({
   leaderboard_opt_out: authStore.profile?.leaderboard_opt_out ?? false,
   hide_from_search: authStore.profile?.hide_from_search ?? false,
   show_online_status: authStore.profile?.show_online_status ?? true,
+  show_read_receipts: authStore.profile?.show_read_receipts ?? true,
 })
 const privacyError = ref('')
 

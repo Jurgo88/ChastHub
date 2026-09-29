@@ -19,6 +19,7 @@ export interface Profile {
   leaderboard_opt_out: boolean
   last_seen_at: string | null
   show_online_status: boolean
+  show_read_receipts: boolean
   hide_from_search: boolean
   birth_year: number | null
   gender: Gender | null
@@ -179,7 +180,21 @@ export interface Conversation {
   responded_at: string | null
   last_message_at: string | null
   last_message: { content: string; sender_id: string } | null
+  /** Messages from the other side since I last opened the thread. */
+  unread: number
+  /** When the other person last read the thread; null when either side hides read receipts. */
+  other_last_read_at: string | null
+  read_receipts: boolean
+  /** What the other person is to me in a running lock. */
+  lock: ConversationLock | null
   other_user: ConversationParticipant | null
+}
+
+export interface ConversationLock {
+  id: string
+  relation: 'keyholder' | 'wearer'
+  status: string
+  loqed_until: string | null
 }
 
 export interface DmMessage {

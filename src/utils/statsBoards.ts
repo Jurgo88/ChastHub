@@ -28,7 +28,7 @@ export const BOARD_META: Record<StatsBoardKey, BoardMeta> = {
 }
 
 /** 5 → "5h", 283 → "11d 19h". */
-export function formatDuration(hours: number): string {
+export function formatStatsDuration(hours: number): string {
   const h = Math.max(0, Math.floor(hours))
   if (h < 24) return `${h}h`
   const d = Math.floor(h / 24)
@@ -38,7 +38,7 @@ export function formatDuration(hours: number): string {
 
 export function formatBoardValue(board: StatsBoardKey, value: number): string {
   const meta = BOARD_META[board]
-  const text = meta.kind === 'hours' ? formatDuration(value) : Math.round(value).toLocaleString('en-US')
+  const text = meta.kind === 'hours' ? formatStatsDuration(value) : Math.round(value).toLocaleString('en-US')
   return meta.plus ? `+${text}` : text
 }
 

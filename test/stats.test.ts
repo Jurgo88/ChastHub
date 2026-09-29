@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { formatBoardValue, formatDuration } from '~/utils/statsBoards'
+import { formatBoardValue, formatStatsDuration } from '~/utils/statsBoards'
 import { lockHours } from '~/server/utils/profileStats'
 
-describe('formatDuration', () => {
+describe('formatStatsDuration', () => {
   it('reads hours under a day and days plus hours above', () => {
-    expect(formatDuration(5.4)).toBe('5h')
-    expect(formatDuration(24)).toBe('1d')
-    expect(formatDuration(283)).toBe('11d 19h')
+    expect(formatStatsDuration(5.4)).toBe('5h')
+    expect(formatStatsDuration(24)).toBe('1d')
+    expect(formatStatsDuration(283)).toBe('11d 19h')
   })
 
   it('marks crowd values with a plus and counts as whole numbers', () => {

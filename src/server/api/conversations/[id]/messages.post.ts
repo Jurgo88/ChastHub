@@ -54,10 +54,11 @@ export default defineEventHandler(async (event) => {
 
   if (error) throw createError({ statusCode: 500, message: 'Failed to send message' })
 
-  await supabase.from('conversations').update({ last_message_at: message.created_at }).eq('id', id)
+  const readColumn = conversation.user_a_id === user.id ? 'user_a_last_read_at' : 'user_b_last_read_at'
+  await supabase.from('conversations').update({ last_message_at: message.created_at, [readColumn]: message.created_at }).eq('id', id)
 
   const recipientId = user.id === conversation.user_a_id ? conversation.user_b_id : conversation.user_a_id
-  await sendPushNotification(recipientId, 'New message', content.slice(0, 80), '/messages')
+  await sendPushNotification(recipientId, 'New message', content.slice(0, 80), `/messages/${id}`)
 
   return message
 })

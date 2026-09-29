@@ -1,69 +1,100 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 
+interface InboxRow {
+  id: string
+  status: 'pending' | 'accepted' | 'declined'
+  requested_by: string
+  created_at: string
+  responded_at: string | null
+  last_message_at: string | null
+  other_id: string
+  my_last_read_at: string | null
+  other_last_read_at: string | null
+  last_content: string | null
+  last_sender: string | null
+  unread: number
+}
+
+interface OtherProfile {
+  id: string
+  display_name: string | null
+  username: string | null
+  avatar_url: string | null
+  role: string
+  is_admin: boolean
+  last_seen_at: string | null
+  show_online_status: boolean
+  show_read_receipts: boolean
+}
+
 export default defineEventHandler(async (event) => {
   const { user } = await requireAuth(event)
   const supabase = useSupabaseAdmin()
 
-  const { data, error } = await supabase
-    .from('conversations')
-    .select(`
-      id,
-      status,
-      requested_by,
-      created_at,
-      responded_at,
-      last_message_at,
-      user_a:profiles!user_a_id(id, display_name, username, avatar_url, role, is_admin, last_seen_at, show_online_status),
-      user_b:profiles!user_b_id(id, display_name, username, avatar_url, role, is_admin, last_seen_at, show_online_status)
-    `)
-    .or(`user_a_id.eq.${user.id},user_b_id.eq.${user.id}`)
-    .order('last_message_at', { ascending: false, nullsFirst: false })
-
+  const { data, error } = await supabase.rpc('dm_inbox', { p_user: user.id })
   if (error) throw createError({ statusCode: 500, message: 'Failed to fetch conversations' })
+  const rows = (data ?? []) as InboxRow[]
 
-  // Supabase/PostgREST has no DISTINCT ON, so pull every message for these
-  // conversations (ordered newest-first, using the existing
-  // idx_dm_messages_conversation index) and keep only the first — i.e. most
-  // recent — row seen per conversation_id.
-  const conversationIds = (data ?? []).map(c => c.id)
-  const lastMessageByConv = new Map<string, { content: string; sender_id: string }>()
-  if (conversationIds.length > 0) {
-    const { data: msgs } = await supabase
-      .from('dm_messages')
-      .select('conversation_id, content, sender_id, created_at')
-      .in('conversation_id', conversationIds)
-      .order('created_at', { ascending: false })
+  const otherIds = [...new Set(rows.map(r => r.other_id))]
+  const profiles = new Map<string, OtherProfile>()
+  // What the other person is to me in a running lock: my keyholder or my wearer.
+  const locks = new Map<string, { id: string; relation: 'keyholder' | 'wearer'; status: string; loqed_until: string | null }>()
+  let myReceipts = true
 
-    for (const m of msgs ?? []) {
-      if (!lastMessageByConv.has(m.conversation_id)) {
-        lastMessageByConv.set(m.conversation_id, { content: m.content, sender_id: m.sender_id })
-      }
+  if (otherIds.length) {
+    const [profRes, meRes, lockRes] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, display_name, username, avatar_url, role, is_admin, last_seen_at, show_online_status, show_read_receipts')
+        .in('id', otherIds),
+      supabase.from('profiles').select('show_read_receipts').eq('id', user.id).maybeSingle(),
+      supabase
+        .from('loqs')
+        .select('id, loqee_id, loqholder_id, status, loqed_until')
+        .in('status', ['active', 'paused'])
+        .or(`and(loqee_id.eq.${user.id},loqholder_id.in.(${otherIds.join(',')})),and(loqholder_id.eq.${user.id},loqee_id.in.(${otherIds.join(',')}))`),
+    ])
+    for (const p of (profRes.data ?? []) as OtherProfile[]) profiles.set(p.id, p)
+    myReceipts = meRes.data?.show_read_receipts ?? true
+    for (const l of lockRes.data ?? []) {
+      const otherId = l.loqee_id === user.id ? l.loqholder_id : l.loqee_id
+      if (!otherId || locks.has(otherId)) continue
+      locks.set(otherId, {
+        id: l.id,
+        relation: l.loqee_id === user.id ? 'keyholder' : 'wearer',
+        status: l.status,
+        loqed_until: l.loqed_until,
+      })
     }
   }
 
-  const conversations = (data ?? []).map((c) => {
-    const otherUserRaw = c.user_a?.id === user.id ? c.user_b : c.user_a
-    const otherUser = otherUserRaw
-      ? {
-          id: otherUserRaw.id,
-          display_name: otherUserRaw.display_name,
-          username: otherUserRaw.username,
-          avatar_url: otherUserRaw.avatar_url,
-          role: otherUserRaw.role,
-          is_admin: otherUserRaw.is_admin,
-          last_seen_at: otherUserRaw.show_online_status ? otherUserRaw.last_seen_at : null,
-        }
-      : null
+  const conversations = rows.map((r) => {
+    const p = profiles.get(r.other_id)
+    const receipts = myReceipts && (p?.show_read_receipts ?? true)
     return {
-      id: c.id,
-      status: c.status,
-      is_requester: c.requested_by === user.id,
-      created_at: c.created_at,
-      responded_at: c.responded_at,
-      last_message_at: c.last_message_at,
-      last_message: lastMessageByConv.get(c.id) ?? null,
-      other_user: otherUser,
+      id: r.id,
+      status: r.status,
+      is_requester: r.requested_by === user.id,
+      created_at: r.created_at,
+      responded_at: r.responded_at,
+      last_message_at: r.last_message_at,
+      last_message: r.last_content != null && r.last_sender ? { content: r.last_content, sender_id: r.last_sender } : null,
+      unread: r.unread,
+      other_last_read_at: receipts ? r.other_last_read_at : null,
+      read_receipts: receipts,
+      lock: locks.get(r.other_id) ?? null,
+      other_user: p
+        ? {
+            id: p.id,
+            display_name: p.display_name,
+            username: p.username,
+            avatar_url: p.avatar_url,
+            role: p.role,
+            is_admin: p.is_admin,
+            last_seen_at: p.show_online_status ? p.last_seen_at : null,
+          }
+        : null,
     }
   })
 

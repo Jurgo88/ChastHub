@@ -10,6 +10,7 @@ interface ProfilePatchBody {
   avatar_url?: string
   leaderboard_opt_out?: boolean
   show_online_status?: boolean
+  show_read_receipts?: boolean
   hide_from_search?: boolean
   birth_year?: number | null
   gender?: string | null
@@ -58,6 +59,10 @@ export default defineEventHandler(async (event) => {
   if (body.show_online_status !== undefined) {
     if (typeof body.show_online_status !== 'boolean') throw createError({ statusCode: 400, message: 'show_online_status must be boolean' })
     allowed.show_online_status = body.show_online_status
+  }
+  if (body.show_read_receipts !== undefined) {
+    if (typeof body.show_read_receipts !== 'boolean') throw createError({ statusCode: 400, message: 'show_read_receipts must be boolean' })
+    allowed.show_read_receipts = body.show_read_receipts
   }
   if (body.hide_from_search !== undefined) {
     if (typeof body.hide_from_search !== 'boolean') throw createError({ statusCode: 400, message: 'hide_from_search must be boolean' })
