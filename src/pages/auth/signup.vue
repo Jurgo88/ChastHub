@@ -11,7 +11,10 @@ const { public: { signupsEnabled } } = useRuntimeConfig()
 const step = ref<1 | 2 | 3>(1)
 const email = ref('')
 const password = ref('')
-const role = ref<UserRole | null>(null)
+// Landing page CTAs preselect the role: /auth/signup?role=wearer|keyholder
+// (UI words in the URL, DB values in state).
+const roleParam = useRoute().query.role
+const role = ref<UserRole | null>(roleParam === 'keyholder' ? 'loqholder' : roleParam === 'wearer' ? 'loqee' : null)
 const termsAccepted = ref(false)
 const error = ref('')
 const loading = ref(false)

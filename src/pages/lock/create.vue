@@ -241,9 +241,9 @@
               No keyholder — your clock starts the moment you create this, and you're in control: pause or end it yourself any time. Share your visitor link so others can add time.
             </template>
             <template v-else>
-              After creating, show your lock in
-              <NuxtLink to="/discover" class="create-queue-hint__link">Discover</NuxtLink>
-              so everyone can engage with your session.
+              After creating, drop your key in
+              <NuxtLink to="/keydrop" class="create-queue-hint__link">Key Drop</NuxtLink>
+              so keyholders can find you.
             </template>
           </p>
         </div>

@@ -9,7 +9,7 @@
       <nav class="app-nav__links app-nav__links--desktop">
         <template v-if="authStore.isAuthenticated">
           <NuxtLink :to="dashboardLink" class="app-nav__link" active-class="app-nav__link--active">Dashboard</NuxtLink>
-          <NuxtLink to="/discover" class="app-nav__link" active-class="app-nav__link--active">Discover</NuxtLink>
+          <NuxtLink to="/keydrop" class="app-nav__link" active-class="app-nav__link--active">Key Drop</NuxtLink>
           <NuxtLink to="/leaderboard" class="app-nav__link" active-class="app-nav__link--active">Leaderboard</NuxtLink>
           <NuxtLink to="/shop" class="app-nav__link" active-class="app-nav__link--active">Shop</NuxtLink>
           <NuxtLink to="/messages" class="app-nav__link" active-class="app-nav__link--active">Messages</NuxtLink>
@@ -58,7 +58,7 @@
               <span class="app-nav__drawer-name">{{ displayName }}</span>
             </div>
             <NuxtLink :to="dashboardLink" class="app-nav__drawer-link">Dashboard</NuxtLink>
-            <NuxtLink to="/discover" class="app-nav__drawer-link">Discover</NuxtLink>
+            <NuxtLink to="/keydrop" class="app-nav__drawer-link">Key Drop</NuxtLink>
             <NuxtLink to="/leaderboard" class="app-nav__drawer-link">Leaderboard</NuxtLink>
             <NuxtLink to="/shop" class="app-nav__drawer-link">Shop</NuxtLink>
             <NuxtLink to="/messages" class="app-nav__drawer-link">Messages</NuxtLink>

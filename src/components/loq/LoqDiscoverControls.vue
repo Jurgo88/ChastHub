@@ -76,9 +76,9 @@ async function pickPermission(value: VisitorPermission) {
   <div class="discover-controls">
     <div class="discover-controls__row">
       <div class="discover-controls__text">
-        <span class="discover-controls__title">Show in Discover</span>
+        <span class="discover-controls__title">Drop your key in Key Drop</span>
         <span class="discover-controls__hint">
-          Anyone signed in can find your lock. What they may do to the clock is up to you, below.
+          Anyone signed in can find your lock. You decide below what they may do to the clock.
         </span>
       </div>
       <button
@@ -87,7 +87,7 @@ async function pickPermission(value: VisitorPermission) {
         :disabled="listingPending"
         @click="toggleListing"
       >
-        {{ listingPending ? '…' : (loq.listed_in_discover ? 'Remove' : 'Show') }}
+        {{ listingPending ? '…' : (loq.listed_in_discover ? 'Take it back' : 'Drop key') }}
       </button>
     </div>
 

@@ -30,7 +30,7 @@
         <span class="dash-state__icon">🔍</span>
         <p class="dash-state__title">No keyholders found</p>
         <p class="dash-state__hint">Try a different search or browse
-          <NuxtLink to="/discover" class="find-link">Discover</NuxtLink>.
+          <NuxtLink to="/keydrop" class="find-link">Key Drop</NuxtLink>.
         </p>
       </div>
 

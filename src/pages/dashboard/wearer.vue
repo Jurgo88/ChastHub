@@ -107,7 +107,7 @@
           <!-- Nudge when the loq is stuck: not public and no requests yet -->
           <div v-if="!loq.is_public && (loq.pending_requests ?? 0) === 0" class="publish-nudge">
             <span class="publish-nudge__icon" aria-hidden="true">📣</span>
-            <p class="publish-nudge__text">No requests yet — publish to Public Locks to reach more keyholders.</p>
+            <p class="publish-nudge__text">No requests yet. Drop your key in Key Drop to reach more keyholders.</p>
           </div>
 
           <div class="loq-card__actions">
@@ -138,13 +138,13 @@
               class="loq-act loq-act--primary"
               :disabled="publishing"
               @click="handlePublish"
-            >{{ publishing ? 'Publishing…' : 'Publish to Public Locks' }}</button>
+            >{{ publishing ? 'Publishing…' : 'Drop your key' }}</button>
             <button
               v-else
               class="loq-act loq-act--outline"
               :disabled="unpublishing"
               @click="handleUnpublish"
-            >{{ unpublishing ? 'Removing…' : 'Remove from Public Locks' }}</button>
+            >{{ unpublishing ? 'Removing…' : 'Take your key back' }}</button>
             <button class="loq-act loq-act--end" :disabled="cancelling" @click="handleCancel">
               {{ cancelling ? 'Cancelling…' : 'Cancel' }}
             </button>
@@ -152,13 +152,13 @@
 
           <p class="loq-card__hint">
             <template v-if="loq.status === 'draft'">
-              Your clock is already running. Show it in
-              <NuxtLink to="/discover" class="loq-card__link">Discover</NuxtLink>
-              or request a specific keyholder to hand over control.
+              Your clock is already running. Drop your key in
+              <NuxtLink to="/keydrop" class="loq-card__link">Key Drop</NuxtLink>
+              or ask a specific keyholder to take control.
             </template>
             <template v-else>
-              Your clock is running — waiting for a keyholder to accept and take control.
-              <NuxtLink v-if="loq.listed_in_discover" to="/discover" class="loq-card__link">View in Discover →</NuxtLink>
+              Your clock is running. Waiting for a keyholder to accept and take control.
+              <NuxtLink v-if="loq.listed_in_discover" to="/keydrop" class="loq-card__link">See it in Key Drop →</NuxtLink>
             </template>
           </p>
 

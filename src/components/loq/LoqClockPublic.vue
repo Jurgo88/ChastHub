@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import logoIcon from '~/assets/images/logos/chasthub-logo-nobg.webp'
 import type { FeedEntry } from '~/composables/usePublicLoq'
 
-defineProps<{
+const props = defineProps<{
   countdown: string
   visitorAddHours: number
   visitorPermission: 'add' | 'remove' | 'both'
@@ -24,292 +23,194 @@ function feedAgo(at: number): string {
   if (s < 60) return 'just now'
   return `${Math.floor(s / 60)}m ago`
 }
+
+// The public API does not expose the lock's total length, so the ring does not
+// claim a progress it cannot know. It sweeps with the seconds of the countdown
+// instead: a live second hand that shows the clock is running.
+const RING_R = 122
+const RING_C = 2 * Math.PI * RING_R
+const ringDash = computed(() => {
+  if (!props.locked) return `0 ${RING_C}`
+  const sec = Number(/(\d+)s$/.exec(props.countdown || '')?.[1] ?? 60)
+  const share = props.isPaused ? 1 : Math.max(0.02, sec / 60)
+  return `${(share * RING_C).toFixed(1)} ${RING_C.toFixed(1)}`
+})
+
+// Long countdowns ("3d 4h 12m 09s") need a smaller size to stay on one line.
+const timeSize = computed(() => {
+  const len = (props.countdown || '').length
+  if (len > 13) return 'lc__time--xs'
+  if (len > 10) return 'lc__time--sm'
+  return ''
+})
+
+const amount = computed(() => {
+  const h = props.visitorAddHours
+  if (h < 1) return `${Math.round(h * 60)} min`
+  return `${h} ${h === 1 ? 'hour' : 'hours'}`
+})
 </script>
 
 <template>
-  <div class="loq-clock">
-    <div class="loq-clock__float">
-      <img :src="logoIcon" alt="" class="loq-clock__float-logo" />
+  <div class="lc">
+    <div class="lc__ring" :class="{ 'lc__ring--ended': !locked }">
+      <svg viewBox="0 0 280 280" aria-hidden="true">
+        <defs>
+          <linearGradient id="lcGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#EB3678" />
+            <stop offset="1" stop-color="#FB773C" />
+          </linearGradient>
+        </defs>
+        <circle cx="140" cy="140" :r="RING_R" fill="none" stroke="#4F1787" stroke-width="16" />
+        <circle
+          cx="140" cy="140" :r="RING_R"
+          fill="none" stroke="url(#lcGrad)" stroke-width="16" stroke-linecap="round"
+          :stroke-dasharray="ringDash" transform="rotate(-90 140 140)" class="lc__arc"
+        />
+      </svg>
+      <div class="lc__center">
+        <span class="lc__label">{{ !locked ? 'UNLOCKED' : isPaused ? 'PAUSED' : 'UNLOCKS IN' }}</span>
+        <span class="lc__time" :class="timeSize">{{ locked ? (countdown || '…') : 'Free' }}</span>
+        <span v-if="locked && isPaused" class="lc__sub">The keyholder paused the clock</span>
+      </div>
     </div>
 
-    <div class="loq-clock__bubble">
-      <p class="loq-clock__label-top">TIME REMAINING</p>
-      <div
-        class="loq-clock__countdown"
-        :class="{ 'loq-clock__countdown--ended': !locked, 'loq-clock__countdown--paused': locked && isPaused }"
+    <div v-if="locked" class="lc__actions">
+      <button
+        v-if="visitorPermission !== 'remove'"
+        type="button"
+        class="lc__btn lc__btn--add"
+        :class="{ 'lc__btn--done': lastAction === 'add' }"
+        :disabled="!!adjustTimeLoading || alreadyActed"
+        @click="$emit('adjustTime', 'add')"
       >
-        {{ countdown || '…' }}
-      </div>
-      <p v-if="locked && isPaused" class="loq-clock__paused-badge">⏸ Paused</p>
-      <p v-else class="loq-clock__label-bottom">LOCKED SESSION</p>
-    </div>
+        <span v-if="lastAction === 'add'">{{ amount }} added</span>
+        <span v-else-if="adjustTimeLoading === 'add'">Adding…</span>
+        <span v-else>Add {{ amount }}</span>
+      </button>
+      <button
+        v-if="visitorPermission !== 'add'"
+        type="button"
+        class="lc__btn lc__btn--remove"
+        :class="{ 'lc__btn--done': lastAction === 'remove' }"
+        :disabled="!!adjustTimeLoading || alreadyActed"
+        @click="$emit('adjustTime', 'remove')"
+      >
+        <span v-if="lastAction === 'remove'">{{ amount }} removed</span>
+        <span v-else-if="adjustTimeLoading === 'remove'">Removing…</span>
+        <span v-else>Show mercy · −{{ amount }}</span>
+      </button>
 
-    <div v-if="locked" class="loq-clock__actions">
-      <div class="loq-clock__btn-row">
-        <button
-          v-if="visitorPermission !== 'remove'"
-          class="loq-clock__add-btn"
-          :class="{ 'loq-clock__add-btn--success': lastAction === 'add' }"
-          :disabled="!!adjustTimeLoading || alreadyActed"
-          @click="$emit('adjustTime', 'add')"
-        >
-          <span v-if="lastAction === 'add'">+{{ visitorAddHours }}h added ✓</span>
-          <span v-else-if="adjustTimeLoading === 'add'">Adding…</span>
-          <span v-else>+ {{ visitorAddHours }}h</span>
-        </button>
-        <button
-          v-if="visitorPermission !== 'add'"
-          class="loq-clock__add-btn loq-clock__add-btn--remove"
-          :class="{ 'loq-clock__add-btn--success': lastAction === 'remove' }"
-          :disabled="!!adjustTimeLoading || alreadyActed"
-          @click="$emit('adjustTime', 'remove')"
-        >
-          <span v-if="lastAction === 'remove'">−{{ visitorAddHours }}h removed ✓</span>
-          <span v-else-if="adjustTimeLoading === 'remove'">Removing…</span>
-          <span v-else>− {{ visitorAddHours }}h</span>
-        </button>
-      </div>
-      <p v-if="actionError" class="loq-clock__error">{{ actionError }}</p>
+      <p v-if="alreadyActed && !lastAction" class="lc__hint">You already made your move. Come back in an hour.</p>
+      <p v-if="actionError" class="lc__error">{{ actionError }}</p>
 
-      <TransitionGroup v-if="feed.length" name="feed" tag="ul" class="loq-clock__feed">
-        <li v-for="entry in feed" :key="entry.id" class="loq-clock__feed-item">
-          <span :class="entry.direction === 'remove' ? 'loq-clock__feed-remove' : 'loq-clock__feed-add'">
+      <TransitionGroup v-if="feed.length" name="feed" tag="ul" class="lc__feed">
+        <li v-for="entry in feed" :key="entry.id" class="lc__feed-item">
+          <span :class="entry.direction === 'remove' ? 'lc__feed-remove' : 'lc__feed-add'">
             {{ entry.direction === 'remove' ? '−' : '+' }}{{ entry.hours }}h
           </span>
-          <span class="loq-clock__feed-label">{{ entry.direction === 'remove' ? 'removed' : 'added' }} · {{ feedAgo(entry.at) }}</span>
+          <span class="lc__feed-label">{{ entry.direction === 'remove' ? 'removed' : 'added' }} · {{ feedAgo(entry.at) }}</span>
         </li>
       </TransitionGroup>
-    </div>
-
-    <div v-else class="loq-clock__ended-label">
-      This lock has ended
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.loq-clock {
+.lc {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.75rem;
-  text-align: center;
-  width: 100%;
-  max-width: 360px;
-
-  &__float {
-    animation: float 4s ease-in-out infinite;
-  }
-
-  &__float-logo {
-    width: clamp(54px, 13vw, 74px);
-    height: auto;
-    display: block;
-    filter:
-      brightness(1.5)
-      drop-shadow(0 0 10px rgba(var(--color-accent-rgb), 0.65))
-      drop-shadow(0 0 28px rgba(var(--color-accent-rgb), 0.35));
-  }
-
-  &__bubble {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 2.25rem 2rem;
-    background: linear-gradient(
-      160deg,
-      rgba(255, 255, 255, 0.04) 0%,
-      rgba(255, 255, 255, 0.015) 100%
-    );
-    border: 1px solid rgba(var(--color-accent-rgb), 0.18);
-    border-top-color: rgba(var(--color-accent-rgb), 0.22);
-    border-radius: 24px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow:
-      0 0 0 1px rgba(0, 0, 0, 0.3),
-      0 8px 40px rgba(0, 0, 0, 0.35),
-      0 0 60px rgba(var(--color-accent-rgb), 0.07),
-      inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  }
-
-  &__label-top {
-    margin: 0;
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.3em;
-    color: var(--color-elevated);
-    text-transform: uppercase;
-  }
-
-  &__countdown {
-    font-family: var(--font-sans);
-    font-size: clamp(2.75rem, 11vw, 5.25rem);
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.01em;
-    line-height: 1;
-    color: var(--color-text);
-    text-shadow:
-      0 0 24px rgba(var(--color-accent-rgb), 0.55),
-      0 0 48px rgba(var(--color-accent-rgb), 0.2),
-      0 2px 0 rgba(0, 0, 0, 0.4);
-    animation: glow-pulse 5s ease-in-out infinite;
-    padding: 0.25rem 0;
-
-    &--ended {
-      color: var(--color-elevated);
-      text-shadow: none;
-      animation: none;
-    }
-
-    &--paused {
-      color: #ffaa5c;
-      text-shadow: 0 0 20px rgba(255, 170, 0, 0.35);
-      animation: none;
-    }
-  }
-
-  &__label-bottom {
-    margin: 0;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    opacity: 0.8;
-  }
-
-  &__paused-badge {
-    margin: 0;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    color: #ffaa5c;
-    text-transform: uppercase;
-  }
-
-  &__actions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.625rem;
-  }
-
-  &__btn-row {
-    display: flex;
-    gap: 0.625rem;
-  }
-
-  &__add-btn {
-    padding: 0.5rem 1.5rem;
-    background: rgba(var(--color-accent-rgb), 0.07);
-    border: 1px solid rgba(var(--color-accent-rgb), 0.35);
-    border-radius: 100px;
-    color: var(--color-accent);
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
-    box-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.12);
-    white-space: nowrap;
-
-    &:hover:not(:disabled) {
-      background: rgba(var(--color-accent-rgb), 0.14);
-      border-color: rgba(var(--color-accent-rgb), 0.6);
-      box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.35);
-      color: var(--color-accent);
-      transform: translateY(-1px);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    &--success {
-      border-color: rgba(0, 210, 80, 0.5);
-      color: #00dd55;
-      background: rgba(0, 210, 80, 0.06);
-      box-shadow: 0 0 14px rgba(0, 210, 80, 0.2);
-    }
-
-    // Remove side uses a warm tone to read as distinct from add — same
-    // neon-orange family the dashboards use for remove/end actions (TASK-061).
-    &--remove {
-      background: rgba(var(--color-remove-rgb), 0.07);
-      border-color: rgba(255, 140, 60, 0.35);
-      color: #ff9a5c;
-      box-shadow: 0 0 12px rgba(var(--color-remove-rgb), 0.12);
-
-      &:hover:not(:disabled) {
-        background: rgba(var(--color-remove-rgb), 0.14);
-        border-color: rgba(255, 150, 80, 0.6);
-        box-shadow: 0 0 20px rgba(var(--color-remove-rgb), 0.35);
-        color: #ffb480;
-      }
-    }
-  }
-
-  &__error {
-    font-size: 0.8125rem;
-    color: #cc3333;
-    margin: 0;
-  }
-
-  &__feed {
-    list-style: none;
-    margin: 0.25rem 0 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-    width: 100%;
-  }
-
-  &__feed-item {
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 0.5rem;
-    font-size: 0.8125rem;
-  }
-
-  &__feed-add { color: var(--color-accent); font-weight: 700; font-variant-numeric: tabular-nums; }
-  &__feed-remove { color: #ff9a5c; font-weight: 700; font-variant-numeric: tabular-nums; }
-
-  &__feed-label {
-    color: var(--color-elevated);
-    letter-spacing: 0.02em;
-  }
-
-  &__ended-label {
-    font-size: 0.9rem;
-    color: var(--color-elevated);
-    letter-spacing: 0.05em;
-  }
+  gap: 22px;
 }
+
+.lc__ring {
+  position: relative;
+  width: min(100%, 280px);
+  aspect-ratio: 1;
+  filter: drop-shadow(0 20px 60px rgba(var(--color-brand-rgb), 0.35));
+
+  svg { width: 100%; height: 100%; display: block; }
+  &--ended { filter: none; opacity: 0.85; }
+}
+.lc__arc { transition: stroke-dasharray 0.9s linear; }
+
+.lc__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 28px;
+  text-align: center;
+}
+.lc__label { font-size: 12px; letter-spacing: 0.2em; color: var(--color-text-muted); font-weight: 600; }
+.lc__time {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+  white-space: nowrap;
+  &--sm { font-size: 34px; }
+  &--xs { font-size: 27px; }
+}
+.lc__sub { font-size: 13px; color: #CFC5F2; }
+
+.lc__actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.lc__btn {
+  width: 100%;
+  height: 58px;
+  border-radius: 18px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.15s;
+
+  &:active:not(:disabled) { transform: scale(0.98); }
+  &:disabled { cursor: not-allowed; opacity: 0.6; }
+
+  &--add {
+    border: 0;
+    background: var(--gradient-brand);
+    color: var(--color-on-accent);
+    box-shadow: 0 10px 36px rgba(var(--color-brand-rgb), 0.4);
+  }
+  &--remove {
+    height: 52px;
+    background: rgba(24, 1, 97, 0.7);
+    border: 1.5px solid var(--color-elevated);
+    color: var(--color-text);
+    font-size: 17px;
+    font-weight: 600;
+  }
+  &--done:disabled { opacity: 1; }
+}
+.lc__hint { margin: 2px 0 0; text-align: center; font-size: 13px; color: var(--color-text-muted); }
+.lc__error { margin: 2px 0 0; text-align: center; font-size: 14px; color: var(--color-danger); }
+
+.lc__feed {
+  position: relative;
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lc__feed-item { display: flex; justify-content: center; gap: 8px; font-size: 14px; }
+.lc__feed-add { color: var(--color-accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+.lc__feed-remove { color: var(--color-cta); font-weight: 700; font-variant-numeric: tabular-nums; }
+.lc__feed-label { color: var(--color-text-muted); }
 
 .feed-enter-active,
 .feed-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
 .feed-enter-from { opacity: 0; transform: translateY(-6px); }
 .feed-leave-to { opacity: 0; }
 .feed-leave-active { position: absolute; }
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes glow-pulse {
-  0%, 100% {
-    text-shadow: 0 0 24px rgba(var(--color-accent-rgb), 0.55), 0 0 48px rgba(var(--color-accent-rgb), 0.2), 0 2px 0 rgba(0, 0, 0, 0.4);
-  }
-  50% {
-    text-shadow: 0 0 32px rgba(var(--color-accent-rgb), 0.8), 0 0 64px rgba(var(--color-accent-rgb), 0.35), 0 2px 0 rgba(0, 0, 0, 0.4);
-  }
-}
 </style>

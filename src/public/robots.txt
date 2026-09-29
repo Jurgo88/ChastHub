@@ -10,7 +10,7 @@ Disallow: /dashboard
 Disallow: /profile
 Disallow: /messages
 Disallow: /search
-Disallow: /discover
+Disallow: /keydrop
 Disallow: /auth
 Disallow: /subscription
 Disallow: /api/

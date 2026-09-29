@@ -20,6 +20,13 @@ export default defineNuxtConfig({
           href: '/fonts/inter-latin.woff2',
           crossorigin: 'anonymous',
         },
+        {
+          rel: 'preload',
+          as: 'font',
+          type: 'font/woff2',
+          href: '/fonts/space-grotesk-latin.woff2',
+          crossorigin: 'anonymous',
+        },
       ],
       meta: [
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
@@ -98,7 +105,8 @@ export default defineNuxtConfig({
     '/dashboard/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/profile/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/messages/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
-    '/discover/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/keydrop/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/discover': { redirect: { to: '/keydrop', statusCode: 301 } },
     '/auth/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/subscription/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
 

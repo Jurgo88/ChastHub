@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
   // was declined. Their dashboard's own realtime subscription (postgres_changes
   // on loq_requests WHERE loqholder_id = them) already picks up this UPDATE
   // and re-fetches their request list — this only adds the push.
-  await sendPushNotification(request.loqholder_id, 'Request declined', 'The wearer declined your request to join their lock.', '/discover')
+  await sendPushNotification(request.loqholder_id, 'Request declined', 'The wearer declined your request to join their lock.', '/keydrop')
 
   return updated
 })

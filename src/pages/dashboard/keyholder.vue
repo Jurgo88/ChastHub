@@ -373,8 +373,8 @@
           <div v-if="nothingVisible" class="empty-state">
             <p class="empty-state__icon"><img :src="unloqedIcon" class="state-icon" alt="" width="128" height="128" decoding="async"></p>
             <p class="empty-state__title">{{ emptyStateTitle }}</p>
-            <p class="empty-state__hint">Browse Discover to pick up a lock.</p>
-            <NuxtLink to="/discover" class="btn btn--primary">Browse Discover</NuxtLink>
+            <p class="empty-state__hint">Open Key Drop to pick up a key.</p>
+            <NuxtLink to="/keydrop" class="btn btn--primary">Open Key Drop</NuxtLink>
           </div>
 
         </div>

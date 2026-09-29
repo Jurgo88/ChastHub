@@ -6,9 +6,9 @@
     <main class="dash-body">
 
       <header class="dash-header">
-        <h1 class="dash-header__title">Discover</h1>
+        <h1 class="dash-header__title">Key Drop</h1>
         <p class="dash-header__sub">
-          Locks people chose to show. Add or take time — one move per lock, per hour.
+          Wearers who dropped their key here. Add or take time, one move per lock per hour.
         </p>
         <p v-if="pairedCount > 0" class="dash-header__stat">
           <strong>{{ pairedCount }}</strong> {{ pairedCount === 1 ? 'lock is' : 'locks are' }} paired with a keyholder right now
@@ -23,9 +23,9 @@
       <!-- Empty state -->
       <div v-else-if="items.length === 0" class="dash-state">
         <span class="dash-state__icon">🔍</span>
-        <p class="dash-state__title">Nothing here yet</p>
+        <p class="dash-state__title">No keys dropped yet</p>
         <p class="dash-state__hint">
-          Locks show up once their owner puts them here. You can put yours here from your dashboard.
+          Locks show up here once their wearer drops the key. You can drop yours from your dashboard.
         </p>
       </div>
 
@@ -88,7 +88,7 @@
                 :disabled="voting === item.id || votedIds.has(item.id)"
                 @click="vote(item, 'add')"
               >+ {{ amountLabel(item.visitor_add_hours) }}</button>
-              <span v-if="votedIds.has(item.id)" class="vote__done">Done — come back in an hour</span>
+              <span v-if="votedIds.has(item.id)" class="vote__done">Done. Come back in an hour</span>
             </div>
             <p v-else-if="item.visitor_permission === 'none'" class="vote__closed">
               The owner isn't taking time changes on this one.
@@ -106,7 +106,7 @@
                   class="btn btn--primary btn--sm"
                   :disabled="!!requesting"
                   @click="requestToJoin(item)"
-                >{{ requesting === item.id ? 'Requesting…' : 'Request to join' }}</button>
+                >{{ requesting === item.id ? 'Requesting…' : 'Ask for this key' }}</button>
               </template>
             </div>
 
