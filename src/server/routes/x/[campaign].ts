@@ -8,7 +8,7 @@ import { normaliseUtm } from '~/utils/trackedLink'
 // 302, so a campaign can be repointed later without browsers caching it.
 export default defineEventHandler((event) => {
   const raw = getRouterParam(event, 'campaign') ?? ''
-  const campaign = normaliseUtm(raw.split('/')[0] ?? '')
+  const campaign = normaliseUtm(raw)
   const params = new URLSearchParams({
     utm_source: 'x',
     utm_medium: campaign ? 'post' : 'bio',
