@@ -4,7 +4,7 @@ import { hasPremiumAccess, isTrialActive, trialDaysLeft } from '~/utils/access'
 const NOW = Date.parse('2026-10-10T12:00:00Z')
 const inDays = (d: number) => new Date(NOW + d * 86_400_000).toISOString()
 
-describe('premium access (free trial, migration 079)', () => {
+describe('premium access (free trial, migration 001)', () => {
   it('grants access to a paid subscriber without a trial', () => {
     expect(hasPremiumAccess({ subscription_status: 'active', trial_ends_at: null }, NOW)).toBe(true)
   })

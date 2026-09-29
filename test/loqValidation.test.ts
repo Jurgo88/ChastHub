@@ -40,7 +40,7 @@ describe('isValidDuration', () => {
 
 describe('isValidEmotion', () => {
   // TASK-070: free-form custom emoji, not a fixed preset list — this is now
-  // just a sanity length bound (mirrored by the DB CHECK, migration 045).
+  // just a sanity length bound (mirrored by the DB CHECK, migration 001).
   it('accepts any short non-empty string, old preset keys included', () => {
     expect(isValidEmotion('excited')).toBe(true) // legacy key, still a valid string
     expect(isValidEmotion('🤭')).toBe(true)

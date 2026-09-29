@@ -2,7 +2,7 @@
 // routes (explicit import from '~/utils/access').
 //
 // Access = a paid subscription OR a free trial that has not ended yet.
-// The trial end is set by the database on signup (migration 079).
+// The trial end is set by the database on signup (migration 001).
 
 export const TRIAL_DAYS = 30
 

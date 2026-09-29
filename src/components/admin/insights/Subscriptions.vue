@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-// TASK-187 — admin_subscription_trends() (migration 076). The page renders
+// TASK-187 — admin_subscription_trends() (migration 001). The page renders
 // this for super admins only; the endpoint enforces the same.
 interface Week {
   week: string

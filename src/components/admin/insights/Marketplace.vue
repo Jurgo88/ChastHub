@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-// TASK-186 — admin_marketplace() (migration 075).
+// TASK-186 — admin_marketplace() (migration 001).
 interface Marketplace {
   exact_since: string | null
   waiting_now: number

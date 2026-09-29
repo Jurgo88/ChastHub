@@ -204,7 +204,7 @@
           <p class="kpi-note">Country at signup.</p>
         </div>
 
-        <!-- TASK-165 — absent until migration 068; the rest of the panel
+        <!-- TASK-165 — absent until migration 001; the rest of the panel
              does not depend on it. -->
         <div v-if="kpi.sources" class="kpi-block">
           <h3 class="kpi-block__title">How they found us</h3>
@@ -267,7 +267,7 @@ interface Kpi {
   subscribers: Record<'new_24h' | 'new_24h_active' | 'first_payment_24h' | 'active_total', number>
   engagement_30d: { active_users: number; active_user_days: number; sessions: number }
   countries: { country: string; users: number }[]
-  // TASK-165 — null until migration 068 is applied.
+  // TASK-165 — null until migration 001 is applied.
   sources: {
     since: string | null
     signups: number

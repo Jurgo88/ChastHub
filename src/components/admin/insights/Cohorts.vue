@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-// TASK-188 — admin_retention_cohorts() (migration 077).
+// TASK-188 — admin_retention_cohorts() (migration 001).
 interface Cohort {
   week: string
   size: number

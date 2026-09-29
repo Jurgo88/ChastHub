@@ -11,7 +11,7 @@
     <!-- No loq -->
     <div v-else-if="!loq" class="dash-state">
       <!-- Subscription gate (TASK-056): loqee needs premium access (paid
-           subscription or running free trial, migration 079) to create a loq -->
+           subscription or running free trial, migration 001) to create a loq -->
       <template v-if="!authStore.hasAccess">
         <div class="dash-state__icon"><img :src="subscribeIcon" class="state-icon" alt="" width="128" height="128" decoding="async"></div>
         <p class="dash-state__title">
@@ -341,7 +341,7 @@ const loq = ref<ActiveLoq | null>(null)
 // and "subscription ended"; a lingering subscription row disambiguates so we
 // can show the right copy on the no-loq state.
 const subscriptionEnded = ref(false)
-// Had a trial (every account gets one, migration 079) and it ran out.
+// Had a trial (every account gets one, migration 001) and it ran out.
 const trialEnded = computed(() => !!authStore.profile?.trial_ends_at && !authStore.hasAccess)
 
 const cancelling = ref(false)

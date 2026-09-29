@@ -15,7 +15,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoqholder = computed(() => profile.value?.role === 'loqholder')
   const isLoqee = computed(() => profile.value?.role === 'loqee')
   // Paid subscription only. For "may use premium features" use hasAccess,
-  // which also counts the free trial (migration 079).
+  // which also counts the free trial (migration 001).
   const isSubscribed = computed(() => profile.value?.subscription_status === 'active')
   const isOnTrial = computed(() => !isSubscribed.value && isTrialActive(profile.value))
   const hasAccess = computed(() => hasPremiumAccess(profile.value))

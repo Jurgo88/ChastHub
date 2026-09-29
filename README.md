@@ -125,14 +125,14 @@ Defined in `routeRules` in `nuxt.config.ts`.
 
 Payments are off until the Stripe keys are set. Meanwhile:
 
-- `profiles.trial_ends_at` defaults to `now() + 30 days` (migration `079`), so every signup gets a trial.
+- `profiles.trial_ends_at` defaults to `now() + 30 days` (initial schema), so every signup gets a trial.
 - Premium access = `subscription_status = 'active'` **or** a running trial: `src/utils/access.ts`, used by `requireActiveSubscription`, the `subscription` middleware, the auth store (`hasAccess`, `isOnTrial`, `trialDays`) and a few server routes.
 - `/subscription/upgrade` shows the trial state instead of plans while `NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is empty; the Stripe routes answer `503`.
 - To go live with payments: set the Stripe env vars below and point the Stripe webhook at `/api/webhooks/stripe`.
 
 ## Database
 
-- Migrations live in `supabase/migrations`, numbered `001`–`079` (`058` and `066` intentionally skipped). Apply them with `npm run migrate`.
+- The schema is one migration, `supabase/migrations/001_initial_schema.sql` (tables, functions, RLS, privileges, storage buckets, realtime). Add changes as `002_...`, `003_...`. Apply with `npm run migrate`.
 - Core tables: `profiles`, `loqs`, `loq_requests`, `messages`, `loq_visitor_interactions`, `conversations`, `dm_messages`, `favorites`, `subscriptions`, `payments`, `push_subscriptions`, `reports`, `audit_log`, `rate_limit_buckets`.
 - **RLS is the security boundary.** The anon key ships in the bundle, so anyone can call PostgREST directly. Clients never write to `profiles` or `loqs`. All writes go through `/api/**` using the service-role client, and every table has RLS. Schema changes go through migrations only, never through the dashboard.
 - Realtime uses server-side **Broadcast** (`broadcastLoqUpdate`) and Presence, not `postgres_changes` on private tables.

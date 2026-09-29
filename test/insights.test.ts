@@ -83,10 +83,10 @@ describe('GET /api/admin/insights/marketplace', () => {
     expect(rpc).toHaveBeenCalledWith('admin_marketplace')
   })
 
-  it('names migration 075 when the function is missing', async () => {
+  it('names migration 001 when the function is missing', async () => {
     rpc = vi.fn(async () => ({ data: null, error: { code: 'PGRST202', message: 'Could not find the function' } }))
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    await expect((await load('marketplace'))({})).rejects.toMatchObject({ message: expect.stringContaining('075') })
+    await expect((await load('marketplace'))({})).rejects.toMatchObject({ message: expect.stringContaining('migration 001') })
     spy.mockRestore()
   })
 })
@@ -107,7 +107,7 @@ describe('GET /api/admin/insights/sources', () => {
   it('names the migration when the function is missing', async () => {
     rpc = vi.fn(async () => ({ data: null, error: { code: 'PGRST202', message: 'Could not find the function' } }))
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    await expect((await load('sources'))({})).rejects.toMatchObject({ statusCode: 500, message: expect.stringContaining('074') })
+    await expect((await load('sources'))({})).rejects.toMatchObject({ statusCode: 500, message: expect.stringContaining('migration 001') })
     spy.mockRestore()
   })
 })

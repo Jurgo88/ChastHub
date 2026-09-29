@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   const limit = Math.min(Number(query.limit) || 50, 100)
   const offset = Number(query.offset) || 0
 
-  // admin_user_listing (migration 055) is profiles left-joined onto
+  // admin_user_listing (migration 001) is profiles left-joined onto
   // subscriptions, so billing_status filters and the exact count come out of
   // the same query as everything else.
   let q = supabase

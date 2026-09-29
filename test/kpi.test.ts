@@ -99,7 +99,7 @@ describe('GET /api/admin/kpi', () => {
     expect(rpc).toHaveBeenCalledWith('admin_signup_sources')
   })
 
-  // TASK-165 — before migration 068 the sources block is absent, the rest shows.
+  // TASK-165 — before migration 001 the sources block is absent, the rest shows.
   it('still returns the KPIs when the sources function is missing', async () => {
     rpc = vi.fn(async (fn: string) => fn === 'admin_kpi'
       ? { data: { users: 3 }, error: null }
@@ -114,7 +114,7 @@ describe('GET /api/admin/kpi', () => {
     rpc = vi.fn(async () => ({ data: null, error: { code: 'PGRST202', message: 'Could not find the function public.admin_kpi' } }))
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    await expect(kpi({})).rejects.toMatchObject({ statusCode: 500, message: expect.stringContaining('migration 065') })
+    await expect(kpi({})).rejects.toMatchObject({ statusCode: 500, message: expect.stringContaining('migration 001') })
     spy.mockRestore()
   })
 })

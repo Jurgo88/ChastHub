@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-// TASK-189 — admin_churn_reasons() (migration 078).
+// TASK-189 — admin_churn_reasons() (migration 001).
 import { DELETION_REASONS, deletionReasonLabel } from '~/utils/deletionReasons'
 
 interface ChurnWeek { week: string; total: number; by_reason: Record<string, number> }

@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
   const displayName = await generateUniqueDisplayName(supabase)
 
   // The auth.users trigger that used to pre-create this row is gone
-  // (migration 056); the upsert stays so a re-invite of a half-created
+  // (migration 001); the upsert stays so a re-invite of a half-created
   // account still succeeds.
   const { error: profileError } = await supabase
     .from('profiles')

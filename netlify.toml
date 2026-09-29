@@ -26,8 +26,8 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Bezpečnostné hlavičky (reakcia na incident 2026-09-24).
 #
-# Anon kľúč sa z prehliadača skryť nedá a netreba — hranicou je RLS (migrácia
-# 063). Tieto hlavičky chránia to druhé: používateľský token pred krádežou cez
+# Anon kľúč sa z prehliadača skryť nedá a netreba, hranicou je RLS
+# (supabase/migrations/001_initial_schema.sql). Tieto hlavičky chránia to druhé: používateľský token pred krádežou cez
 # XSS, a stránku pred clickjackingom, downgrade útokmi a únikom referreru.
 #
 # CSP je zámerne v Report-Only režime: enforcnutá zle by rozbila appku

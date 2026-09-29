@@ -50,7 +50,7 @@ Loq expires (attended or not) or manually ended → locked = false
 - **Loqholder:** unlimited active loqs simultaneously
 - **Loq clock:** starts at CREATION (`loqed_until` set on insert, TASK-062) — accept still gates who has *control* (add/remove/pause/end), it no longer gates the clock
 - **Combination:** can be photo OR text field (not just photo)
-- **Access:** loqholder = FREE; loqee = paid subscription OR 30-day free trial (`trial_ends_at`, migration 079, helper `src/utils/access.ts`). Stripe is off until its env vars are set.
+- **Access:** loqholder = FREE; loqee = paid subscription OR 30-day free trial (`trial_ends_at`, migration 001, helper `src/utils/access.ts`). Stripe is off until its env vars are set.
 - **Timestamps:** always stored in UTC
 
 ### Database Tables (V2)

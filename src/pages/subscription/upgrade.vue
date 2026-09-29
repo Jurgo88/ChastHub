@@ -23,7 +23,7 @@
       </div>
 
       <!-- Payments not live yet: show the free-trial state instead of plans
-           whose checkout would fail (migration 079). -->
+           whose checkout would fail (migration 001). -->
       <div v-else-if="!paymentsEnabled" class="current-plan-card">
         <div class="current-plan-header">
           <span class="current-badge">{{ authStore.isOnTrial ? 'Free trial' : 'Trial ended' }}</span>

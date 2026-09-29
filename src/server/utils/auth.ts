@@ -49,7 +49,7 @@ export function requireAdminLevel(adminLevel: AdminLevel | null, levels: AdminLe
 /**
  * Enforces the loqee subscription gate (TASK-056). Throws 402 unless the
  * user has premium access: an active subscription or a running free trial
- * (migration 079). Apply to loq-creating actions
+ * (migration 001). Apply to loq-creating actions
  * (create / request a loqholder / publish) — never to lifecycle actions
  * (pause / end / cancel) or to an already-running loq, so cancelling a
  * subscription can't be used to shorten or trap a live loq.

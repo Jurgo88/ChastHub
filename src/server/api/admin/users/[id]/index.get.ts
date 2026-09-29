@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
   }
   if (!listing.data) throw createError({ statusCode: 404, message: 'User not found' })
 
-  // Activity is extra: a missing table (migration 065 not applied) or any
+  // Activity is extra: a missing table (migration 001 not applied) or any
   // other failure here leaves the rest of the page intact.
   if (activity.error) console.error('[admin/users/:id] activity', activity.error.message)
 

@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-// TASK-185 — admin_source_quality() (migration 074).
+// TASK-185 — admin_source_quality() (migration 001).
 interface Row {
   source: string | null
   tagged: boolean

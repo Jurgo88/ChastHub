@@ -6,7 +6,7 @@ import { requireAdminLevel, requireAuth } from '~/server/utils/auth'
 // dashboard sees them, by the owner's decision. They are aggregates, not
 // anyone's personal data. Revenue (/api/admin/revenue) stays super_admin only.
 //
-// All of it is computed by admin_kpi() (migration 065) in one call; this
+// All of it is computed by admin_kpi() (migration 001) in one call; this
 // handler only gates and forwards. TASK-165 adds admin_signup_sources() (068)
 // alongside it.
 export default defineEventHandler(async (event) => {
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     const missing = /admin_kpi|function .* does not exist|PGRST202/i.test(`${error.code} ${error.message}`)
     throw createError({
       statusCode: 500,
-      message: missing ? 'KPIs are not set up yet — apply migration 065.' : 'Failed to fetch KPIs',
+      message: missing ? 'KPIs are not set up yet — apply migration 001.' : 'Failed to fetch KPIs',
     })
   }
 

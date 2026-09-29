@@ -24,7 +24,7 @@ onMounted(async () => {
   authStore.setSession(session)
 
   // No profile means this Google account has not finished signing up —
-  // there is no auth.users trigger creating one any more (migration 056), so
+  // there is no auth.users trigger creating one any more (migration 001), so
   // zero rows is expected here and .maybeSingle() is the honest query.
   const { data: profile } = await $supabase
     .from('profiles')

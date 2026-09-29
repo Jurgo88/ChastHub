@@ -12,7 +12,7 @@ export const MAX_DURATION_MINUTES = 3650 * 24 * 60 // 10 years
 // TASK-070: was a fixed 5-value enum ('excited'/'chill'/.../'hopeless') —
 // client confirmed she wants free-form custom emoji instead of an expanded
 // preset list. loqs.emotion now stores the emoji itself; this is just a
-// sanity length bound, mirrored by the DB CHECK constraint (migration 045).
+// sanity length bound, mirrored by the DB CHECK constraint (migration 001).
 export const MIN_EMOTION_LENGTH = 1
 export const MAX_EMOTION_LENGTH = 16
 
