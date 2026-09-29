@@ -123,7 +123,7 @@ function pickCustom() {
 
   &--active {
     border-color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb, 0, 0, 0), 0.06);
+    background: rgba(var(--color-accent-rgb), 0.06);
   }
 
   &:disabled {

@@ -175,7 +175,7 @@ async function setNewPassword() {
     background: rgba(var(--color-accent-rgb), 0.08);
     border: 1px solid rgba(var(--color-accent-rgb), 0.25);
     border-radius: 10px;
-    color: #6699ff;
+    color: var(--color-accent);
     font-size: 0.9375rem;
   }
 
@@ -188,7 +188,7 @@ async function setNewPassword() {
       color: rgba(255, 255, 255, 0.4);
       text-decoration: none;
 
-      &:hover { color: #6699ff; }
+      &:hover { color: var(--color-accent); }
     }
   }
 }
@@ -254,11 +254,11 @@ async function setNewPassword() {
     width: 100%;
     margin-top: 0.5rem;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.35);
 
     &:hover:not(:disabled) {
-      background: #2233ff;
+      background: var(--color-accent);
       box-shadow: 0 0 30px rgba(var(--color-accent-rgb), 0.55);
       transform: translateY(-1px);
     }

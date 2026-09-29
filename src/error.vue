@@ -64,8 +64,8 @@ function goHome() {
   justify-content: center;
   padding: 2rem 1.5rem;
   background:
-    radial-gradient(ellipse 90% 45% at 50% -5%, rgba(0, 68, 255, 0.13) 0%, transparent 65%),
-    var(--color-bg, #0c0c12);
+    radial-gradient(ellipse 90% 45% at 50% -5%, rgba(var(--color-accent-rgb), 0.13) 0%, transparent 65%),
+    var(--color-bg);
   color: var(--color-text);
 
   &__inner {
@@ -125,12 +125,12 @@ function goHome() {
     display: inline-block;
     padding: 0.875rem 2.5rem;
     border-radius: 0.5rem;
-    background: linear-gradient(135deg, #1a5aff 0%, #0033cc 100%);
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent) 100%);
     color: #fff;
     font-weight: 600;
     font-size: 0.9375rem;
     text-decoration: none;
-    box-shadow: 0 4px 24px rgba(0, 68, 255, 0.4);
+    box-shadow: 0 4px 24px rgba(var(--color-accent-rgb), 0.4);
     transition: opacity 0.15s, transform 0.15s;
 
     &:hover { opacity: 0.92; transform: translateY(-1px); }

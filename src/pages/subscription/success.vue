@@ -146,7 +146,7 @@ function startCountdown() {
   height: 5rem;
   border-radius: 50%;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
   font-size: 2.5rem;
   display: flex;
   align-items: center;
@@ -199,7 +199,7 @@ p {
 
   &-primary {
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
 
     &:hover {
       opacity: 0.9;

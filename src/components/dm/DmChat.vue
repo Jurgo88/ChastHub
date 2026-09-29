@@ -258,7 +258,7 @@ function formatTime(iso: string) {
     height: 2rem;
     border-radius: 50%;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     border: none;
     cursor: pointer;
     display: flex;
@@ -329,8 +329,8 @@ function formatTime(iso: string) {
   }
 
   &--own &__bubble {
-    background: linear-gradient(135deg, var(--color-accent), #5c5ef0);
-    color: #fff;
+    background: var(--gradient-brand);
+    color: var(--color-on-accent);
     border-color: transparent;
     border-radius: 1rem 1rem 0.25rem 1rem;
   }

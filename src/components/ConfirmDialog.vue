@@ -154,12 +154,12 @@ function onKeydown(e: KeyboardEvent) {
 
     &--primary {
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-on-accent);
       &:hover { opacity: 0.88; }
     }
 
     &--danger {
-      background: var(--color-danger, #ff6b6b);
+      background: var(--color-danger);
       color: #fff;
       &:hover { opacity: 0.88; }
     }

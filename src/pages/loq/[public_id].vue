@@ -138,21 +138,21 @@ useSeoMeta({
 html, body, #__nuxt {
   height: 100%;
   margin: 0;
-  background: #0c0c12;
+  background: var(--color-bg);
 }
 </style>
 
 <style scoped lang="scss">
-$blue: #0044ff;
-$blue-glow: rgba(0, 68, 255, 0.55);
+$blue: var(--color-accent);
+$blue-glow: rgba(var(--color-accent-rgb), 0.55);
 
 .loq-page {
   min-height: 100dvh;
   background:
-    radial-gradient(ellipse 90% 45% at 50% -5%, rgba(0, 68, 255, 0.13) 0%, transparent 65%),
-    radial-gradient(ellipse 60% 35% at 50% 110%, rgba(80, 0, 220, 0.07) 0%, transparent 65%),
-    #0c0c12;
-  color: #e2e2ec;
+    radial-gradient(ellipse 90% 45% at 50% -5%, rgba(var(--color-accent-rgb), 0.13) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 35% at 50% 110%, rgba(var(--color-accent-rgb), 0.07) 0%, transparent 65%),
+    var(--color-bg);
+  color: var(--color-text);
   display: flex;
   flex-direction: column;
 
@@ -197,11 +197,11 @@ $blue-glow: rgba(0, 68, 255, 0.55);
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.2em;
-    color: #6699ff;
-    border: 1px solid rgba(0, 68, 255, 0.28);
+    color: var(--color-accent);
+    border: 1px solid rgba(var(--color-accent-rgb), 0.28);
     border-radius: 100px;
     padding: 0.35rem 1rem;
-    background: rgba(0, 68, 255, 0.08);
+    background: rgba(var(--color-accent-rgb), 0.08);
     backdrop-filter: blur(4px);
   }
 
@@ -223,8 +223,8 @@ $blue-glow: rgba(0, 68, 255, 0.55);
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #4d88ff;
-    box-shadow: 0 0 8px #4d88ff;
+    background: var(--color-accent);
+    box-shadow: 0 0 8px var(--color-accent);
     animation: pulse-dot 2s ease-in-out infinite;
   }
 
@@ -234,7 +234,7 @@ $blue-glow: rgba(0, 68, 255, 0.55);
     text-align: center;
     font-size: 0.9375rem;
     font-style: italic;
-    color: #aaaabb;
+    color: var(--color-text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -258,7 +258,7 @@ $blue-glow: rgba(0, 68, 255, 0.55);
     width: 2rem;
     height: 2rem;
     border: 2px solid rgba(255, 255, 255, 0.06);
-    border-top-color: #4d88ff;
+    border-top-color: var(--color-accent);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -268,13 +268,13 @@ $blue-glow: rgba(0, 68, 255, 0.55);
   }
 
   &__state-hint {
-    color: #555;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
     text-align: center;
   }
 
   &__error-msg {
-    color: #555;
+    color: var(--color-text-muted);
     font-size: 1rem;
     text-align: center;
   }
@@ -291,7 +291,7 @@ $blue-glow: rgba(0, 68, 255, 0.55);
   &__tagline {
     margin: 0;
     font-size: 0.8125rem;
-    color: #44445a;
+    color: var(--color-text-muted);
     letter-spacing: 0.05em;
     text-align: center;
   }
@@ -299,7 +299,7 @@ $blue-glow: rgba(0, 68, 255, 0.55);
   &__cta {
     display: inline-block;
     padding: 0.875rem 2.5rem;
-    background: linear-gradient(135deg, #1a5aff 0%, #0033cc 100%);
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent) 100%);
     color: #fff;
     text-decoration: none;
     font-weight: 600;
@@ -307,11 +307,11 @@ $blue-glow: rgba(0, 68, 255, 0.55);
     letter-spacing: 0.04em;
     border-radius: 8px;
     transition: opacity 0.15s, box-shadow 0.15s, transform 0.15s;
-    box-shadow: 0 4px 24px rgba(0, 68, 255, 0.4), 0 1px 0 rgba(255, 255, 255, 0.12) inset;
+    box-shadow: 0 4px 24px rgba(var(--color-accent-rgb), 0.4), 0 1px 0 rgba(255, 255, 255, 0.12) inset;
 
     &:hover {
       opacity: 0.92;
-      box-shadow: 0 6px 32px rgba(0, 68, 255, 0.6), 0 1px 0 rgba(255, 255, 255, 0.12) inset;
+      box-shadow: 0 6px 32px rgba(var(--color-accent-rgb), 0.6), 0 1px 0 rgba(255, 255, 255, 0.12) inset;
       transform: translateY(-1px);
     }
   }

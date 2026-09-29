@@ -289,7 +289,7 @@ onMounted(() => fetchPage(true))
 
   &--selected {
     border-color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb, 0, 0, 0), 0.06);
+    background: rgba(var(--color-accent-rgb), 0.06);
   }
 
   &--requested {
@@ -382,7 +382,7 @@ onMounted(() => fetchPage(true))
     .find-card--selected & {
       border-color: var(--color-accent);
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-on-accent);
     }
   }
 }

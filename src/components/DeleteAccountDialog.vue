@@ -418,7 +418,7 @@ function onKeydown(e: KeyboardEvent) {
 
   &--primary {
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     &:hover:not(:disabled) { opacity: 0.88; }
   }
 }

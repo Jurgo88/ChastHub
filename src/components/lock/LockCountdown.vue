@@ -164,8 +164,8 @@ onUnmounted(() => {
 
 .lc-bubble {
   width: 100%;
-  background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.05);
-  border: 1.5px solid rgba(var(--color-accent-rgb, 99, 102, 241), 0.18);
+  background: rgba(var(--color-accent-rgb), 0.05);
+  border: 1.5px solid rgba(var(--color-accent-rgb), 0.18);
   border-radius: 0.875rem;
   padding: 1.5rem 1rem 1.25rem;
   display: flex;
@@ -227,7 +227,7 @@ onUnmounted(() => {
     letter-spacing: -2px;
     line-height: 1;
     color: var(--color-accent);
-    text-shadow: 0 0 20px rgba(var(--color-accent-rgb, 99, 102, 241), 0.35);
+    text-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.35);
 
     .lc-bubble--paused & {
       color: #ffaa00;
@@ -260,8 +260,8 @@ onUnmounted(() => {
 
 @mixin hero-expanded-state {
   padding: 1.5rem 1rem 1.25rem;
-  background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.05);
-  border-color: rgba(var(--color-accent-rgb, 99, 102, 241), 0.18);
+  background: rgba(var(--color-accent-rgb), 0.05);
+  border-color: rgba(var(--color-accent-rgb), 0.18);
 
   .lc-hero__sep {
     font-size: 2.25rem;
@@ -273,7 +273,7 @@ onUnmounted(() => {
   .lc-seg__val {
     font-size: 2.75rem;
     letter-spacing: -2px;
-    text-shadow: 0 0 20px rgba(var(--color-accent-rgb, 99, 102, 241), 0.35);
+    text-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.35);
   }
 
   .lc-seg__label { max-height: 2rem; opacity: 1; font-size: 0.625rem; }

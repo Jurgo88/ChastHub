@@ -107,8 +107,8 @@ function feedAgo(at: number): string {
     display: block;
     filter:
       brightness(1.5)
-      drop-shadow(0 0 10px rgba(80, 140, 255, 0.65))
-      drop-shadow(0 0 28px rgba(0, 68, 255, 0.35));
+      drop-shadow(0 0 10px rgba(var(--color-accent-rgb), 0.65))
+      drop-shadow(0 0 28px rgba(var(--color-accent-rgb), 0.35));
   }
 
   &__bubble {
@@ -123,15 +123,15 @@ function feedAgo(at: number): string {
       rgba(255, 255, 255, 0.04) 0%,
       rgba(255, 255, 255, 0.015) 100%
     );
-    border: 1px solid rgba(80, 120, 255, 0.18);
-    border-top-color: rgba(140, 170, 255, 0.22);
+    border: 1px solid rgba(var(--color-accent-rgb), 0.18);
+    border-top-color: rgba(var(--color-accent-rgb), 0.22);
     border-radius: 24px;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow:
       0 0 0 1px rgba(0, 0, 0, 0.3),
       0 8px 40px rgba(0, 0, 0, 0.35),
-      0 0 60px rgba(0, 68, 255, 0.07),
+      0 0 60px rgba(var(--color-accent-rgb), 0.07),
       inset 0 1px 0 rgba(255, 255, 255, 0.07);
   }
 
@@ -140,7 +140,7 @@ function feedAgo(at: number): string {
     font-size: 0.625rem;
     font-weight: 700;
     letter-spacing: 0.3em;
-    color: #555570;
+    color: var(--color-elevated);
     text-transform: uppercase;
   }
 
@@ -151,16 +151,16 @@ function feedAgo(at: number): string {
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.01em;
     line-height: 1;
-    color: #c8d4ff;
+    color: var(--color-text);
     text-shadow:
-      0 0 24px rgba(0, 68, 255, 0.55),
-      0 0 48px rgba(0, 68, 255, 0.2),
+      0 0 24px rgba(var(--color-accent-rgb), 0.55),
+      0 0 48px rgba(var(--color-accent-rgb), 0.2),
       0 2px 0 rgba(0, 0, 0, 0.4);
     animation: glow-pulse 5s ease-in-out infinite;
     padding: 0.25rem 0;
 
     &--ended {
-      color: #3a3a55;
+      color: var(--color-elevated);
       text-shadow: none;
       animation: none;
     }
@@ -177,7 +177,7 @@ function feedAgo(at: number): string {
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.22em;
-    color: #4466cc;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     opacity: 0.8;
   }
@@ -205,23 +205,23 @@ function feedAgo(at: number): string {
 
   &__add-btn {
     padding: 0.5rem 1.5rem;
-    background: rgba(0, 68, 255, 0.07);
-    border: 1px solid rgba(80, 120, 255, 0.35);
+    background: rgba(var(--color-accent-rgb), 0.07);
+    border: 1px solid rgba(var(--color-accent-rgb), 0.35);
     border-radius: 100px;
-    color: #8aabff;
+    color: var(--color-accent);
     font-size: 0.875rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     cursor: pointer;
     transition: background 0.2s, box-shadow 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
-    box-shadow: 0 0 12px rgba(0, 68, 255, 0.12);
+    box-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.12);
     white-space: nowrap;
 
     &:hover:not(:disabled) {
-      background: rgba(0, 68, 255, 0.14);
-      border-color: rgba(100, 150, 255, 0.6);
-      box-shadow: 0 0 20px rgba(0, 68, 255, 0.35);
-      color: #ccd9ff;
+      background: rgba(var(--color-accent-rgb), 0.14);
+      border-color: rgba(var(--color-accent-rgb), 0.6);
+      box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.35);
+      color: var(--color-accent);
       transform: translateY(-1px);
     }
 
@@ -240,15 +240,15 @@ function feedAgo(at: number): string {
     // Remove side uses a warm tone to read as distinct from add — same
     // neon-orange family the dashboards use for remove/end actions (TASK-061).
     &--remove {
-      background: rgba(255, 102, 0, 0.07);
+      background: rgba(var(--color-remove-rgb), 0.07);
       border-color: rgba(255, 140, 60, 0.35);
       color: #ff9a5c;
-      box-shadow: 0 0 12px rgba(255, 102, 0, 0.12);
+      box-shadow: 0 0 12px rgba(var(--color-remove-rgb), 0.12);
 
       &:hover:not(:disabled) {
-        background: rgba(255, 102, 0, 0.14);
+        background: rgba(var(--color-remove-rgb), 0.14);
         border-color: rgba(255, 150, 80, 0.6);
-        box-shadow: 0 0 20px rgba(255, 102, 0, 0.35);
+        box-shadow: 0 0 20px rgba(var(--color-remove-rgb), 0.35);
         color: #ffb480;
       }
     }
@@ -278,17 +278,17 @@ function feedAgo(at: number): string {
     font-size: 0.8125rem;
   }
 
-  &__feed-add { color: #8aabff; font-weight: 700; font-variant-numeric: tabular-nums; }
+  &__feed-add { color: var(--color-accent); font-weight: 700; font-variant-numeric: tabular-nums; }
   &__feed-remove { color: #ff9a5c; font-weight: 700; font-variant-numeric: tabular-nums; }
 
   &__feed-label {
-    color: #555570;
+    color: var(--color-elevated);
     letter-spacing: 0.02em;
   }
 
   &__ended-label {
     font-size: 0.9rem;
-    color: #3a3a55;
+    color: var(--color-elevated);
     letter-spacing: 0.05em;
   }
 }
@@ -306,10 +306,10 @@ function feedAgo(at: number): string {
 
 @keyframes glow-pulse {
   0%, 100% {
-    text-shadow: 0 0 24px rgba(0, 68, 255, 0.55), 0 0 48px rgba(0, 68, 255, 0.2), 0 2px 0 rgba(0, 0, 0, 0.4);
+    text-shadow: 0 0 24px rgba(var(--color-accent-rgb), 0.55), 0 0 48px rgba(var(--color-accent-rgb), 0.2), 0 2px 0 rgba(0, 0, 0, 0.4);
   }
   50% {
-    text-shadow: 0 0 32px rgba(0, 68, 255, 0.8), 0 0 64px rgba(0, 68, 255, 0.35), 0 2px 0 rgba(0, 0, 0, 0.4);
+    text-shadow: 0 0 32px rgba(var(--color-accent-rgb), 0.8), 0 0 64px rgba(var(--color-accent-rgb), 0.35), 0 2px 0 rgba(0, 0, 0, 0.4);
   }
 }
 </style>

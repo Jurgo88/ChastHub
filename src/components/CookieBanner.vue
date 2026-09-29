@@ -113,7 +113,7 @@ function decline() {
 
     &--accept {
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-on-accent);
       box-shadow: 0 2px 12px rgba(var(--color-accent-rgb), 0.35);
     }
   }

@@ -136,7 +136,7 @@ function showMe() {
     &--show {
       border: none;
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-on-accent);
 
       &:hover { opacity: 0.85; }
     }

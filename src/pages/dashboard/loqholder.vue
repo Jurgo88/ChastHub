@@ -971,7 +971,7 @@ function patchLoq(id: string, patch: Partial<Loq>) {
 
 // Stat cards double as filter toggles (aria-pressed reflects the state)
 .stat-card {
-  background: var(--color-surface, #242424);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 0.625rem;
   padding: 0.875rem;
@@ -1121,8 +1121,8 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     flex: 1;
     border-color: var(--color-accent);
     color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.08);
-    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.15); }
+    background: rgba(var(--color-accent-rgb), 0.08);
+    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.15); }
   }
 
   &--chat {
@@ -1131,7 +1131,7 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     &:hover:not(:disabled) {
       border-color: var(--color-accent);
       color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.06);
+      background: rgba(var(--color-accent-rgb), 0.06);
     }
   }
 
@@ -1139,23 +1139,23 @@ function patchLoq(id: string, patch: Partial<Loq>) {
   &--chat-open {
     border-color: var(--color-accent);
     color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.08);
-    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.15); }
+    background: rgba(var(--color-accent-rgb), 0.08);
+    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.15); }
   }
 
   // TASK-061: neon orange — this removes time from an active loq.
   &--remove {
     flex: 1;
-    color: var(--color-remove, #ff6a00);
-    border-color: rgba(var(--color-remove-rgb, 255, 106, 0), 0.3);
+    color: var(--color-remove);
+    border-color: rgba(var(--color-remove-rgb), 0.3);
     font-size: 0.8125rem;
-    &:hover:not(:disabled) { background: rgba(var(--color-remove-rgb, 255, 106, 0), 0.08); border-color: var(--color-remove, #ff6a00); }
+    &:hover:not(:disabled) { background: rgba(var(--color-remove-rgb), 0.08); border-color: var(--color-remove); }
   }
 
   &--add {
     flex: 1;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     border-color: var(--color-accent);
     font-size: 0.8125rem;
     &:hover:not(:disabled) { opacity: 0.88; }
@@ -1167,23 +1167,23 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     font-size: 0.75rem;
     color: var(--color-muted);
     border-color: var(--color-border);
-    &:hover { color: var(--color-accent); border-color: var(--color-accent); background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.06); }
+    &:hover { color: var(--color-accent); border-color: var(--color-accent); background: rgba(var(--color-accent-rgb), 0.06); }
   }
 
   &--reject {
     flex: 1;
-    color: var(--color-danger, #ff6b6b);
+    color: var(--color-danger);
     border-color: rgba(255, 107, 107, 0.3);
     &:hover:not(:disabled) {
       background: rgba(255, 107, 107, 0.08);
-      border-color: var(--color-danger, #ff6b6b);
+      border-color: var(--color-danger);
     }
   }
 
   &--accept {
     flex: 2;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     border-color: var(--color-accent);
     &:hover:not(:disabled) { opacity: 0.88; }
   }
@@ -1193,7 +1193,7 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     &:hover:not(:disabled) {
       border-color: var(--color-accent);
       color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.06);
+      background: rgba(var(--color-accent-rgb), 0.06);
     }
   }
 
@@ -1203,8 +1203,8 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     font-size: 0.8125rem;
     border-color: var(--color-accent);
     color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.08);
-    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.15); }
+    background: rgba(var(--color-accent-rgb), 0.08);
+    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.15); }
   }
 }
 
@@ -1313,8 +1313,8 @@ function patchLoq(id: string, patch: Partial<Loq>) {
 
     &--active {
       background: var(--color-accent);
-      color: #fff;
-      box-shadow: 0 1px 4px rgba(var(--color-accent-rgb, 99, 102, 241), 0.45);
+      color: var(--color-on-accent);
+      box-shadow: 0 1px 4px rgba(var(--color-accent-rgb), 0.45);
     }
   }
 }
@@ -1369,14 +1369,14 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     padding: 0 0.875rem;
     border-radius: 0.5rem;
     border: 1px solid var(--color-accent);
-    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.1);
+    background: rgba(var(--color-accent-rgb), 0.1);
     color: var(--color-accent);
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.12s;
 
-    &:hover:not(:disabled) { background: var(--color-accent); color: #fff; }
+    &:hover:not(:disabled) { background: var(--color-accent); color: var(--color-on-accent); }
     &:disabled { opacity: 0.4; cursor: not-allowed; }
   }
 }
@@ -1485,9 +1485,9 @@ function patchLoq(id: string, patch: Partial<Loq>) {
 
     &:hover:not(:disabled) {
       color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.07);
+      background: rgba(var(--color-accent-rgb), 0.07);
     }
-    &:active:not(:disabled) { background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.14); }
+    &:active:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.14); }
     &:disabled { opacity: 0.2; cursor: default; }
     svg { display: block; }
   }
@@ -1585,6 +1585,6 @@ function patchLoq(id: string, patch: Partial<Loq>) {
   text-decoration: none;
   transition: opacity 0.15s;
 
-  &--primary { background: var(--color-accent); color: #fff; &:hover { opacity: 0.9; } }
+  &--primary { background: var(--color-accent); color: var(--color-on-accent); &:hover { opacity: 0.9; } }
 }
 </style>

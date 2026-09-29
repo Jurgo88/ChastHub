@@ -158,7 +158,7 @@ async function logout() {
   height: 3.25rem;
   padding: 0 1.5rem;
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg, #0d0d0d);
+  background: var(--color-bg);
   flex-shrink: 0;
 
   &__brand {
@@ -210,7 +210,7 @@ async function logout() {
 
     &--cta {
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-on-accent);
       font-weight: 600;
       padding: 0.35rem 0.75rem;
       border-radius: 999px;
@@ -218,7 +218,7 @@ async function logout() {
       &:hover {
         background: var(--color-accent);
         opacity: 0.85;
-        color: #fff;
+        color: var(--color-on-accent);
       }
     }
   }
@@ -278,7 +278,7 @@ async function logout() {
     display: flex;
     flex-direction: column;
     gap: 0.125rem;
-    background: var(--color-bg, #1a1a1a);
+    background: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: 0.5rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
@@ -352,7 +352,7 @@ async function logout() {
     top: 3.25rem;
     left: 0;
     right: 0;
-    background: var(--color-bg, #1a1a1a);
+    background: var(--color-bg);
     border-bottom: 1px solid var(--color-border);
     padding: 0.75rem 1.5rem 1rem;
     display: flex;

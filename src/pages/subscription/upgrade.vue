@@ -191,7 +191,7 @@ function formatDate(iso: string) {
   left: 50%;
   transform: translateX(-50%);
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.25rem 0.75rem;
@@ -271,7 +271,7 @@ function formatDate(iso: string) {
 
 .current-badge {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-on-accent);
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.2rem 0.6rem;
@@ -291,7 +291,7 @@ function formatDate(iso: string) {
 }
 
 .error-message {
-  color: var(--color-danger, #e53e3e);
+  color: var(--color-danger);
   font-size: 0.9rem;
   margin: 0;
   text-align: center;
@@ -326,7 +326,7 @@ function formatDate(iso: string) {
 
   &-primary {
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
 
     &:hover:not(:disabled) {
       opacity: 0.9;
@@ -339,7 +339,7 @@ function formatDate(iso: string) {
   }
 
   &-danger {
-    color: var(--color-danger, #e53e3e);
+    color: var(--color-danger);
 
     &:hover:not(:disabled) {
       background: rgba(229, 62, 62, 0.08);

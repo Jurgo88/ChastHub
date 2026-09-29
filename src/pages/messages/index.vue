@@ -358,7 +358,7 @@ async function handleStartConversation() {
     &--active {
       background: var(--color-accent);
       border-color: var(--color-accent);
-      color: #fff;
+      color: var(--color-on-accent);
     }
   }
 }
@@ -413,7 +413,7 @@ async function handleStartConversation() {
 
   &:hover {
     border-color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.05);
+    background: rgba(var(--color-accent-rgb), 0.05);
   }
 
   &__link {

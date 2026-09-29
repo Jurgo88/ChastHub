@@ -990,7 +990,7 @@ async function toggleOnlineStatus() {
 
 .form-success {
   font-size: 0.875rem;
-  color: var(--color-success, #38a169);
+  color: var(--color-success);
   margin: 0;
 }
 
@@ -1014,7 +1014,7 @@ async function toggleOnlineStatus() {
 
   &--primary {
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
 
     &:hover:not(:disabled) {
       opacity: 0.9;

@@ -236,7 +236,7 @@ async function handleCompleteSignup() {
   margin-top: 0.5rem;
 
   &:disabled { opacity: 0.6; cursor: not-allowed; }
-  &--primary { background: var(--color-accent); color: #fff; }
+  &--primary { background: var(--color-accent); color: var(--color-on-accent); }
   &--ghost { background: transparent; border: 1px solid var(--color-border); color: var(--color-text); }
 }
 </style>

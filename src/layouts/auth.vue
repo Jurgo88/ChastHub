@@ -36,7 +36,7 @@ const logoSize = computed(() => (useCircleLogo.value ? { w: 256, h: 246 } : { w:
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: #0d0d0d;
+  background: var(--color-bg);
   position: relative;
   overflow: hidden;
 

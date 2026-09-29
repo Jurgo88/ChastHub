@@ -232,7 +232,7 @@ definePageMeta({ layout: false })
 }
 
 .highlight {
-  background: linear-gradient(90deg, var(--color-accent), #6699ff);
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -275,8 +275,8 @@ definePageMeta({ layout: false })
 
 /* Primary — Sign up */
 .access-card__signup-btn {
-  color: #fff;
-  background: linear-gradient(135deg, #2244ff 0%, var(--color-accent) 100%);
+  color: var(--color-on-accent);
+  background: var(--gradient-brand);
   box-shadow: 0 4px 24px rgba(var(--color-accent-rgb), 0.45), 0 1px 0 rgba(255, 255, 255, 0.12) inset;
 }
 

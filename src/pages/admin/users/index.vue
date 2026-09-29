@@ -380,7 +380,7 @@ onMounted(fetchUsers)
   // is what an admin scans by.
   &__email {
     font-size: 0.8125rem;
-    color: var(--color-text-muted, #8a8a99);
+    color: var(--color-text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

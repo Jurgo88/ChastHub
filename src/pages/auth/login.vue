@@ -153,10 +153,10 @@ async function handleLogin() {
     color: rgba(255, 255, 255, 0.35);
 
     a {
-      color: #6699ff;
+      color: var(--color-accent);
       text-decoration: none;
 
-      &:hover { color: #99bbff; }
+      &:hover { color: var(--color-accent); }
     }
   }
 }
@@ -203,7 +203,7 @@ async function handleLogin() {
     color: rgba(255, 255, 255, 0.4);
     text-decoration: none;
 
-    &:hover { color: #6699ff; }
+    &:hover { color: var(--color-accent); }
   }
 
   &__error {
@@ -237,11 +237,11 @@ async function handleLogin() {
     width: 100%;
     margin-top: 0.5rem;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.35);
 
     &:hover:not(:disabled) {
-      background: #2233ff;
+      background: var(--color-accent);
       box-shadow: 0 0 30px rgba(var(--color-accent-rgb), 0.55);
       transform: translateY(-1px);
     }

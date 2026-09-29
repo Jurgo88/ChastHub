@@ -178,7 +178,7 @@ async function handleDecline() {
     font-weight: 600;
     cursor: pointer;
     transition: border-color 0.12s, color 0.12s;
-    &:hover { border-color: var(--color-danger, #ff6b6b); color: var(--color-danger, #ff6b6b); }
+    &:hover { border-color: var(--color-danger); color: var(--color-danger); }
   }
 
   &__name-row {
@@ -223,14 +223,14 @@ async function handleDecline() {
 .loq-act {
   &--reject {
     flex: 1;
-    color: var(--color-danger, #ff6b6b);
+    color: var(--color-danger);
     border-color: rgba(255, 107, 107, 0.3);
-    &:hover:not(:disabled) { background: rgba(255, 107, 107, 0.08); border-color: var(--color-danger, #ff6b6b); }
+    &:hover:not(:disabled) { background: rgba(255, 107, 107, 0.08); border-color: var(--color-danger); }
   }
   &--accept {
     flex: 2;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     border-color: var(--color-accent);
     &:hover:not(:disabled) { opacity: 0.88; }
   }

@@ -374,7 +374,7 @@ function initial(name: string | null): string {
     height: 2rem;
     border-radius: 50%;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     font-size: 0.8125rem;
     font-weight: 700;
     display: flex;

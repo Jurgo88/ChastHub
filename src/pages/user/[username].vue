@@ -257,7 +257,7 @@ async function handleToggleFavorite() {
 
   &__error {
     font-size: 0.8125rem;
-    color: var(--color-danger, #ff6b6b);
+    color: var(--color-danger);
     margin: 0;
   }
 }

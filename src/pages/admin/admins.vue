@@ -154,7 +154,7 @@ onMounted(fetchAdmins)
 
 .badge--super_admin { background: rgba(229, 62, 62, 0.15); color: #fc8181; }
 .badge--support { background: rgba(66, 153, 225, 0.15); color: #63b3ed; }
-.badge--analyst { background: rgba(159, 122, 234, 0.15); color: #b794f4; }
+.badge--analyst { background: rgba(var(--color-accent-rgb), 0.15); color: var(--color-accent); }
 
 .success-text {
   color: #68d391;

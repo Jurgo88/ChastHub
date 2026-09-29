@@ -171,11 +171,11 @@ async function submit() {
   input { position: absolute; opacity: 0; pointer-events: none; }
 
   &--on {
-    border-color: #6c5ce7;
-    background: rgba(108, 92, 231, 0.12);
+    border-color: var(--color-accent);
+    background: rgba(var(--color-accent-rgb), 0.12);
   }
 
-  &:focus-within { outline: 2px solid #6c5ce7; outline-offset: 2px; }
+  &:focus-within { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 }
 
 .sec-form__kind-title { font-weight: 600; }
@@ -201,8 +201,8 @@ async function submit() {
   padding: 0.6rem 1.3rem;
   border: 0;
   border-radius: 8px;
-  background: #6c5ce7;
-  color: #fff;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   font-weight: 600;
   cursor: pointer;
 }

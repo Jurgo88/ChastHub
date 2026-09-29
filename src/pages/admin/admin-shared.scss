@@ -197,8 +197,8 @@
   &--open     { background: rgba(66, 153, 225, 0.15); color: #63b3ed; }
   &--dismissed{ background: var(--color-border); color: var(--color-text-muted); }
   &--resolved { background: rgba(72, 187, 120, 0.15); color: #68d391; }
-  &--keyholder{ background: rgba(159, 122, 234, 0.15); color: #b794f4; }
-  &--self     { background: rgba(159, 122, 234, 0.15); color: #b794f4; }
+  &--keyholder{ background: rgba(var(--color-accent-rgb), 0.15); color: var(--color-accent); }
+  &--self     { background: rgba(var(--color-accent-rgb), 0.15); color: var(--color-accent); }
   &--lockee   { background: rgba(237, 137, 54, 0.15); color: #f6ad55; }
   &--admin    { background: rgba(229, 62, 62, 0.15); color: #fc8181; }
 }
@@ -222,7 +222,7 @@
 
   &-primary {
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     &:hover:not(:disabled) { opacity: 0.9; }
   }
 
@@ -234,14 +234,14 @@
   }
 
   &-danger {
-    background: var(--color-danger, #e53e3e);
+    background: var(--color-danger);
     color: #fff;
     &:hover:not(:disabled) { opacity: 0.9; }
   }
 }
 
 .text-muted { color: var(--color-text-muted); font-size: 0.875rem; }
-.error-text { color: var(--color-danger, #e53e3e); font-size: 0.875rem; margin: 0; }
+.error-text { color: var(--color-danger); font-size: 0.875rem; margin: 0; }
 
 .modal-overlay {
   position: fixed;
@@ -299,7 +299,7 @@
 
   &--active, &:hover {
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     border-color: var(--color-accent);
   }
 }

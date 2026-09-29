@@ -555,7 +555,7 @@ async function submit() {
 
     &--active {
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-on-accent);
     }
   }
 }
@@ -634,7 +634,7 @@ async function submit() {
 
   &--active {
     border-color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb, 0, 0, 0), 0.08);
+    background: rgba(var(--color-accent-rgb), 0.08);
     color: var(--color-accent);
     font-weight: 600;
   }
@@ -650,7 +650,7 @@ async function submit() {
 
   &--active {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb, 99, 102, 241), 0.1);
+    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.1);
   }
 
   &__tag {
@@ -719,11 +719,11 @@ async function submit() {
 
     &:hover:not(:disabled) {
       color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.07);
+      background: rgba(var(--color-accent-rgb), 0.07);
     }
 
     &:active:not(:disabled) {
-      background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.14);
+      background: rgba(var(--color-accent-rgb), 0.14);
     }
 
     &:disabled {
@@ -824,7 +824,7 @@ async function submit() {
 
   &--active {
     border-color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb, 0, 0, 0), 0.08);
+    background: rgba(var(--color-accent-rgb), 0.08);
   }
 
   &--custom {

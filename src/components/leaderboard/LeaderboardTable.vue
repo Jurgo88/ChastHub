@@ -228,7 +228,7 @@ function formatMetric(row: Row): string {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #c7cdd6, #8a919c);
+    background: linear-gradient(135deg, var(--color-text), var(--color-text-muted));
 
     .podium-card--gold & {
       width: 68px;
@@ -293,7 +293,7 @@ function formatMetric(row: Row): string {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--color-text-muted, #888);
+  color: var(--color-text-muted);
   border-bottom: 1px solid var(--color-border);
 
   &__metric {
@@ -316,7 +316,7 @@ function formatMetric(row: Row): string {
   &__rank {
     font-size: 0.8125rem;
     font-weight: 700;
-    color: var(--color-text-muted, #888);
+    color: var(--color-text-muted);
     font-variant-numeric: tabular-nums;
   }
 

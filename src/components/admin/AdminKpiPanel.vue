@@ -423,9 +423,9 @@ onMounted(async () => {
 }
 
 // TASK-180 — the chart's two series. Validated as a pair on the dark admin
-// surface (#242424): CVD ΔE ≥ 31, normal-vision ΔE 33, both ≥ 3:1 contrast.
+// surface (var(--color-surface)): CVD ΔE ≥ 31, normal-vision ΔE 33, both ≥ 3:1 contrast.
 .kpi-panel {
-  --series-returning: #6d6ffb;
+  --series-returning: var(--color-accent);
   --series-new: #d95926;
 }
 

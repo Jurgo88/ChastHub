@@ -695,8 +695,8 @@ async function onExpired() {
   gap: 0.625rem;
   padding: 0.625rem 0.75rem;
   border-radius: 0.75rem;
-  background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.08);
-  border: 1px solid rgba(var(--color-accent-rgb, 99, 102, 241), 0.25);
+  background: rgba(var(--color-accent-rgb), 0.08);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.25);
 
   &__icon { font-size: 1.125rem; line-height: 1; flex-shrink: 0; }
 
@@ -716,14 +716,14 @@ async function onExpired() {
     &:hover:not(:disabled) {
       border-color: var(--color-accent);
       color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.06);
+      background: rgba(var(--color-accent-rgb), 0.06);
     }
   }
 
   &--primary {
     flex: 1;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     border-color: var(--color-accent);
     &:hover:not(:disabled) { opacity: 0.88; }
   }
@@ -732,8 +732,8 @@ async function onExpired() {
     flex: 1;
     border-color: var(--color-accent);
     color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.08);
-    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.15); }
+    background: rgba(var(--color-accent-rgb), 0.08);
+    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.15); }
   }
 }
 
@@ -747,7 +747,7 @@ async function onExpired() {
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
-  background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.12);
+  background: rgba(var(--color-accent-rgb), 0.12);
   flex-shrink: 0;
 }
 
@@ -837,7 +837,7 @@ async function onExpired() {
 
     &--active {
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-on-accent);
     }
   }
 }
@@ -847,8 +847,8 @@ async function onExpired() {
 .combo-reveal {
   width: 100%;
   max-width: 360px;
-  background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.08);
-  border: 1px solid rgba(var(--color-accent-rgb, 99, 102, 241), 0.35);
+  background: rgba(var(--color-accent-rgb), 0.08);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.35);
   border-radius: 0.875rem;
   padding: 1rem 1.125rem;
   display: flex;
@@ -879,7 +879,7 @@ async function onExpired() {
     font-weight: 700;
     color: var(--color-text);
     word-break: break-all;
-    text-shadow: 0 0 16px rgba(var(--color-accent-rgb, 99, 102, 241), 0.35);
+    text-shadow: 0 0 16px rgba(var(--color-accent-rgb), 0.35);
   }
 
   &--photo {
@@ -969,9 +969,9 @@ async function onExpired() {
 }
 
 .visitor-flash {
-  background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.1);
+  background: rgba(var(--color-accent-rgb), 0.1);
   color: var(--color-accent);
-  border: 1px solid rgba(var(--color-accent-rgb, 99, 102, 241), 0.25);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.25);
   border-radius: 0.625rem;
   font-size: 0.8125rem;
   font-weight: 600;

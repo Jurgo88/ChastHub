@@ -153,7 +153,7 @@ async function handleOptOut() {
 }
 
 .lb-subtitle {
-  color: var(--color-text-muted, #888);
+  color: var(--color-text-muted);
   margin: 0.3rem 0 0;
   font-size: 0.9375rem;
 }
@@ -181,7 +181,7 @@ async function handleOptOut() {
 
   &__hint {
     font-size: 0.75rem;
-    color: var(--color-text-muted, #888);
+    color: var(--color-text-muted);
   }
 }
 
@@ -209,7 +209,7 @@ async function handleOptOut() {
   text-align: center;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--color-text-muted, #888);
+  color: var(--color-text-muted);
   transition: color 0.2s;
 
   &:hover { color: var(--color-text); }

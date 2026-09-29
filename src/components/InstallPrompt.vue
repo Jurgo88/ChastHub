@@ -85,7 +85,7 @@ async function handleInstall() {
     cursor: pointer;
     border: none;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     transition: opacity 0.15s;
     touch-action: manipulation;
 

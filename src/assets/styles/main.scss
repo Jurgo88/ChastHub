@@ -40,36 +40,37 @@
 }
 
 :root {
-  --color-primary: #111111;
-  // Accessible accent: pure #0000ff has ~2:1 contrast on --color-bg (WCAG
-  // needs 4.5:1). This indigo is the value components were already getting
-  // through the rgba(var(--color-accent-rgb, 99, 102, 241), …) fallback.
-  //
-  // TASK-061 (client feedback, 2026-08-04): "overall blue color more
-  // saturated." Bumped saturation/lightness slightly (was #6366f1,
-  // ~3.9:1 contrast on --color-bg) rather than pushing toward pure blue —
-  // that direction *lowers* contrast against a dark background (blue has
-  // low perceptual luminance), the opposite of what a "more saturated"
-  // ask should do here. This value: ~4.3:1. Tentative pending visual
-  // sign-off — swap both lines together if the client wants a different
-  // shade, keep the rgb one in sync (used as the rgba(var(...), alpha)
-  // fallback throughout the codebase).
-  --color-accent: #6d6ffb;
-  --color-accent-rgb: 109, 111, 251;
-  --color-danger: #ff6b6b;
+  // ChastHub palette. Contrast ratios are WCAG, measured against --color-surface
+  // unless noted. Text on an accent/CTA/brand fill must use --color-on-accent:
+  // white on these fills fails 4.5:1 (white on #FB773C is 2.7:1).
+  --color-bg: #0E0033;          // page background
+  --color-surface: #180161;     // cards, panels
+  --color-elevated: #4F1787;    // raised surfaces, hover, chips
+  --color-border: #34138A;
+
+  --color-text: #F4F0FF;        // 16:1
+  --color-text-muted: #A99CD6;  // 6.9:1 (4.7:1 on --color-elevated)
+  --color-muted: #A99CD6;
+  --color-primary: #0E0033;
+
+  // Pink: links, highlights, active states, own chat bubbles. 5.5:1.
+  --color-accent: #F25A93;
+  --color-accent-rgb: 242, 90, 147;
+  // Brand pink for large fills and decoration (logo, gradients). 4.4:1 —
+  // not for small text.
+  --color-brand: #EB3678;
+  --color-brand-rgb: 235, 54, 120;
+  // Orange: the main call to action. 6.4:1.
+  --color-cta: #FB773C;
+  --color-cta-rgb: 251, 119, 60;
+  --color-on-accent: #0E0033;   // text on accent / brand / CTA fills (6.2–7.3:1)
+  --gradient-brand: linear-gradient(135deg, #EB3678 0%, #FB773C 100%);
+
+  --color-danger: #ff6b6b;      // destructive: ban, decline, reject, delete. 6.2:1
   --color-danger-rgb: 255, 107, 107;
-  // TASK-061: neon orange for Remove/End actions specifically (time
-  // removal, ending a loq) — distinct from --color-danger (red), which
-  // stays for other destructive-but-different actions (ban, decline,
-  // reject). ~6:1 contrast on --color-bg.
-  --color-remove: #ff6a00;
-  --color-remove-rgb: 255, 106, 0;
-  --color-bg: #1a1a1a;
-  --color-surface: #242424;
-  --color-text: #e8e8e8;
-  --color-muted: #888888;
-  --color-text-muted: #888888;
-  --color-border: #2e2e2e;
+  // Remove time / end a lock. Amber so it never reads as the orange CTA. 9.4:1
+  --color-remove: #FFB020;
+  --color-remove-rgb: 255, 176, 32;
 
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -78,6 +79,7 @@
   --font-sans: system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, monospace;
 }
+
 
 html,
 body {
@@ -94,12 +96,12 @@ a {
   text-decoration: none;
 
   &:hover {
-    color: #818cf8;
+    color: var(--color-accent);
     text-decoration: underline;
   }
 }
 
 ::selection {
   background: var(--color-accent);
-  color: var(--color-text);
+  color: var(--color-on-accent);
 }
