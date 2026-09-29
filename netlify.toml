@@ -24,22 +24,6 @@
   status = 301
   force = true
 
-# Short links for social posts. chasthub.com/x reads well in a bio or a post;
-# the redirect adds the UTM tags that signup records (TASK-164), so Insights
-# can tell X signups apart without a long ?utm_ link in the post itself.
-# 302, so a campaign can be repointed later without browsers caching it.
-[[redirects]]
-  from = "/x"
-  to = "/?utm_source=x&utm_medium=bio&utm_campaign=profile"
-  status = 302
-  force = true
-
-[[redirects]]
-  from = "/x/:campaign"
-  to = "/?utm_source=x&utm_medium=post&utm_campaign=:campaign"
-  status = 302
-  force = true
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Bezpečnostné hlavičky (reakcia na incident 2026-09-24).
 #
