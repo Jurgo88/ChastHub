@@ -84,7 +84,7 @@ const error = ref('')
 
 const { public: { siteUrl } } = useRuntimeConfig()
 useHead({
-  title: 'Report an issue — ChastHub',
+  title: 'Report an issue',
   // Two URLs, one page: tell search engines which one is the page.
   link: [{ rel: 'canonical', href: `${siteUrl}/report` }],
 })

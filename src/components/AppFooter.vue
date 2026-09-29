@@ -1,151 +1,131 @@
 <template>
-  <footer class="app-footer">
-    <div class="app-footer__links">
-      <span class="app-footer__age">18+</span>
+  <footer class="ft">
+    <div class="ft__inner">
+      <div class="ft__brand">
+        <NuxtLink to="/" class="ft__logo" aria-label="ChastHub home">
+          <BrandLogo :size="20" />
+        </NuxtLink>
+        <p class="ft__tagline">A chastity timer you don't control.</p>
+        <span class="ft__age">18+ only</span>
+      </div>
 
-      <nav class="app-footer__nav" aria-label="Footer">
-        <NuxtLink to="/install" class="app-footer__link">Get the app</NuxtLink>
-        <NuxtLink to="/faq" class="app-footer__link">FAQ</NuxtLink>
-        <NuxtLink to="/terms" class="app-footer__link">Terms</NuxtLink>
-        <NuxtLink to="/privacy" class="app-footer__link">Privacy</NuxtLink>
-        <!-- TASK-172 — bugs and security issues, one form. -->
-        <NuxtLink to="/report" class="app-footer__link">Report issue</NuxtLink>
-        <a href="mailto:founder@chasthub.com" class="app-footer__link">Contact</a>
+      <nav class="ft__cols" aria-label="Footer">
+        <div class="ft__col">
+          <span class="ft__head">ChastHub</span>
+          <NuxtLink to="/faq" class="ft__link">FAQ</NuxtLink>
+          <NuxtLink to="/install" class="ft__link">Get the app</NuxtLink>
+          <NuxtLink to="/leaderboard" class="ft__link">Leaderboard</NuxtLink>
+        </div>
+        <div class="ft__col">
+          <span class="ft__head">Help</span>
+          <!-- TASK-172: bugs and security issues, one form. -->
+          <NuxtLink to="/report" class="ft__link">Report an issue</NuxtLink>
+          <a href="mailto:founder@chasthub.com" class="ft__link">Contact us</a>
+        </div>
+        <div class="ft__col">
+          <span class="ft__head">Legal</span>
+          <NuxtLink to="/terms" class="ft__link">Terms</NuxtLink>
+          <NuxtLink to="/privacy" class="ft__link">Privacy</NuxtLink>
+        </div>
       </nav>
     </div>
 
-    <div class="app-footer__legal">
+    <div class="ft__bottom">
       <span>© {{ year }} ChastHub</span>
-      <span>
-        Created by
-        <a
-          href="https://projentiq.com/"
-          target="_blank"
-          rel="noopener me"
-          class="app-footer__credit"
-        >Projentiq</a>
-      </span>
+      <span class="ft__note">Consent first. Your release is always yours.</span>
     </div>
   </footer>
 </template>
 
 <script setup lang="ts">
-// TASK-153 — this footer appears on every page of an app people use daily, so
-// the bar for including anything is that it is not already one tap away.
-//
-// What that rules out: the wordmark (AppNav renders it directly above this, on
-// every page), and Discover / Leaderboard / Shop / Profile, all of which are
-// nav entries. Repeating them costs height on every screen and teaches people
-// that the footer holds nothing new.
-//
-// What is left is exactly what the nav does not carry. /install especially:
-// TASK-122 removed "Get the app" from the nav entirely, leaving it reachable
-// only from the profile page — and installing is what unlocks push on iOS,
-// so it is worth one link here.
-//
-// No store access and no props: it renders identically signed in or out,
-// which is what keeps it cheap on a page that already has plenty to do.
+// Shown on every page, signed in or out, so it holds what the nav does not:
+// install instructions (the only way to get push on iOS), help and legal.
 const year = new Date().getFullYear()
 </script>
 
 <style scoped lang="scss">
-.app-footer {
-  /* Page background rather than --color-surface. A footer lighter than the
-     content pulls the eye downward, which is the opposite of what a footer
-     should do — one hairline is enough to separate it. */
-  background: var(--color-bg);
+.ft {
+  position: relative;
+  margin-top: auto;
   border-top: 1px solid var(--color-border);
+  background:
+    radial-gradient(700px 260px at 10% 0%, rgba(var(--color-brand-rgb), 0.1) 0%, rgba(var(--color-brand-rgb), 0) 70%),
+    #0B0029;
+  color: var(--color-text);
 
-  &__links,
-  &__legal {
-    max-width: 760px;
-    margin: 0 auto;
-    padding-inline: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  &__links {
-    padding-block: 0.875rem;
-  }
-
-  &__nav {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  /* The one spot of colour down here, and it earns it: an age signal is worth
-     stating plainly on an 18+ platform rather than burying it in the Terms. */
-  &__age {
-    flex-shrink: 0;
-    padding: 0.125rem 0.375rem;
-    border: 1px solid rgba(var(--color-accent-rgb), 0.45);
-    border-radius: 0.25rem;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    color: var(--color-accent);
-  }
-
-  &__link {
-    /* Vertical padding rather than a min-height: it lifts the tap target to a
-       usable size on a phone without making the row taller than its text on
-       a desktop, where the row is a single line either way. */
-    padding: 0.375rem 0;
-    font-size: 0.8125rem;
-    color: var(--color-text-muted);
-    text-decoration: none;
-    transition: color 0.15s;
-
-    &:hover,
-    &:focus-visible {
-      color: var(--color-accent);
-    }
-  }
-
-  &__legal {
-    justify-content: space-between;
-    padding-block: 0.625rem;
-    border-top: 1px solid var(--color-border);
-    font-size: 0.6875rem;
-    color: var(--color-muted);
-  }
-
-  /* A shade brighter than the line it sits in, so it reads as a link without
-     competing with the navigation above it. */
-  &__credit {
-    color: var(--color-text-muted);
-    text-decoration: none;
-    transition: color 0.15s;
-
-    &:hover,
-    &:focus-visible {
-      color: var(--color-accent);
-    }
+  // Thin brand line along the top edge
+  &::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 180px;
+    height: 2px;
+    background: var(--gradient-brand);
   }
 }
 
-@media (max-width: 560px) {
-  .app-footer {
-    &__links {
-      /* The 18+ chip leads the row on desktop; centred under a stack of
-         wrapped links it would look stranded, so everything centres together. */
-      justify-content: center;
-      gap: 0.5rem 1.25rem;
-    }
+.ft__inner {
+  max-width: 1232px;
+  margin: 0 auto;
+  padding: 48px 24px 36px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr);
+  gap: 40px;
+}
 
-    &__nav {
-      justify-content: center;
-      gap: 0.25rem 1.25rem;
-    }
+.ft__brand { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.ft__logo { text-decoration: none; &:hover { text-decoration: none; opacity: 0.9; } }
+.ft__tagline { margin: 0; font-size: 15px; line-height: 1.5; color: #CFC5F2; max-width: 280px; }
+.ft__age {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-accent-rgb), 0.5);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
 
-    &__legal {
-      justify-content: center;
-      gap: 0.25rem 0.75rem;
-    }
-  }
+.ft__cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.ft__col { display: flex; flex-direction: column; gap: 10px; }
+.ft__head {
+  margin-bottom: 4px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.ft__link {
+  align-self: flex-start;
+  font-size: 15px;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: color 0.15s;
+  &:hover { color: var(--color-accent); text-decoration: none; }
+}
+
+.ft__bottom {
+  max-width: 1232px;
+  margin: 0 auto;
+  padding: 18px 24px 28px;
+  border-top: 1px solid rgba(52, 19, 138, 0.6);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 760px) {
+  .ft__inner { grid-template-columns: minmax(0, 1fr); padding: 40px 20px 28px; gap: 32px; }
+  .ft__cols { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 16px; }
+  .ft__bottom { flex-direction: column; padding: 16px 20px 24px; gap: 6px; }
 }
 </style>
