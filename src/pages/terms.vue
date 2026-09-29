@@ -11,7 +11,7 @@
       </div>
 
       <div class="legal-content">
-        <p>These Terms govern your use of ChastHub, a web platform for adults who run timed chastity locks together — wearers set a lock, keyholders take control of it. By creating an account or using the platform you agree to these Terms. If you do not agree, do not use ChastHub.</p>
+        <p>These Terms govern your use of ChastHub, a web platform for adults who run timed chastity locks together: wearers set a lock, keyholders take control of it. By creating an account or using the platform you agree to these Terms. If you do not agree, do not use ChastHub.</p>
 
         <h2>1. Operator</h2>
         <p>ChastHub is operated from Slovakia, European Union. Full operator details will be published on this page. Until then you can reach us at <a href="mailto:support@chasthub.com">support@chasthub.com</a>.</p>
@@ -87,7 +87,7 @@ definePageMeta({ layout: 'default' })
 // The "· ChastHub" suffix now comes from the site-wide titleTemplate in app.vue.
 useSeoMeta({
   title: 'Terms of Service',
-  description: 'The rules for using ChastHub — eligibility, consent and safety, acceptable use, the free trial and subscriptions, and the limits of our liability.',
+  description: 'The rules for using ChastHub: eligibility, consent and safety, acceptable use, the free trial and subscriptions, and the limits of our liability.',
 })
 </script>
 

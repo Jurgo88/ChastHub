@@ -70,7 +70,7 @@
           <!-- TASK-180 — two series, so a legend; together they make the day's total. -->
           <ul class="legend" aria-label="Legend">
             <li><span class="legend__key legend__key--returning" />Returning</li>
-            <li><span class="legend__key legend__key--new" />New — signed up that day</li>
+            <li><span class="legend__key legend__key--new" />New: signed up that day</li>
           </ul>
         </div>
         <div class="dau-chart" @mouseleave="hover = null">
@@ -137,7 +137,7 @@
           </div>
         </div>
         <p class="kpi-note">
-          Before exact tracking a user counts as active on a day only if they did something — signed up,
+          Before exact tracking a user counts as active on a day only if they did something: signed up,
           made or accepted a lock, sent a message, voted<template v-if="!kpi.audit_log_active">
           (the auth log adds no logins here)</template>. Days before that line read low.
         </p>
@@ -236,7 +236,7 @@
             </p>
           </template>
           <p v-else class="kpi-note">
-            Nothing recorded yet — the source is saved from the next signup on.
+            Nothing recorded yet. The source is saved from the next signup on.
           </p>
         </div>
       </div>

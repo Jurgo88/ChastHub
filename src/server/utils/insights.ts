@@ -25,7 +25,7 @@ export async function runInsight(
     const missing = /PGRST202|does not exist|Could not find the function/i.test(`${error.code} ${error.message}`)
     throw createError({
       statusCode: 500,
-      message: missing ? `Not set up yet — apply migration ${migration}.` : 'Failed to load this section',
+      message: missing ? `Not set up yet. Apply migration ${migration}.` : 'Failed to load this section',
     })
   }
   return data

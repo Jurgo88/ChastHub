@@ -74,7 +74,7 @@ export default defineEventHandler(async (event) => {
 
   await logAudit(supabase, 'loq_accepted', user.id, request.loqholder_id, { loq_id: id })
 
-  await sendPushNotification(request.loqholder_id, 'Request approved', "You're now the keyholder — it's time!", '/dashboard')
+  await sendPushNotification(request.loqholder_id, 'Request approved', "You're now the keyholder. It's time!", '/dashboard')
 
   return updated
 })

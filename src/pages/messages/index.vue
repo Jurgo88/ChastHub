@@ -69,7 +69,7 @@
             <div class="spinner spinner--sm" />
           </div>
           <p v-else-if="favorites.length === 0" class="search-empty">
-            No favorites yet — heart a profile to save it here.
+            No favorites yet. Heart a profile to save it here.
           </p>
           <div v-else class="user-list">
             <div v-for="fav in favorites" :key="fav.favorite_id" class="user-row">

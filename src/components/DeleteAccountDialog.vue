@@ -61,7 +61,7 @@
                 You mentioned privacy. What worried you? Reports like this go straight to whoever handles security.
               </template>
               <template v-else>
-                You mentioned bugs. Tell us what broke — we will look at it even after you are gone.
+                You mentioned bugs. Tell us what broke. We will look at it even after you are gone.
               </template>
             </p>
             <div class="delete-dialog__note">
@@ -99,14 +99,14 @@
               </button>
             </div>
             <p v-if="reportMessage.trim().length < REPORT_MIN" class="delete-dialog__hint">
-              A few words ({{ REPORT_MIN }}+ characters) to send — or skip.
+              A few words ({{ REPORT_MIN }}+ characters) to send, or skip.
             </p>
           </template>
 
           <!-- TASK-176 — "something else" with nothing written: one sentence. -->
           <template v-else>
             <h2 id="delete-dialog-title" class="delete-dialog__title">What was it?</h2>
-            <p class="delete-dialog__message">One sentence is enough — it helps us more than you would think.</p>
+            <p class="delete-dialog__message">One sentence is enough. It helps us more than you would think.</p>
             <div class="delete-dialog__note">
               <textarea
                 ref="followUpEl"

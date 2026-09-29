@@ -164,7 +164,7 @@ export default defineEventHandler(async (event) => {
 
   if (scrubError) {
     console.error('[profile/delete] Profile anonymization failed:', scrubError)
-    throw createError({ statusCode: 500, message: 'Failed to delete the account. Nothing was changed — please try again.' })
+    throw createError({ statusCode: 500, message: 'Failed to delete the account. Nothing was changed, please try again.' })
   }
 
   // ── 6. Close the door on the auth side ───────────────────────────────────

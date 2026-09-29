@@ -1,7 +1,7 @@
 <template>
   <section class="insight">
     <header class="insight__head">
-      <h2>Wearers and keyholders — are locks finding someone?</h2>
+      <h2>Wearers and keyholders: are locks finding someone?</h2>
       <span class="text-muted">last 30 days</span>
     </header>
 

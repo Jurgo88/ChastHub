@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     const missing = /admin_kpi|function .* does not exist|PGRST202/i.test(`${error.code} ${error.message}`)
     throw createError({
       statusCode: 500,
-      message: missing ? 'KPIs are not set up yet — apply migration 001.' : 'Failed to fetch KPIs',
+      message: missing ? 'KPIs are not set up yet. Apply migration 001.' : 'Failed to fetch KPIs',
     })
   }
 

@@ -201,7 +201,7 @@ export default defineNuxtConfig({
     manifest: {
       name: 'ChastHub',
       short_name: 'ChastHub',
-      description: 'ChastHub — your keyholder app',
+      description: 'ChastHub, your keyholder app',
       theme_color: '#0E0033',
       background_color: '#0E0033',
       display: 'standalone',

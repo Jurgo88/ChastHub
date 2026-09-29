@@ -61,7 +61,7 @@
               class="q-card__clock"
               :class="flashing[item.id] && `q-card__clock--${flashing[item.id]}`"
             >
-              <span class="q-card__clock-value">{{ countdowns[item.id] || '—' }}</span>
+              <span class="q-card__clock-value">{{ countdowns[item.id] || 'Not started' }}</span>
               <span class="q-card__clock-label">
                 <template v-if="flashing[item.id] === 'add'">someone just added time</template>
                 <template v-else-if="flashing[item.id] === 'remove'">someone just took time off</template>
@@ -226,7 +226,7 @@ function formatMs(ms: number): string {
 function tick() {
   const next: Record<string, string> = {}
   for (const item of items.value) {
-    if (!item.loqed_until) { next[item.id] = '—'; continue }
+    if (!item.loqed_until) { next[item.id] = 'Not started'; continue }
     // A paused loq's clock is frozen, so show what was left at the pause.
     const ms = new Date(item.loqed_until).getTime() - Date.now()
     next[item.id] = ms > 0 ? formatMs(ms) : 'Unlocked'
@@ -302,7 +302,7 @@ async function requestToJoin(item: DiscoverLoq) {
   }
   catch (err: unknown) {
     const fe = err as { data?: { message?: string }; message?: string }
-    errorMessage.value = fe?.data?.message ?? fe?.message ?? 'Failed to send request — try another.'
+    errorMessage.value = fe?.data?.message ?? fe?.message ?? 'Failed to send request. Try another one.'
     errorId.value = item.id
   }
   finally { requesting.value = null }

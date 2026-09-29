@@ -25,7 +25,7 @@
           <li>Content you create: locks and their settings, lock photos or combinations, messages, and reports</li>
           <li>Usage data (interactions, session information)</li>
           <li>Technical data (IP address, browser type, device information)</li>
-          <li>Signup origin, recorded once when you create your account: the country and region you signed up from, and how you found us — the domain of the site that linked you here (for example instagram.com, never the full address) and any campaign tags in that link. It is kept with your account, not in your browser, and used only to count where our members come from.</li>
+          <li>Signup origin, recorded once when you create your account: the country and region you signed up from, and how you found us: the domain of the site that linked you here (for example instagram.com, never the full address) and any campaign tags in that link. It is kept with your account, not in your browser, and used only to count where our members come from.</li>
           <li>Cookies and tracking data</li>
         </ul>
 
@@ -107,7 +107,7 @@
 
         <h2>International Users</h2>
         <p>We aim to store your data within the European Union. Some of our service providers may process data outside the EU; where they do, they rely on appropriate safeguards such as the EU Standard Contractual Clauses.</p>
-        <p>You also have the right to lodge a complaint with a data protection supervisory authority — in Slovakia, the Office for Personal Data Protection (Úrad na ochranu osobných údajov SR), or the authority in the EU country where you live.</p>
+        <p>You also have the right to lodge a complaint with a data protection supervisory authority. In Slovakia that is the Office for Personal Data Protection (Úrad na ochranu osobných údajov SR), or the authority in the EU country where you live.</p>
 
         <h2>Changes to This Policy</h2>
         <p>We may update this Privacy Policy from time to time. Updates will be published on this page.</p>
@@ -125,7 +125,7 @@ definePageMeta({ layout: 'default' })
 // The "· ChastHub" suffix now comes from the site-wide titleTemplate in app.vue.
 useSeoMeta({
   title: 'Privacy Policy',
-  description: 'How ChastHub collects, uses and protects your personal data — what we store, why we store it, and the rights you have over it.',
+  description: 'How ChastHub collects, uses and protects your personal data: what we store, why we store it, and the rights you have over it.',
 })
 </script>
 

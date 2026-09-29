@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
   // fairness problem the client flagged. Public loqs now go through
   // request-to-join.post.ts + the loqee's own approve-request.post.ts.
   if (loq.is_public) {
-    throw createError({ statusCode: 409, message: 'Public locks are joined by request — use "Request to join" instead' })
+    throw createError({ statusCode: 409, message: 'Public locks are joined by request. Use "Request to join" instead' })
   }
 
   const { data: request } = await supabase

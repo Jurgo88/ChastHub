@@ -121,7 +121,7 @@ const limit = 50
 // being kept, not before it was being captured.
 function originTitle(d: Deletion) {
   if (!d.signup_country && !d.signup_timezone && !d.signup_locale) {
-    return 'Not recorded — this deletion predates the origin being kept'
+    return 'Not recorded. This deletion predates the origin being kept'
   }
   return [
     [d.signup_region, d.signup_country].filter(Boolean).join(', '),

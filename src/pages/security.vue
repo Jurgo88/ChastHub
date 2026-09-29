@@ -7,7 +7,7 @@
         <div class="dash-header__text">
           <h1 class="dash-header__title">Report an issue</h1>
           <p class="dash-header__sub">
-            Something broken, or something that looks unsafe? Tell us here — we
+            Something broken, or something that looks unsafe? Tell us here. We
             read every report. Found a vulnerability? Please give us time to
             fix it before disclosing it publicly.
           </p>
@@ -37,7 +37,7 @@
         <label class="sec-form__label" for="sec-contact">How can we reach you? (optional)</label>
         <input
           id="sec-contact" v-model="contact" class="sec-form__input" type="text"
-          autocomplete="off" placeholder="Email or handle — or leave blank to stay anonymous"
+          autocomplete="off" placeholder="Email or handle, or leave blank to stay anonymous"
         >
 
         <!-- honeypot: skryté pred používateľmi, chytá botov -->
@@ -54,7 +54,7 @@
       </form>
 
       <div v-else class="sec-done">
-        <p>Thank you — your report has been received. If you left contact details, we may follow up.</p>
+        <p>Thank you, your report has been received. If you left contact details, we may follow up.</p>
       </div>
     </div>
   </div>

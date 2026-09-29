@@ -4,12 +4,12 @@
       <p class="install-prompt__title">Add ChastHub as an app</p>
       <p class="install-prompt__desc">
         <template v-if="inAppBrowser">
-          You're inside {{ inAppBrowser }}'s built-in browser, which can't install apps — open
+          You're inside {{ inAppBrowser }}'s built-in browser, which can't install apps. Open
           chasthub.com in {{ isIos ? 'Safari' : 'your browser' }} first.
         </template>
         <template v-else-if="isIos">
           Tap <strong>Share → Add to Home Screen</strong> in Safari, then open ChastHub from your home
-          screen — on iPhone that's the only way push notifications work.
+          screen. On iPhone that's the only way push notifications work.
         </template>
         <template v-else>
           Install ChastHub for quick access and to enable push notifications for messages, lock requests, and expirations.

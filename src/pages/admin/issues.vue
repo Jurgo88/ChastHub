@@ -58,7 +58,7 @@
           <span class="kind" :class="`kind--${r.kind}`">{{ KIND_LABELS[r.kind] ?? r.kind }}</span>
           <!-- TASK-177 — why they left, and who it was. -->
           <span v-if="r.source === 'account_deletion'" class="leaver" :title="'Sent while deleting their account'">
-            Left the app — {{ deletionReasonLabel(r.source_detail) }}
+            Left the app: {{ deletionReasonLabel(r.source_detail) }}
           </span>
           <NuxtLink v-if="r.reporter" :to="`/admin/users/${r.reporter.id}`" class="sr__reporter">
             {{ r.reporter.display_name || r.reporter.email }}
@@ -95,7 +95,7 @@
               class="admin-input sr__note-input"
               rows="2"
               maxlength="1000"
-              placeholder="What was done (optional) — e.g. fixed in PR #123, not reproducible…"
+              placeholder="What was done (optional), e.g. fixed in PR #123, not reproducible…"
             />
             <button class="btn btn-primary btn-sm" :disabled="busyId === r.id" @click="setHandled(r, true)">
               {{ busyId === r.id ? 'Saving…' : 'Mark handled' }}

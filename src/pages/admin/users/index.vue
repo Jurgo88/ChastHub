@@ -38,7 +38,7 @@
           <th
             class="th-sort"
             :aria-sort="sortDir === 'asc' ? 'ascending' : 'descending'"
-            :title="sortDir === 'asc' ? 'Oldest first — click for newest' : 'Newest first — click for oldest'"
+            :title="sortDir === 'asc' ? 'Oldest first, click for newest' : 'Newest first, click for oldest'"
             @click="toggleSort"
           >
             Joined <span class="th-sort__arrow">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
@@ -291,7 +291,7 @@ function originTitle(user: {
   signup_locale: string | null
 }) {
   if (!user.signup_country && !user.signup_timezone && !user.signup_locale) {
-    return 'Not recorded — this account predates signup origin being captured'
+    return 'Not recorded. This account predates signup origin being captured'
   }
   const parts = [
     [user.signup_region, user.signup_country].filter(Boolean).join(', '),
@@ -306,8 +306,8 @@ function billingTitle(user: { billing_status: string; current_period_end: string
   const end = user.current_period_end ? formatDateTimeFull(user.current_period_end) : null
   switch (user.billing_status) {
     case 'active': return end ? `Renews ${end}` : 'Active subscription'
-    case 'cancelling': return end ? `Cancelled — access until ${end}` : 'Cancels at the end of the period'
-    case 'past_due': return end ? `Payment failed — access until ${end}` : 'Payment failed'
+    case 'cancelling': return end ? `Cancelled, access until ${end}` : 'Cancels at the end of the period'
+    case 'past_due': return end ? `Payment failed, access until ${end}` : 'Payment failed'
     case 'lapsed': return 'Subscribed before, nothing active now'
     case 'none': return 'Never subscribed'
     default: return ''

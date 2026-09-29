@@ -32,7 +32,7 @@
         <p class="current-plan-detail">
           <template v-if="authStore.isOnTrial">
             Your free trial ends in {{ authStore.trialDays }} {{ authStore.trialDays === 1 ? 'day' : 'days' }}.
-            Paid plans are on the way — you will never be charged unless you choose to subscribe.
+            Paid plans are on the way. You will never be charged unless you choose to subscribe.
           </template>
           <template v-else>
             Thanks for trying ChastHub. Subscriptions for wearers are launching soon.

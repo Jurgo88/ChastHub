@@ -4,7 +4,7 @@
       <div class="install-banner__content">
         <p class="install-banner__text">
           <strong>Add ChastHub to your home screen</strong>
-          <span>Opens like a real app — and it's the only way to get push notifications on iPhone.</span>
+          <span>Opens like a real app, and it's the only way to get push notifications on iPhone.</span>
         </p>
         <div class="install-banner__actions">
           <button class="install-banner__btn install-banner__btn--dismiss" @click="dismiss">

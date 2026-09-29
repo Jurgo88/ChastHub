@@ -62,7 +62,7 @@
       <p v-if="actionError" class="error-text">{{ actionError }}</p>
 
       <p v-if="user.ban" class="ban-note">
-        Banned {{ formatDateTimeFull(user.ban.at) }}<template v-if="user.ban.reason"> — {{ user.ban.reason }}</template>
+        Banned {{ formatDateTimeFull(user.ban.at) }}<template v-if="user.ban.reason">: {{ user.ban.reason }}</template>
       </p>
 
       <p v-if="user.bio" class="bio">{{ user.bio }}</p>
@@ -132,7 +132,7 @@
                 :key="d.day"
                 class="strip__day"
                 :class="{ 'strip__day--on': d.sessions, 'strip__day--untracked': d.untracked }"
-                :title="d.untracked ? `${formatDate(d.day)} — before tracking` : `${formatDate(d.day)} — ${d.sessions ? `${d.sessions} app ${d.sessions === 1 ? 'open' : 'opens'}` : 'not active'}`"
+                :title="d.untracked ? `${formatDate(d.day)}, before tracking` : `${formatDate(d.day)}: ${d.sessions ? `${d.sessions} app ${d.sessions === 1 ? 'open' : 'opens'}` : 'not active'}`"
               />
             </div>
             <p v-if="!user.activity_tracking_since" class="text-muted">Tracking starts with the next app open.</p>
@@ -153,7 +153,7 @@
             <dt>Language</dt>
             <dd>{{ user.signup_locale || '–' }}</dd>
           </dl>
-          <p v-else class="text-muted">Not recorded — this account predates signup origin being captured.</p>
+          <p v-else class="text-muted">Not recorded. This account predates signup origin being captured.</p>
         </section>
       </div>
 

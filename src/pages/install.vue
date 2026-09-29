@@ -7,7 +7,7 @@
         <div class="dash-header__text">
           <h1 class="dash-header__title">Get the ChastHub app</h1>
           <p class="dash-header__sub">
-            Add ChastHub to your home screen — it opens like a normal app, full screen, and it's the
+            Add ChastHub to your home screen. It opens like a normal app, full screen, and it's the
             only way to receive push notifications on iPhone.
           </p>
         </div>
@@ -70,10 +70,10 @@
           <p class="install-card__note">
             <template v-if="active === 'ios'">
               On iPhone and iPad, push notifications <strong>only</strong> work from the installed
-              app — the Safari tab never gets them.
+              app. The Safari tab never gets them.
             </template>
             <template v-else-if="active === 'android'">
-              Some browsers call it "Install app", others "Add to Home screen" — both do the same
+              Some browsers call it "Install app", others "Add to Home screen". Both do the same
               thing.
             </template>
             <template v-else>
@@ -99,7 +99,7 @@ definePageMeta({ layout: 'default' })
 // The "· ChastHub" suffix now comes from the site-wide titleTemplate in app.vue.
 useSeoMeta({
   title: 'Install the chastity timer app',
-  description: 'Add ChastHub — the chastity timer and keyholder app — to your home screen on iPhone, iPad, Android or desktop. Step-by-step instructions, no app store needed.',
+  description: 'Add ChastHub, the chastity timer and keyholder app, to your home screen on iPhone, iPad, Android or desktop. Step-by-step instructions, no app store needed.',
   ogTitle: 'Install ChastHub on your phone',
   ogDescription: 'Add the chastity timer and keyholder app to your home screen on iPhone, iPad, Android or desktop. No app store needed.',
 })
@@ -120,7 +120,7 @@ onMounted(() => { active.value = platform.value })
 const STEPS: Record<InstallPlatform, string[]> = {
   ios: [
     'Open <strong>chasthub.com</strong> in <strong>Safari</strong> (Chrome on iPhone works too).',
-    'Tap the <strong>Share</strong> button — the square with an arrow pointing up, at the bottom of the screen (top right on iPad).',
+    'Tap the <strong>Share</strong> button: the square with an arrow pointing up, at the bottom of the screen (top right on iPad).',
     'Scroll down the list and tap <strong>Add to Home Screen</strong>.',
     'Tap <strong>Add</strong> in the top right corner.',
     'Open ChastHub from the new icon on your home screen.',
@@ -154,7 +154,7 @@ useHead({
       '@context': 'https://schema.org',
       '@type': 'HowTo',
       name: 'Install ChastHub on an iPhone or iPad',
-      description: 'Add ChastHub to your home screen from Safari — no app store needed.',
+      description: 'Add ChastHub to your home screen from Safari. No app store needed.',
       totalTime: 'PT1M',
       step: STEPS.ios.map((text, i) => ({
         '@type': 'HowToStep',

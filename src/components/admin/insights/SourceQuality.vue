@@ -7,7 +7,7 @@
 
     <div v-if="loading" class="admin-loading"><span class="admin-loading__spinner" />Loading…</div>
     <p v-else-if="error" class="error-text">{{ error }}</p>
-    <p v-else-if="!data?.rows.length" class="text-muted">No sources recorded yet — they are saved from each new signup on.</p>
+    <p v-else-if="!data?.rows.length" class="text-muted">No sources recorded yet. They are saved from each new signup on.</p>
 
     <template v-else>
       <table class="admin-table admin-table--compact quality">
@@ -40,7 +40,7 @@
       </table>
       <p class="kpi-note">
         Percentages are of that source's signups. "Used a lock" means they were in an accepted lock;
-        "ever paid" means at least one successful payment. Small sources swing a lot — read percentages
+        "ever paid" means at least one successful payment. Small sources swing a lot, so read percentages
         next to the counts.
       </p>
     </template>

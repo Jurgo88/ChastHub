@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
   if (error && (error.code === 'email_not_confirmed' || /not confirmed/i.test(error.message))) {
     throw createError({
       statusCode: 403,
-      message: 'Confirm your email address first — check your inbox for the link we sent.',
+      message: 'Confirm your email address first. Check your inbox for the link we sent.',
       data: { code: 'email_not_confirmed' },
     })
   }

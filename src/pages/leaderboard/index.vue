@@ -88,7 +88,7 @@ const {
 useSeoMeta({
   robots: 'noindex, follow',
   title: 'Leaderboard',
-  description: 'The ChastHub leaderboard — which keyholders hold the most keys, and who has spent the longest in chastity. Standings update as locks run.',
+  description: 'The ChastHub leaderboard: which keyholders hold the most keys, and who has spent the longest in chastity. Standings update as locks run.',
   ogTitle: 'ChastHub Leaderboard',
   ogDescription: 'Who is holding the most keys, and who has spent the longest locked.',
 })

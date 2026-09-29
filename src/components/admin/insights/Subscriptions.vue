@@ -18,7 +18,7 @@
         <div class="kpi-card" :class="{ 'kpi-card--warn': data.past_due.length }">
           <span class="kpi-card__label">Payment failed</span>
           <span class="kpi-card__value">{{ data.past_due.length }}</span>
-          <span class="kpi-card__sub">still have access — worth a message before it lapses</span>
+          <span class="kpi-card__sub">still have access, worth a message before it lapses</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-card__label">New paying · 4 weeks</span>
@@ -55,7 +55,7 @@
       </p>
 
       <template v-if="data.past_due.length">
-        <h3 class="sub">Payment failed — contact these people</h3>
+        <h3 class="sub">Payment failed: contact these people</h3>
         <table class="admin-table admin-table--compact">
           <thead><tr><th>Who</th><th>Plan</th><th>Access until</th></tr></thead>
           <tbody>

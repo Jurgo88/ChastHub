@@ -53,7 +53,7 @@
       </label>
 
       <label class="field">
-        <span class="field__label">Content <em>optional — tells two links in one campaign apart; seen in Google Analytics only</em></span>
+        <span class="field__label">Content <em>optional, tells two links in one campaign apart; seen in Google Analytics only</em></span>
         <input v-model="content" class="admin-input" placeholder="e.g. banner-a" maxlength="100">
       </label>
 
@@ -69,7 +69,7 @@
     <section class="guide">
       <h2>Naming, so the numbers add up</h2>
       <ul>
-        <li><strong>Source</strong> is the place: <code>x</code>, <code>reddit</code>, <code>instagram</code>. Always the same word for the same place — <code>x</code>, never <code>twitter</code> one day and <code>x</code> the next.</li>
+        <li><strong>Source</strong> is the place: <code>x</code>, <code>reddit</code>, <code>instagram</code>. Always the same word for the same place: <code>x</code>, never <code>twitter</code> one day and <code>x</code> the next.</li>
         <li><strong>Medium</strong> is the kind of link: <code>bio</code> for a profile link, <code>post</code> for a post, <code>dm</code>, <code>ad</code>, <code>qr</code> for printed codes.</li>
         <li><strong>Campaign</strong> is the push: one name per announcement, promo or partner.</li>
         <li>Everything is lower-cased and spaces become <code>-</code> automatically.</li>

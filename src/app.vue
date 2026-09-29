@@ -36,7 +36,7 @@ const organisation = {
 
 useHead({
   htmlAttrs: { lang: 'en' },
-  titleTemplate: title => (title ? `${title} · ChastHub` : 'ChastHub — Timed Lock & Keyholder App'),
+  titleTemplate: title => (title ? `${title} · ChastHub` : 'ChastHub: Timed Lock & Keyholder App'),
   link: [{ rel: 'canonical', href: canonical }],
   script: [{
     type: 'application/ld+json',
@@ -64,7 +64,7 @@ useSeoMeta({
   ogImage: `${siteUrl}/images/og-default.png`,
   ogImageWidth: 1200,
   ogImageHeight: 630,
-  ogImageAlt: 'ChastHub — the platform for Keyholders and Wearers',
+  ogImageAlt: 'ChastHub, the platform for Keyholders and Wearers',
   twitterCard: 'summary_large_image',
   twitterImage: `${siteUrl}/images/og-default.png`,
 })
