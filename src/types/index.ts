@@ -211,3 +211,60 @@ export interface ApiError {
   statusCode: number
   message: string
 }
+
+// ── Stats page (/stats, migration 004) ───────────────────────────────────────
+
+export type StatsBoardKey =
+  | 'wearer_longest' | 'wearer_total' | 'wearer_completed' | 'wearer_running'
+  | 'keyholder_locks' | 'keyholder_hours' | 'keyholder_wearers' | 'keyholder_holding'
+  | 'crowd' | 'locktober_survivors'
+
+export type StatsPeriod = 'all' | 'month' | 'locktober'
+
+export interface StatsRow {
+  rank: number
+  id: string
+  display_name: string
+  username: string | null
+  avatar_url: string | null
+  value: number
+  self_lock: boolean
+  since: string | null
+}
+
+export interface StatsMeRow extends StatsRow {
+  /** Value of the person one place above, null when you are first. */
+  next_value: number | null
+  /** How many people rank below you. */
+  below: number
+}
+
+export interface StatsBoard {
+  board: StatsBoardKey
+  period: StatsPeriod
+  total: number
+  rows: StatsRow[]
+  me: StatsMeRow | null
+}
+
+export interface StatsPulse {
+  locked_now: number
+  hours_this_month: number
+  done_this_week: number
+  keyholders_active: number
+  keydrop_waiting: number
+  locktober: {
+    year: number
+    active: boolean
+    day: number | null
+    starters: number
+    survivors: number
+    joined: number
+  }
+}
+
+export interface StatsMe {
+  hidden: boolean
+  role: UserRole
+  boards: Partial<Record<StatsBoardKey, { total: number; me: StatsMeRow | null }>>
+}

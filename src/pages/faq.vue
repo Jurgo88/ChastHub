@@ -105,7 +105,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: 'Who can see my lock and profile?',
-        a: ['Nobody, unless you share a public link or use Key Drop. You can also hide your profile from search, hide your online status and opt out of the leaderboard.'],
+        a: ['Nobody, unless you share a public link or use Key Drop. You can also hide your profile from search, hide your online status and opt out of the rankings on Stats.'],
       },
       {
         q: 'How do you keep the community safe?',

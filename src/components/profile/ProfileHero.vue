@@ -29,14 +29,14 @@ const tiles = computed<Tile[]>(() => {
       { value: String(s.holding_now), label: 'Holding now', highlight: true },
       { value: String(s.locks_completed), label: 'Locks held' },
       { value: formatHours(s.total_hours), label: props.self ? 'Time in your hands' : 'Time controlled' },
-      { value: rank, label: 'Leaderboard' },
+      { value: rank, label: 'Stats rank' },
     ]
   }
   return [
     { value: formatHours(s.total_hours), label: 'Total locked', highlight: true },
     { value: formatHours(s.longest_hours), label: 'Longest lock' },
     { value: String(s.locks_completed), label: 'Locks completed' },
-    { value: rank, label: 'Leaderboard' },
+    { value: rank, label: 'Stats rank' },
   ]
 })
 

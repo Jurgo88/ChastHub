@@ -95,7 +95,8 @@ export default defineNuxtConfig({
     //
     // ssr: false follows from noindex: the data arrives client-side either way,
     // so rendering a server pass bought nothing but a function invocation (#307).
-    '/leaderboard': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, follow' } },
+    '/stats': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, follow' } },
+    '/leaderboard': { redirect: { to: '/stats', statusCode: 301 } },
 
     // Private areas render client-side only and are kept out of the index.
     // robots.txt asks crawlers not to fetch these; X-Robots-Tag covers

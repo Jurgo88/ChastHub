@@ -141,8 +141,8 @@
 
           <div class="trow">
             <div>
-              <span class="trow__label">Show me on the leaderboard</span>
-              <p class="trow__hint">Others see your name, photo and your best result in the public top wearers or keyholders list.</p>
+              <span class="trow__label">Show me in rankings</span>
+              <p class="trow__hint">Others see your name, photo and results in the rankings on Stats. Turned off, you are left out of every list and only anonymous totals include you.</p>
             </div>
             <button class="toggle" :class="{ 'toggle--on': !privacy.leaderboard_opt_out }" type="button" :aria-pressed="!privacy.leaderboard_opt_out" @click="togglePrivacy('leaderboard_opt_out')">
               <span class="toggle__knob" />

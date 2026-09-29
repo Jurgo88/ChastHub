@@ -10,7 +10,7 @@
         <template v-if="authStore.isAuthenticated">
           <NuxtLink :to="dashboardLink" class="app-nav__link" active-class="app-nav__link--active">Dashboard</NuxtLink>
           <NuxtLink to="/keydrop" class="app-nav__link" active-class="app-nav__link--active">Key Drop</NuxtLink>
-          <NuxtLink to="/leaderboard" class="app-nav__link" active-class="app-nav__link--active">Leaderboard</NuxtLink>
+          <NuxtLink to="/stats" class="app-nav__link" active-class="app-nav__link--active">Stats</NuxtLink>
           <NuxtLink to="/shop" class="app-nav__link" active-class="app-nav__link--active">Shop</NuxtLink>
           <NuxtLink to="/messages" class="app-nav__link" active-class="app-nav__link--active">Messages</NuxtLink>
           <NuxtLink v-if="authStore.isLoqee && !authStore.hasAccess" to="/subscription/upgrade" class="app-nav__link app-nav__link--cta">Upgrade</NuxtLink>
@@ -61,7 +61,7 @@
             </div>
             <NuxtLink :to="dashboardLink" class="app-nav__drawer-link">Dashboard</NuxtLink>
             <NuxtLink to="/keydrop" class="app-nav__drawer-link">Key Drop</NuxtLink>
-            <NuxtLink to="/leaderboard" class="app-nav__drawer-link">Leaderboard</NuxtLink>
+            <NuxtLink to="/stats" class="app-nav__drawer-link">Stats</NuxtLink>
             <NuxtLink to="/shop" class="app-nav__drawer-link">Shop</NuxtLink>
             <NuxtLink to="/messages" class="app-nav__drawer-link">Messages</NuxtLink>
             <NuxtLink to="/profile" class="app-nav__drawer-link">Profile</NuxtLink>

@@ -85,7 +85,7 @@ async function save() {
   <div>
     <h1 class="auth-title">Pick your name</h1>
     <p class="auth-sub">
-      This is how others see you in Key Drop, on the leaderboard and in messages.
+      This is how others see you in Key Drop, on Stats and in messages.
       Keep our suggestion, roll another one, or write your own. You can change it later.
     </p>
 

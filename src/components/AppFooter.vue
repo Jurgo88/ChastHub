@@ -14,7 +14,7 @@
           <span class="ft__head">ChastHub</span>
           <NuxtLink to="/faq" class="ft__link">FAQ</NuxtLink>
           <NuxtLink to="/install" class="ft__link">Get the app</NuxtLink>
-          <NuxtLink to="/leaderboard" class="ft__link">Leaderboard</NuxtLink>
+          <NuxtLink to="/stats" class="ft__link">Stats</NuxtLink>
         </div>
         <div class="ft__col">
           <span class="ft__head">Help</span>

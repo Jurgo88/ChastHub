@@ -7,7 +7,7 @@
     <div v-else-if="!profile" class="upage__state">
       <p class="upage__state-title">User not found</p>
       <p class="upage__state-hint">The name may have changed, or the account no longer exists.</p>
-      <NuxtLink to="/leaderboard" class="pbtn pbtn--primary">Go to the leaderboard</NuxtLink>
+      <NuxtLink to="/stats" class="pbtn pbtn--primary">Go to Stats</NuxtLink>
     </div>
 
     <div v-else class="upage__wrap">

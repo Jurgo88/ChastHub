@@ -8,7 +8,7 @@
 //   /lock/<id>   — user-generated and time-limited. They stay crawlable and carry
 //                  Open Graph tags for sharing, but listing them here would fill
 //                  the index with thin, short-lived pages.
-//   /leaderboard — noindex (TASK-119). Its rows load client-side, so a crawler
+//   /stats       — noindex (TASK-119, was /leaderboard). Its rows load client-side, so a crawler
 //                  only ever saw "No entries yet"; and rendering them server-side
 //                  instead would make pseudonymous display names searchable in
 //                  Google, which the opt-out toggle does not ask people about.

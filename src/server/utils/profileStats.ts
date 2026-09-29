@@ -1,19 +1,46 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ProfileStats, UserRole } from '~/types'
 
-// Numbers for the profile header. They follow the leaderboard's own rules so
-// the two never disagree: a wearer's lock counts once it has ended and had a
-// keyholder, and its length is created_at to loqed_until, exactly as in the
-// loqee_leaderboard views (migration 001).
+// Numbers for the profile header, counted exactly like the Stats page
+// (stats_board in migration 004), so the two never disagree:
+//   - only locks that had a keyholder count;
+//   - a lock runs from created_at (the wearer is locked from creation) to
+//     whichever came first of ended_at and loqed_until; a running lock runs
+//     until now, a paused one until it was paused;
+//   - keyholder time starts at accepted_at.
+// The rank shown is the one on the Stats page's main board for the role.
 
 const HOUR = 3600 * 1000
+const RUNNING = ['draft', 'pending', 'active', 'paused']
 
-function hoursBetween(from: string | null, to: string | null): number {
-  if (!from || !to) return 0
-  return Math.max(0, (new Date(to).getTime() - new Date(from).getTime()) / HOUR)
+interface LockRow {
+  status: string
+  created_at: string
+  accepted_at: string | null
+  loqed_until: string | null
+  ended_at: string | null
+  paused_at: string | null
+}
+
+export function lockEnd(l: LockRow, now = Date.now()): number {
+  const until = l.loqed_until ? new Date(l.loqed_until).getTime() : now
+  if (l.status === 'ended') return Math.min(l.ended_at ? new Date(l.ended_at).getTime() : until, until)
+  if (l.status === 'paused') return Math.min(l.paused_at ? new Date(l.paused_at).getTime() : now, until, now)
+  return Math.min(until, now)
+}
+
+export function lockHours(l: LockRow, from: 'created' | 'accepted' = 'created', now = Date.now()): number {
+  const startIso = from === 'accepted' ? (l.accepted_at ?? l.created_at) : l.created_at
+  return Math.max(0, (lockEnd(l, now) - new Date(startIso).getTime()) / HOUR)
 }
 
 const round1 = (n: number) => Math.round(n * 10) / 10
+const LOCK_COLUMNS = 'status, created_at, accepted_at, loqed_until, ended_at, paused_at'
+
+async function rankOn(supabase: SupabaseClient, board: string, userId: string): Promise<number | null> {
+  const { data } = await supabase.rpc('stats_board', { p_board: board, p_period: 'all', p_limit: 0, p_user: userId })
+  return (data as { me: { rank: number } | null } | null)?.me?.rank ?? null
+}
 
 export async function getProfileStats(
   supabase: SupabaseClient,
@@ -32,34 +59,29 @@ export async function getProfileStats(
   }
 
   if (role === 'loqholder') {
-    const [{ data: ended }, { count: holding }, rank] = await Promise.all([
+    const [{ data }, rank] = await Promise.all([
       supabase.from('loqs')
-        .select('created_at, loqed_until')
+        .select(LOCK_COLUMNS)
         .eq('loqholder_id', userId)
-        .eq('status', 'ended'),
-      supabase.from('loqs')
-        .select('id', { count: 'exact', head: true })
-        .eq('loqholder_id', userId)
-        .in('status', ['active', 'paused']),
-      opts.leaderboardOptOut
-        ? Promise.resolve({ data: null })
-        : supabase.from('loqholder_leaderboard_all').select('rank').eq('id', userId).maybeSingle(),
+        .in('status', [...RUNNING, 'ended'])
+        .not('loqed_until', 'is', null),
+      opts.leaderboardOptOut ? Promise.resolve(null) : rankOn(supabase, 'keyholder_locks', userId),
     ])
 
-    const rows = ended ?? []
+    const rows = (data ?? []) as LockRow[]
     stats.locks_completed = rows.length
-    stats.total_hours = round1(rows.reduce((sum, r) => sum + hoursBetween(r.created_at, r.loqed_until), 0))
-    stats.holding_now = holding ?? 0
-    stats.rank = (rank.data as { rank: number } | null)?.rank ?? null
+    stats.total_hours = round1(rows.reduce((sum, r) => sum + lockHours(r, 'accepted'), 0))
+    stats.holding_now = rows.filter(r => RUNNING.includes(r.status)).length
+    stats.rank = rank
     return stats
   }
 
   if (role === 'loqee') {
-    const [{ data: ended }, { data: running }, rank] = await Promise.all([
+    const [{ data }, { data: running }, rank] = await Promise.all([
       supabase.from('loqs')
-        .select('created_at, loqed_until')
+        .select(LOCK_COLUMNS)
         .eq('loqee_id', userId)
-        .eq('status', 'ended')
+        .in('status', [...RUNNING, 'ended'])
         .not('loqholder_id', 'is', null)
         .not('loqed_until', 'is', null),
       supabase.from('loqs')
@@ -67,16 +89,15 @@ export async function getProfileStats(
         .eq('loqee_id', userId)
         .in('status', ['pending', 'active', 'paused'])
         .maybeSingle(),
-      opts.leaderboardOptOut
-        ? Promise.resolve({ data: null })
-        : supabase.from('loqee_leaderboard_all').select('rank').eq('id', userId).maybeSingle(),
+      opts.leaderboardOptOut ? Promise.resolve(null) : rankOn(supabase, 'wearer_longest', userId),
     ])
 
-    const hours = (ended ?? []).map(r => hoursBetween(r.created_at, r.loqed_until))
-    stats.locks_completed = hours.length
+    const rows = (data ?? []) as LockRow[]
+    const hours = rows.map(r => lockHours(r))
+    stats.locks_completed = rows.filter(r => r.status === 'ended').length
     stats.total_hours = round1(hours.reduce((a, b) => a + b, 0))
     stats.longest_hours = round1(hours.reduce((a, b) => Math.max(a, b), 0))
-    stats.rank = (rank.data as { rank: number } | null)?.rank ?? null
+    stats.rank = rank
 
     // Only a lock that Key Drop already lists (same rule as that listing:
     // listed, unpaired, has a link). Pointing at it from the profile reveals
