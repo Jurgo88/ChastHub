@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
     .from('reports')
     .select(`
       id, reason, description, status, created_at, resolved_at, conversation_id,
+      lounge_message:lounge_messages!lounge_message_id(id, content, created_at),
       reported_user:profiles!reported_user_id(id, email, display_name),
       reported_by:profiles!reported_by_id(id, email, display_name)
     `, { count: 'exact' })

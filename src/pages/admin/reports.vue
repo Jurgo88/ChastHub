@@ -32,7 +32,10 @@
         <tr v-for="report in reports" :key="report.id">
           <td>{{ report.reported_user?.email ?? '–' }}</td>
           <td>{{ report.reported_by?.email ?? '–' }}</td>
-          <td>{{ report.reason }}</td>
+          <td>
+            {{ report.reason }}
+            <p v-if="report.lounge_message" class="lounge-quote" :title="report.lounge_message.content">Lounge: "{{ report.lounge_message.content }}"</p>
+          </td>
           <td><span class="badge" :class="`badge--${report.status}`">{{ report.status }}</span></td>
           <td :title="formatDateTimeFull(report.created_at)">{{ formatDate(report.created_at) }}</td>
           <td>
@@ -165,6 +168,10 @@ function next() { offset.value += limit; fetchReports() }
 
 onMounted(fetchReports)
 </script>
+
+<style scoped>
+.lounge-quote { margin: 4px 0 0; max-width: 320px; font-size: 12px; color: var(--color-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
 
 <style lang="scss" scoped>
 @use './admin-shared';

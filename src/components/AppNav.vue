@@ -10,6 +10,7 @@
         <template v-if="authStore.isAuthenticated">
           <NuxtLink :to="dashboardLink" class="app-nav__link" active-class="app-nav__link--active">Dashboard</NuxtLink>
           <NuxtLink to="/keydrop" class="app-nav__link" active-class="app-nav__link--active">Key Drop</NuxtLink>
+          <NuxtLink v-if="lounge?.visible" to="/lounge" class="app-nav__link" active-class="app-nav__link--active">Lounge<i v-if="loungeOpen" class="app-nav__live" /></NuxtLink>
           <NuxtLink to="/stats" class="app-nav__link" active-class="app-nav__link--active">Stats</NuxtLink>
           <NuxtLink to="/messages" class="app-nav__link" active-class="app-nav__link--active">Messages<span v-if="dmUnread" class="app-nav__badge">{{ dmUnread > 9 ? '9+' : dmUnread }}</span></NuxtLink>
           <NuxtLink v-if="authStore.isLoqee && !authStore.hasAccess" to="/subscription/upgrade" class="app-nav__link app-nav__link--cta">Upgrade</NuxtLink>
@@ -61,6 +62,7 @@
             </div>
             <NuxtLink :to="dashboardLink" class="app-nav__drawer-link">Dashboard</NuxtLink>
             <NuxtLink to="/keydrop" class="app-nav__drawer-link">Key Drop</NuxtLink>
+            <NuxtLink v-if="lounge?.visible" to="/lounge" class="app-nav__drawer-link">Lounge<i v-if="loungeOpen" class="app-nav__live" /></NuxtLink>
             <NuxtLink to="/stats" class="app-nav__drawer-link">Stats</NuxtLink>
             <NuxtLink to="/messages" class="app-nav__drawer-link">Messages<span v-if="dmUnread" class="app-nav__badge">{{ dmUnread > 9 ? '9+' : dmUnread }}</span></NuxtLink>
             <NuxtLink to="/profile" class="app-nav__drawer-link">Profile</NuxtLink>
@@ -113,9 +115,10 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 const { count: dmUnread, start: startDmUnread } = useDmUnread()
+const { status: lounge, isOpen: loungeOpen, start: startLounge } = useLoungeStatus()
 
 onMounted(() => {
-  if (authStore.isAuthenticated) startDmUnread()
+  if (authStore.isAuthenticated) { startDmUnread(); startLounge() }
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onKeydown)
 })
@@ -126,7 +129,7 @@ onBeforeUnmount(() => {
 })
 
 watch(() => route.fullPath, () => { accountMenuOpen.value = false })
-watch(() => authStore.isAuthenticated, (on) => { if (on) startDmUnread() })
+watch(() => authStore.isAuthenticated, (on) => { if (on) { startDmUnread(); startLounge() } })
 
 const dashboardLink = computed(() =>
   authStore.isLoqholder ? '/dashboard/keyholder' : '/dashboard/wearer'
@@ -309,6 +312,17 @@ async function logout() {
 
     &:hover { background: rgba(244, 240, 255, 0.06); color: var(--color-text); text-decoration: none; }
     &--logout { color: var(--color-text-muted); }
+  }
+
+  &__live {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-left: 6px;
+    border-radius: 50%;
+    background: var(--color-success);
+    box-shadow: 0 0 8px var(--color-success);
+    vertical-align: 2px;
   }
 
   &__badge {

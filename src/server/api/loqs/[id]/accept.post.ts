@@ -1,6 +1,7 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 import { logAudit } from '~/server/utils/auditLog'
+import { postLoungeEvent } from '~/server/utils/lounge'
 import { sendPushNotification } from '~/server/utils/sendPushNotification'
 import { broadcastLoqUpdate } from '~/server/utils/broadcastLoq'
 import { hasPremiumAccess } from '~/utils/access'
@@ -103,6 +104,7 @@ export default defineEventHandler(async (event) => {
   await broadcastLoqUpdate(id, { loq: { id, status: 'active' } })
 
   await sendPushNotification(loq.loqee_id, 'Lock accepted', 'Your lock request was accepted. It\'s time!', '/dashboard')
+  await postLoungeEvent('🤝 A wearer just got a keyholder. Another lock is on.', 'keyholder', 15 * 60_000)
 
   return updated
 })

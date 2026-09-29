@@ -36,6 +36,7 @@
           <NuxtLink to="/admin/locks" class="admin-nav-link">Locks</NuxtLink>
           <NuxtLink to="/admin/messages" class="admin-nav-link">Messages</NuxtLink>
           <NuxtLink to="/admin/reports" class="admin-nav-link">Reports</NuxtLink>
+          <NuxtLink to="/admin/lounge" class="admin-nav-link">Lounge</NuxtLink>
         </template>
         <template v-if="authStore.isSuperAdmin">
           <NuxtLink to="/admin/deletions" class="admin-nav-link">Deletions</NuxtLink>

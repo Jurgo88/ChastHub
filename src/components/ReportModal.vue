@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ reportedUserId: string; conversationId?: string }>()
+const props = defineProps<{ reportedUserId: string; conversationId?: string; loungeMessageId?: string }>()
 const emit = defineEmits<{ close: [] }>()
 
 const { authFetch } = useAuthFetch()
@@ -62,6 +62,7 @@ async function submit() {
         reason: reason.value,
         description: description.value || undefined,
         conversation_id: props.conversationId,
+        lounge_message_id: props.loungeMessageId,
       },
     })
     success.value = true

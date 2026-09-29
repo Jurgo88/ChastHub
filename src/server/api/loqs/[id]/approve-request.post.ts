@@ -1,6 +1,7 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 import { logAudit } from '~/server/utils/auditLog'
+import { postLoungeEvent } from '~/server/utils/lounge'
 import { sendPushNotification } from '~/server/utils/sendPushNotification'
 import { hasPremiumAccess } from '~/utils/access'
 
@@ -75,6 +76,7 @@ export default defineEventHandler(async (event) => {
   await logAudit(supabase, 'loq_accepted', user.id, request.loqholder_id, { loq_id: id })
 
   await sendPushNotification(request.loqholder_id, 'Request approved', "You're now the keyholder. It's time!", '/dashboard')
+  await postLoungeEvent('🤝 A wearer just got a keyholder. Another lock is on.', 'keyholder', 15 * 60_000)
 
   return updated
 })

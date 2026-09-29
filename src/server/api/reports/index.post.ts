@@ -13,8 +13,8 @@ export default defineEventHandler(async (event) => {
 
   const supabase = useSupabaseAdmin()
 
-  const body = await readBody<{ reported_user_id: string; reason: string; description?: string; conversation_id?: string }>(event)
-  const { reported_user_id, reason, description, conversation_id } = body ?? {}
+  const body = await readBody<{ reported_user_id: string; reason: string; description?: string; conversation_id?: string; lounge_message_id?: string }>(event)
+  const { reported_user_id, reason, description, conversation_id, lounge_message_id } = body ?? {}
 
   if (!reported_user_id || !reason) {
     throw createError({ statusCode: 400, message: 'reported_user_id and reason are required' })
@@ -54,6 +54,18 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // A Lounge message is public to every member, so only check that it
+  // exists and that it was written by the person being reported.
+  let verifiedLoungeMessageId: string | null = null
+  if (lounge_message_id) {
+    const { data: msg } = await supabase
+      .from('lounge_messages')
+      .select('id, user_id')
+      .eq('id', lounge_message_id)
+      .maybeSingle()
+    if (msg && msg.user_id === reported_user_id) verifiedLoungeMessageId = msg.id
+  }
+
   const { data: report, error } = await supabase
     .from('reports')
     .insert({
@@ -62,6 +74,7 @@ export default defineEventHandler(async (event) => {
       reason,
       description: description ?? null,
       conversation_id: verifiedConversationId,
+      lounge_message_id: verifiedLoungeMessageId,
     })
     .select('id, created_at')
     .single()

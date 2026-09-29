@@ -1,3 +1,4 @@
+import { postLoungeEvent } from '~/server/utils/lounge'
 import { createHash } from 'crypto'
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { broadcastLoqUpdate } from '~/server/utils/broadcastLoq'
@@ -161,6 +162,13 @@ export default defineEventHandler(async (event) => {
       await sendPushNotification(loq.loqholder_id, 'Lock time changed', message, pushUrl)
     }
   }
+
+  await postLoungeEvent(
+    direction === 'remove'
+      ? `⏱ A visitor took ${magnitude}h off a Key Drop lock`
+      : `⏱ A visitor added +${magnitude}h to a Key Drop lock`,
+    'keydrop',
+  )
 
   return {
     // TASK-147 — the share page knows only the public link id, and the

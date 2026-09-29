@@ -283,3 +283,57 @@ export interface StatsMe {
   role: UserRole
   boards: Partial<Record<StatsBoardKey, { total: number; me: StatsMeRow | null }>>
 }
+
+// ─── Lounge ──────────────────────────────────────────────────────────────────
+
+export interface LoungeWindowInfo {
+  name: string
+  start: string
+  end: string
+  date: string
+  day: number
+}
+
+export interface LoungeStatus {
+  enabled: boolean
+  /** Shown in the menu: a session is open, starts within a day, or ended within a day. */
+  visible: boolean
+  open: LoungeWindowInfo | null
+  next: LoungeWindowInfo | null
+  previous: LoungeWindowInfo | null
+  question: { day: number; text: string } | null
+  last_session: { people: number; messages: number } | null
+  slow_mode_seconds: number
+  sessions: { name: string; tz: string; start: string; end: string }[]
+}
+
+export interface LoungeAuthor {
+  id: string
+  display_name: string | null
+  username: string | null
+  avatar_url: string | null
+  role: UserRole
+  team: boolean
+  /** Day of the author's running lock as a wearer; null when not locked or hidden. */
+  lock_day: number | null
+}
+
+export interface LoungeMessage {
+  id: string
+  kind: 'user' | 'system'
+  content: string
+  created_at: string
+  question_day: number | null
+  reply_to: { id: string; name: string } | null
+  author: LoungeAuthor | null
+}
+
+export interface LoungeMe {
+  can_post: boolean
+  /** Why posting is blocked right now, shown in place of the composer. */
+  blocked_reason: string | null
+  muted_until: string | null
+  moderator: boolean
+  reminder_for: string | null
+  last_post_at: string | null
+}
