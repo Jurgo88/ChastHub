@@ -101,6 +101,12 @@ export default defineNuxtConfig({
     // robots.txt asks crawlers not to fetch these; X-Robots-Tag covers
     // anything that reaches them anyway (a direct link, a crawler ignoring
     // robots.txt).
+    // Wearer-only screens that happen to live under /lock/. Without these they
+    // inherit SSR from '/lock/**', the auth middleware runs on the server where
+    // there is no session (auth is client-only), and a refresh bounces the user
+    // to /auth/login.
+    '/lock/create': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/lock/*/find-keyholder': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/admin/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/dashboard/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/profile/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
