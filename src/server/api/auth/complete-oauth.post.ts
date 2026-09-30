@@ -33,6 +33,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Unauthorized' })
   }
 
+  // X accounts can exist without an email address, and a profile needs one
+  // (password reset, receipts). Say so instead of failing on the insert.
+  if (!user.email) {
+    throw createError({
+      statusCode: 400,
+      message: 'Your account did not share an email address. Add one to your X account, or sign up with email instead.',
+    })
+  }
+
   const { data: existing } = await supabase
     .from('profiles')
     .select('id')

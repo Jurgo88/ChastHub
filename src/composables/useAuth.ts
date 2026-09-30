@@ -86,14 +86,16 @@ export function useAuth() {
   // came from to the return URL, because leaving for Google loses it. Plain
   // login, and a signup with no source, keep the return URL exactly as before.
   // Supabase accepts any return URL on the Site URL's own host, query included.
-  async function loginWithGoogle(opts: { carrySource?: boolean } = {}) {
+  async function loginWithProvider(provider: 'google' | 'x', opts: { carrySource?: boolean } = {}) {
     const query = opts.carrySource ? useSignupSource().oauthReturnQuery() : ''
     const { error } = await $supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider,
       options: { redirectTo: `${window.location.origin}/auth/callback${query}` },
     })
     if (error) throw error
   }
 
-  return { signup, login, logout, resetPassword, updatePassword, fetchProfile, loginWithGoogle, resendConfirmation }
+  const loginWithGoogle = (opts: { carrySource?: boolean } = {}) => loginWithProvider('google', opts)
+
+  return { signup, login, logout, resetPassword, updatePassword, fetchProfile, loginWithGoogle, loginWithProvider, resendConfirmation }
 }

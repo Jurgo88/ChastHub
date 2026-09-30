@@ -177,6 +177,9 @@ export default defineNuxtConfig({
       stripePublishableKey: process.env.NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || process.env.NUXT_STRIPE_PUBLISHABLE_KEY || '',
       vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
       signupsEnabled: process.env.NUXT_PUBLIC_SIGNUPS_ENABLED === 'true',
+      // Shows "Continue with X". Turn on only once the X provider is set up
+      // in Supabase, or the button leads to "provider is not enabled".
+      xLoginEnabled: process.env.NUXT_PUBLIC_X_LOGIN_ENABLED === 'true',
       // TASK-123 — when true, a new account must click the link in its
       // confirmation mail before it can log in. Off by default: it also
       // needs "Confirm email" switched on in the Supabase project AND

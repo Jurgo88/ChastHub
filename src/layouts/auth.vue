@@ -297,6 +297,16 @@ const aside = computed(() => ASIDES[(route.meta.authAside as keyof typeof ASIDES
     font-weight: 600;
     &:hover:not(:disabled) { border-color: var(--color-elevated); background: #1F0677; }
   }
+  .btn--x {
+    width: 100%;
+    margin-top: 10px;
+    background: #000;
+    color: #fff;
+    border: 1.5px solid #2f2f2f;
+    font-weight: 600;
+    &:hover:not(:disabled) { background: #111; border-color: #555; color: #fff; }
+  }
+  .oauth-note { margin: 10px 0 0; text-align: center; font-size: 12px; color: var(--color-text-muted); }
   .btn__icon { width: 20px; height: 20px; flex-shrink: 0; }
 
   .divider {
