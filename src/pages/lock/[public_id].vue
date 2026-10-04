@@ -84,6 +84,14 @@ useSeoMeta({
   twitterImage: ogImage,
 })
 
+// The page is server-rendered for link previews, but the session lives in the
+// browser: decide signed-in UI after mount so hydration matches.
+const authStore = useAuthStore()
+const mounted = ref(false)
+onMounted(() => { mounted.value = true })
+const signedIn = computed(() => mounted.value && authStore.isAuthenticated)
+const brandLink = computed(() => signedIn.value ? '/dashboard' : '/')
+
 // Locktober framing for the join card, until the month is over.
 const isLocktober = ref(true)
 onMounted(() => { isLocktober.value = Date.now() < Date.parse('2026-11-01T00:00:00+01:00') })
@@ -99,7 +107,7 @@ onMounted(() => { isLocktober.value = Date.now() < Date.parse('2026-11-01T00:00:
 
     <div class="lp__inner">
       <header class="lp__top">
-        <NuxtLink to="/" class="lp__brand" aria-label="ChastHub home">Chast<span class="lp__grad">Hub</span></NuxtLink>
+        <NuxtLink :to="brandLink" class="lp__brand" :aria-label="signedIn ? 'Go to your dashboard' : 'ChastHub home'">Chast<span class="lp__grad">Hub</span></NuxtLink>
         <span v-if="loq && loq.locked" class="lp__live"><span class="lp__live-dot" />LIVE</span>
       </header>
 
@@ -112,7 +120,7 @@ onMounted(() => { isLocktober.value = Date.now() < Date.parse('2026-11-01T00:00:
         <div v-else-if="fetchError" class="lp__state">
           <p class="lp__state-title">{{ fetchError }}</p>
           <p class="lp__state-hint">The link may be broken, or the lock has been removed.</p>
-          <NuxtLink to="/" class="lp__cta">Go to ChastHub</NuxtLink>
+          <NuxtLink :to="brandLink" class="lp__cta">{{ signedIn ? 'Back to dashboard' : 'Go to ChastHub' }}</NuxtLink>
         </div>
 
         <template v-else-if="loq">
@@ -149,7 +157,7 @@ onMounted(() => { isLocktober.value = Date.now() < Date.parse('2026-11-01T00:00:
         </template>
       </main>
 
-      <footer class="lp__join">
+      <footer v-if="mounted && !signedIn" class="lp__join">
         <span class="lp__join-text">{{ isLocktober ? 'Want your own lock this Locktober?' : 'Want your own lock?' }}</span>
         <NuxtLink :to="joinLink" class="lp__cta">Join free</NuxtLink>
       </footer>
