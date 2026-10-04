@@ -27,7 +27,10 @@ export default defineEventHandler(async (event) => {
 
   // Issue #6: recent moves, totals, Top teasers and reactions. The internal
   // id stays on the server.
+  // `locked` is derived from the status: self-locks were created with the
+  // column left at its default (false), which made their public page say
+  // the lock had ended.
   const { id, ...publicLoq } = loq
   const activity = await getPublicLoqActivity(id)
-  return { ...publicLoq, ...activity }
+  return { ...publicLoq, locked: ['active', 'paused'].includes(loq.status), ...activity }
 })

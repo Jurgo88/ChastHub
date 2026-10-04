@@ -99,8 +99,11 @@ export async function usePublicLoq(publicId: string) {
           const next = { ...loq.value }
           if (typeof loqPatch.loqed_until === 'string') next.loqed_until = loqPatch.loqed_until
           if (loqPatch.paused_at === null || typeof loqPatch.paused_at === 'string') next.paused_at = loqPatch.paused_at
-          if (typeof loqPatch.status === 'string') next.status = loqPatch.status
-          if (typeof loqPatch.locked === 'boolean') next.locked = loqPatch.locked
+          if (typeof loqPatch.status === 'string') {
+            next.status = loqPatch.status
+            next.locked = ['active', 'paused'].includes(loqPatch.status)
+          }
+          else if (loqPatch.locked === false) next.locked = false
           loq.value = next
         }
         if ((direction === 'add' || direction === 'remove') && typeof hours_changed === 'number' && hours_changed > 0 && hours_changed <= 48) {

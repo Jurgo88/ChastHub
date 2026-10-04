@@ -65,6 +65,8 @@ export default defineEventHandler(async (event) => {
       emotion: emotion ?? null,
       reason: reason ?? null,
       status: self ? 'active' : 'draft',
+      // A self-lock is locked from the start; paired locks flip this on accept.
+      locked: !!self,
       loqed_until: loqedUntil,
       public_link_id: self ? generateLinkId() : null,
     })
