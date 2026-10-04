@@ -1,4 +1,5 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
+import { getPublicLoqActivity } from '~/server/utils/publicLoqActivity'
 
 export default defineEventHandler(async (event) => {
   const publicId = getRouterParam(event, 'public_id')
@@ -12,7 +13,7 @@ export default defineEventHandler(async (event) => {
   // reusing it for a public page would defeat the entire point of a loq.
   const { data: loq, error } = await supabase
     .from('loqs')
-    .select('loqed_until, emotion, reason, visitor_add_hours, visitor_permission, locked, status, paused_at')
+    .select('id, loqed_until, emotion, reason, visitor_add_hours, visitor_permission, locked, status, paused_at')
     .eq('public_link_id', publicId)
     .single()
 
@@ -24,5 +25,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 410, message: 'This lock has ended' })
   }
 
-  return loq
+  // Issue #6: recent moves, totals, Top teasers and reactions. The internal
+  // id stays on the server.
+  const { id, ...publicLoq } = loq
+  const activity = await getPublicLoqActivity(id)
+  return { ...publicLoq, ...activity }
 })

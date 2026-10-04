@@ -11,14 +11,25 @@ export interface PublicLoqData {
   paused_at: string | null
 }
 
+export type ReactionKey = 'devil' | 'lock' | 'laugh' | 'fire'
+
+// Issue #6: activity around the clock, served with the lock.
+export interface PublicLoqActivity {
+  recent: { direction: 'add' | 'remove'; hours: number; at: string; name: string | null }[]
+  totals: { visitors: number; added_hours: number; removed_hours: number }
+  top: { name: string; username: string | null; avatar_url: string | null; hours: number }[]
+  reactions: Record<ReactionKey, number> | null
+}
+
 export interface FeedEntry {
   id: number
   direction: 'add' | 'remove'
   hours: number
   at: number
+  name?: string | null
 }
 
-const MAX_FEED_ENTRIES = 5
+const MAX_FEED_ENTRIES = 6
 
 export async function usePublicLoq(publicId: string) {
   const { publishDetached } = useDiscoverFeed()
@@ -33,12 +44,19 @@ export async function usePublicLoq(publicId: string) {
   // Live "Visitor added/removed Xh" feed — populated by this visitor's own
   // action and by broadcasts from other visitors on the same public page.
   const feed = ref<FeedEntry[]>([])
+  const totals = ref<PublicLoqActivity['totals']>({ visitors: 0, added_hours: 0, removed_hours: 0 })
+  const top = ref<PublicLoqActivity['top']>([])
+  const reactions = ref<PublicLoqActivity['reactions']>(null)
+  const reacted = ref<Partial<Record<ReactionKey, boolean>>>({})
+  const reactError = ref('')
   let feedIdCounter = 0
   let interval: ReturnType<typeof setInterval> | null = null
   let channel: RealtimeChannel | null = null
 
-  function pushFeedEntry(direction: 'add' | 'remove', hours: number) {
-    feed.value = [{ id: feedIdCounter++, direction, hours, at: Date.now() }, ...feed.value].slice(0, MAX_FEED_ENTRIES)
+  function pushFeedEntry(direction: 'add' | 'remove', hours: number, name: string | null = null) {
+    feed.value = [{ id: feedIdCounter++, direction, hours, at: Date.now(), name }, ...feed.value].slice(0, MAX_FEED_ENTRIES)
+    if (direction === 'add') totals.value = { ...totals.value, added_hours: totals.value.added_hours + hours }
+    else totals.value = { ...totals.value, removed_hours: totals.value.removed_hours + hours }
   }
 
   const storageKey = `loq_added_${publicId}`
@@ -76,8 +94,27 @@ export async function usePublicLoq(publicId: string) {
       .channel(`loq-public:${publicId}`)
       .on('broadcast', { event: 'loq_updated' }, ({ payload }: { payload: Partial<PublicLoqData> & { direction?: 'add' | 'remove'; hours_changed?: number } }) => {
         const { direction, hours_changed, ...loqPatch } = payload
-        if (loq.value) loq.value = { ...loq.value, ...loqPatch }
-        if (direction && hours_changed) pushFeedEntry(direction, hours_changed)
+        // Only the fields the page renders; anything else in a broadcast is ignored.
+        if (loq.value) {
+          const next = { ...loq.value }
+          if (typeof loqPatch.loqed_until === 'string') next.loqed_until = loqPatch.loqed_until
+          if (loqPatch.paused_at === null || typeof loqPatch.paused_at === 'string') next.paused_at = loqPatch.paused_at
+          if (typeof loqPatch.status === 'string') next.status = loqPatch.status
+          if (typeof loqPatch.locked === 'boolean') next.locked = loqPatch.locked
+          loq.value = next
+        }
+        if ((direction === 'add' || direction === 'remove') && typeof hours_changed === 'number' && hours_changed > 0 && hours_changed <= 48) {
+          pushFeedEntry(direction, hours_changed)
+          totals.value = { ...totals.value, visitors: totals.value.visitors + 1 }
+        }
+      })
+      .on('broadcast', { event: 'reaction' }, ({ payload }: { payload: { emoji?: ReactionKey; count?: number } }) => {
+        const r = reactions.value
+        if (!r || !payload?.emoji || !(payload.emoji in r) || typeof payload.count !== 'number') return
+        // Counts only grow; a lower number from a broadcast is stale or forged.
+        if (payload.count > r[payload.emoji] && payload.count <= r[payload.emoji] + 50) {
+          reactions.value = { ...r, [payload.emoji]: payload.count }
+        }
       })
       .subscribe()
   }
@@ -113,6 +150,7 @@ export async function usePublicLoq(publicId: string) {
       if (import.meta.client) {
         localStorage.setItem(storageKey, '1')
       }
+      if (!alreadyActed.value) totals.value = { ...totals.value, visitors: totals.value.visitors + 1 }
       alreadyActed.value = true
       lastAction.value = direction
       // Broadcast doesn't echo back to the sender, so add our own entry to
@@ -145,6 +183,30 @@ export async function usePublicLoq(publicId: string) {
     }
   }
 
+  async function react(emoji: ReactionKey) {
+    if (reacted.value[emoji] || !reactions.value) return
+    reactError.value = ''
+    reacted.value = { ...reacted.value, [emoji]: true }
+    reactions.value = { ...reactions.value, [emoji]: reactions.value[emoji] + 1 }
+    try {
+      const token = useAuthStore().session?.access_token
+      const res = await $fetch<{ emoji: ReactionKey; count: number }>(`/api/loq/${publicId}/react`, {
+        method: 'POST',
+        body: { emoji },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      })
+      if (reactions.value) reactions.value = { ...reactions.value, [emoji]: res.count }
+      channel?.send({ type: 'broadcast', event: 'reaction', payload: { emoji, count: res.count } })
+    }
+    catch (e: unknown) {
+      const fe = e as { data?: { message?: string }; statusCode?: number }
+      if (reactions.value) reactions.value = { ...reactions.value, [emoji]: Math.max(0, reactions.value[emoji] - 1) }
+      // 429 means this visitor already reacted this hour: keep it marked.
+      if (fe?.statusCode !== 429) reacted.value = { ...reacted.value, [emoji]: false }
+      reactError.value = fe?.data?.message ?? 'Could not send that.'
+    }
+  }
+
   onUnmounted(() => {
     if (interval) clearInterval(interval)
     channel?.unsubscribe()
@@ -156,17 +218,28 @@ export async function usePublicLoq(publicId: string) {
   // onMounted, a social crawler saw an empty page and every shared link
   // previewed as a blank box. Nuxt serialises the result into the payload,
   // so the browser does not fetch it a second time.
-  const { data, error } = await useAsyncData<PublicLoqData>(
+  const { data, error } = await useAsyncData<PublicLoqData & PublicLoqActivity>(
     `public-loq:${publicId}`,
-    () => $fetch<PublicLoqData>(`/api/loq/${publicId}`),
+    () => $fetch<PublicLoqData & PublicLoqActivity>(`/api/loq/${publicId}`),
   )
 
   if (error.value) {
     const fe = error.value as { data?: { message?: string }; message?: string }
     fetchError.value = fe?.data?.message ?? fe?.message ?? 'Lock not found'
   }
-  else {
-    loq.value = data.value
+  else if (data.value) {
+    const { recent, totals: t, top: tp, reactions: rx, ...rest } = data.value
+    loq.value = rest
+    totals.value = t ?? totals.value
+    top.value = tp ?? []
+    reactions.value = rx ?? null
+    feed.value = (recent ?? []).slice(0, MAX_FEED_ENTRIES).map(r => ({
+      id: feedIdCounter++,
+      direction: r.direction,
+      hours: r.hours,
+      at: new Date(r.at).getTime(),
+      name: r.name,
+    }))
   }
   loading.value = false
 
@@ -186,5 +259,11 @@ export async function usePublicLoq(publicId: string) {
     alreadyActed,
     feed,
     adjustTime,
+    totals,
+    top,
+    reactions,
+    reacted,
+    reactError,
+    react,
   }
 }

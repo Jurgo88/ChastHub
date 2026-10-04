@@ -17,6 +17,7 @@
   "dependencies": {
     "@microsoft/clarity": "^1.0.2",
     "@pinia/nuxt": "^0.10.1",
+    "@resvg/resvg-js": "^2.6.2",
     "@supabase/supabase-js": "^2.49.4",
     "@vite-pwa/nuxt": "^1.1.1",
     "nuxt": "^3.16.2",

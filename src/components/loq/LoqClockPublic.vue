@@ -21,7 +21,11 @@ defineEmits<{
 function feedAgo(at: number): string {
   const s = Math.max(0, Math.floor((Date.now() - at) / 1000))
   if (s < 60) return 'just now'
-  return `${Math.floor(s / 60)}m ago`
+  const m = Math.floor(s / 60)
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
 }
 
 // The public API does not expose the lock's total length, so the ring does not
@@ -109,7 +113,7 @@ const amount = computed(() => {
           <span :class="entry.direction === 'remove' ? 'lc__feed-remove' : 'lc__feed-add'">
             {{ entry.direction === 'remove' ? '−' : '+' }}{{ entry.hours }}h
           </span>
-          <span class="lc__feed-label">{{ entry.direction === 'remove' ? 'removed' : 'added' }} · {{ feedAgo(entry.at) }}</span>
+          <span class="lc__feed-label">{{ entry.direction === 'remove' ? 'removed' : 'added' }}<template v-if="entry.name"> by <b>{{ entry.name }}</b></template> · {{ feedAgo(entry.at) }}</span>
         </li>
       </TransitionGroup>
     </div>
@@ -206,7 +210,7 @@ const amount = computed(() => {
 .lc__feed-item { display: flex; justify-content: center; gap: 8px; font-size: 14px; }
 .lc__feed-add { color: var(--color-accent); font-weight: 700; font-variant-numeric: tabular-nums; }
 .lc__feed-remove { color: var(--color-cta); font-weight: 700; font-variant-numeric: tabular-nums; }
-.lc__feed-label { color: var(--color-text-muted); }
+.lc__feed-label { color: var(--color-text-muted); b { color: var(--color-text); font-weight: 600; } }
 
 .feed-enter-active,
 .feed-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }

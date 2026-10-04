@@ -21,6 +21,12 @@ const {
   alreadyActed,
   feed,
   adjustTime,
+  totals,
+  top,
+  reactions,
+  reacted,
+  reactError,
+  react,
 } = await usePublicLoq(publicId)
 
 // TASK-108 — this is the page people paste into Telegram, X and Discord, so
@@ -53,6 +59,12 @@ const shareDescription = computed(() => {
   return `${timeLeft.value} left on the clock. ${action}`
 })
 
+// Live share image: the current clock and visitor numbers (issue #5). The
+// ?v= bucket changes every 10 minutes so crawlers do not keep a stale card.
+const ogImage = loq.value
+  ? `${siteUrl}/api/og/lock/${publicId}?v=${Math.floor(Date.now() / 600_000)}`
+  : `${siteUrl}/images/og-default.png`
+
 useSeoMeta({
   // No "· ChastHub" here — the site-wide titleTemplate in app.vue appends it.
   title: headline,
@@ -61,15 +73,15 @@ useSeoMeta({
   ogDescription: shareDescription,
   ogType: 'website',
   ogUrl: `${siteUrl}/lock/${publicId}`,
-  ogImage: `${siteUrl}/images/og-default.png`,
+  ogImage,
   ogImageWidth: 1200,
   ogImageHeight: 630,
-  ogImageAlt: 'ChastHub, the platform for keyholders and wearers',
+  ogImageAlt: () => loq.value ? `A live lock on ChastHub: ${headline.value}` : 'ChastHub, the platform for keyholders and wearers',
   ogSiteName: 'ChastHub',
   twitterCard: 'summary_large_image',
   twitterTitle: headline,
   twitterDescription: shareDescription,
-  twitterImage: `${siteUrl}/images/og-default.png`,
+  twitterImage: ogImage,
 })
 
 // Locktober framing for the join card, until the month is over.
@@ -123,6 +135,16 @@ onMounted(() => { isLocktober.value = Date.now() < Date.parse('2026-11-01T00:00:
             :action-error="actionError"
             :feed="feed"
             @adjust-time="adjustTime"
+          />
+          <LoqActivity
+            :totals="totals"
+            :top="top"
+            :reactions="reactions"
+            :reacted="reacted"
+            :react-error="reactError"
+            :permission="loq.visitor_permission"
+            :locked="loq.locked"
+            @react="react"
           />
         </template>
       </main>
