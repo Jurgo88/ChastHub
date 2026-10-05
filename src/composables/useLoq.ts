@@ -60,6 +60,9 @@ export function useLoq() {
     emotion?: string
     reason?: string
     self?: boolean
+    visitor_permission?: 'none' | 'add' | 'remove' | 'both'
+    visitor_add_hours?: number
+    listed_in_discover?: boolean
   }): Promise<Loq> {
     try {
       const loq = await authFetch<Loq>('/api/loqs', { method: 'POST', body: data })

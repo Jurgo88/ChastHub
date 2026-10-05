@@ -14,9 +14,33 @@ export default defineEventHandler(async (event) => {
     emotion?: string
     reason?: string
     self?: boolean
+    visitor_permission?: string
+    visitor_add_hours?: number
+    listed_in_discover?: boolean
   }>(event)
 
   const { duration_minutes, combination_text, combination_photo_url, emotion, reason, self } = body ?? {}
+
+  // Visitor settings can be chosen up front, but only for a self-lock: on a
+  // paired lock they belong to the keyholder.
+  const extra: Record<string, unknown> = {}
+  if (self) {
+    const { visitor_permission: perm, visitor_add_hours: hrs, listed_in_discover: listed } = body ?? {}
+    if (perm !== undefined) {
+      if (!['none', 'add', 'remove', 'both'].includes(perm)) throw createError({ statusCode: 400, message: 'Invalid visitor_permission' })
+      extra.visitor_permission = perm
+    }
+    if (hrs !== undefined) {
+      if (typeof hrs !== 'number' || !Number.isFinite(hrs) || hrs < 1 / 60 || hrs > MAX_DURATION_MINUTES / 60) {
+        throw createError({ statusCode: 400, message: 'Invalid visitor_add_hours' })
+      }
+      extra.visitor_add_hours = hrs
+    }
+    if (listed !== undefined) {
+      if (typeof listed !== 'boolean') throw createError({ statusCode: 400, message: 'listed_in_discover must be true or false' })
+      extra.listed_in_discover = listed
+    }
+  }
 
   if (!duration_minutes || typeof duration_minutes !== 'number') {
     throw createError({ statusCode: 400, message: 'duration_minutes is required' })
@@ -69,6 +93,7 @@ export default defineEventHandler(async (event) => {
       locked: !!self,
       loqed_until: loqedUntil,
       public_link_id: self ? generateLinkId() : null,
+      ...extra,
     })
     .select()
     .single()

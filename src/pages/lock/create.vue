@@ -3,300 +3,275 @@
     <div class="create-glow" aria-hidden="true" />
 
     <header class="create-nav">
-      <NuxtLink to="/dashboard/wearer" class="create-nav__back">
+      <button v-if="step > 1" type="button" class="create-nav__back" @click="prevStep">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+        Back
+      </button>
+      <NuxtLink v-else to="/dashboard/wearer" class="create-nav__back">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
         Dashboard
       </NuxtLink>
-      <span class="create-nav__step">Step {{ step }} of {{ TOTAL_STEPS }} · {{ STEP_NAMES[step - 1] }}</span>
+      <ol class="steps" aria-label="Steps">
+        <li v-for="(n, i) in STEP_NAMES" :key="n" :class="{ on: step === i + 1, done: step > i + 1 }">
+          <i>{{ step > i + 1 ? '✓' : i + 1 }}</i><span>{{ n }}</span>
+        </li>
+      </ol>
     </header>
 
-    <div class="create-progress" aria-hidden="true">
-      <span
-        v-for="i in TOTAL_STEPS"
-        :key="i"
-        class="create-progress__bar"
-        :class="{ 'create-progress__bar--on': step >= i }"
-      />
-    </div>
+    <div class="create-grid">
+      <main class="create-main">
 
-    <main class="create-main">
+        <!-- Step 1: Time -->
+        <section v-if="step === 1" class="create-step">
+          <h1 class="create-step__title">How long?</h1>
+          <p class="create-step__hint">The clock starts the moment you lock.</p>
 
-      <!-- Step 1: Duration -->
-      <section v-if="step === 1" class="create-step">
-        <h1 class="create-step__title">How long?</h1>
-        <p class="create-step__hint">Pick a duration. The clock starts the moment you create the lock.</p>
-        <div class="duration-grid">
           <button
-            v-for="opt in DURATION_OPTIONS"
-            :key="opt.value"
-            class="duration-chip"
-            :class="{ 'duration-chip--active': form.duration_minutes === opt.value }"
+            v-if="october"
             type="button"
-            @click="selectDuration(opt.value)"
+            class="lt-card"
+            :class="{ 'lt-card--on': choiceId === 'l30' }"
+            :aria-pressed="choiceId === 'l30'"
+            @click="choiceId = 'l30'"
           >
-            {{ opt.label }}
+            <span class="lt-card__ico" aria-hidden="true">🔒</span>
+            <span class="lt-card__txt">
+              <b>Locktober 30</b>
+              <small>30 days, ends {{ fmtEnd(addMinutes(now, LOCKTOBER_30_MINUTES)) }}. Counts for the Locktober 30 board.</small>
+            </span>
+            <span class="lt-card__chk" aria-hidden="true">✓</span>
           </button>
-        </div>
-        <div class="custom-block" :class="{ 'custom-block--active': form.duration_minutes > 0 }">
-          <span class="custom-block__tag">Or set your own</span>
-          <div class="custom-block__spinners">
 
-            <div class="dur-spin">
-              <button class="dur-spin__arrow" type="button" aria-label="More days" :disabled="customDays >= MAX_CUSTOM_DAYS" @click="spinDay(1)">
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <span class="dur-spin__val">{{ String(customDays).padStart(2, '0') }}</span>
-              <button class="dur-spin__arrow" type="button" aria-label="Fewer days" :disabled="customDays <= 0" @click="spinDay(-1)">
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <span class="dur-spin__label">Days</span>
-            </div>
-
-            <div class="dur-spin">
-              <button class="dur-spin__arrow" type="button" aria-label="More hours" :disabled="customHours >= 23" @click="spinHour(1)">
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <span class="dur-spin__val">{{ String(customHours).padStart(2, '0') }}</span>
-              <button class="dur-spin__arrow" type="button" aria-label="Fewer hours" :disabled="customHours <= 0" @click="spinHour(-1)">
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <span class="dur-spin__label">Hours</span>
-            </div>
-
-            <div class="dur-spin">
-              <button class="dur-spin__arrow" type="button" aria-label="More minutes" :disabled="customMinutes >= 59" @click="spinMinute(1)">
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <span class="dur-spin__val">{{ String(customMinutes).padStart(2, '0') }}</span>
-              <button class="dur-spin__arrow" type="button" aria-label="Fewer minutes" :disabled="customMinutes <= 0" @click="spinMinute(-1)">
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <span class="dur-spin__label">Min</span>
-            </div>
-
+          <p class="lbl">Quick picks</p>
+          <div class="duration-grid">
+            <button
+              v-for="p in presets"
+              :key="p.id"
+              class="duration-chip"
+              :class="{ 'duration-chip--active': choiceId === p.id }"
+              type="button"
+              @click="choiceId = p.id"
+            >
+              {{ p.label }}
+              <small v-if="p.id === 'weekend'">Mon 8:00</small>
+              <small v-else-if="p.id === 'nov1'">00:00</small>
+            </button>
           </div>
-          <p v-if="form.duration_minutes > 0" class="custom-block__preview">
-            You'll be locked for <strong>{{ formatDuration(form.duration_minutes) }}</strong>
+
+          <p class="lbl">Or set your own</p>
+          <div class="seg" role="tablist" aria-label="Custom time">
+            <button class="seg__btn" :class="{ 'seg__btn--on': choiceId === 'custom' && customMode === 'duration' }" type="button" role="tab" @click="pickCustom('duration')">Duration</button>
+            <button class="seg__btn" :class="{ 'seg__btn--on': choiceId === 'custom' && customMode === 'until' }" type="button" role="tab" @click="pickCustom('until')">Until a date</button>
+          </div>
+
+          <div v-if="choiceId === 'custom' && customMode === 'duration'" class="custom-block custom-block--active">
+            <div class="custom-block__spinners">
+              <div v-for="sp in spinners" :key="sp.key" class="dur-spin">
+                <button class="dur-spin__arrow" type="button" :aria-label="`More ${sp.label}`" :disabled="custom[sp.key] >= sp.max" @click="spin(sp.key, 1, sp.max)">
+                  <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </button>
+                <span class="dur-spin__val">{{ String(custom[sp.key]).padStart(2, '0') }}</span>
+                <button class="dur-spin__arrow" type="button" :aria-label="`Fewer ${sp.label}`" :disabled="custom[sp.key] <= 0" @click="spin(sp.key, -1, sp.max)">
+                  <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </button>
+                <span class="dur-spin__label">{{ sp.label }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="choiceId === 'custom' && customMode === 'until'" class="until">
+            <label><span>Date</span><input v-model="untilDate" type="date" class="create-input" :min="todayIso"></label>
+            <label><span>Time</span><input v-model="untilTime" type="time" class="create-input"></label>
+          </div>
+
+          <p v-if="minutes" class="create-preview">
+            <strong>{{ formatMinutes(minutes) }}</strong> · ends {{ fmtEnd(endsAt) }}
           </p>
-        </div>
-        <p v-if="errors.duration" class="create-error">{{ errors.duration }}</p>
-        <div class="create-actions">
-          <button class="btn btn--primary" :disabled="!form.duration_minutes" @click="nextStep">Continue</button>
-        </div>
-      </section>
+          <p v-else-if="choiceId === 'custom'" class="create-input-meta create-input-meta--left">Pick a time in the future.</p>
 
-      <!-- Step 2: Combination -->
-      <section v-if="step === 2" class="create-step">
-        <h1 class="create-step__title">Hide your combination</h1>
-        <p class="create-step__hint">
-          Enter your padlock code or add a photo of it. It stays hidden from you until the lock ends.
-        </p>
+          <div class="create-actions">
+            <button class="btn btn--primary" :disabled="!minutes" @click="nextStep">Continue</button>
+          </div>
+        </section>
 
-        <div class="seg" role="tablist" aria-label="Combination type">
-          <button
-            class="seg__btn"
-            :class="{ 'seg__btn--on': comboMode === 'text' }"
-            type="button"
-            role="tab"
-            :aria-selected="comboMode === 'text'"
-            @click="comboMode = 'text'"
-          >Code</button>
-          <button
-            class="seg__btn"
-            :class="{ 'seg__btn--on': comboMode === 'photo' }"
-            type="button"
-            role="tab"
-            :aria-selected="comboMode === 'photo'"
-            @click="comboMode = 'photo'"
-          >Photo</button>
-        </div>
+        <!-- Step 2: Key -->
+        <section v-if="step === 2" class="create-step">
+          <h1 class="create-step__title">Hide your key</h1>
+          <p class="create-step__hint">Set your padlock to this code. It stays hidden from you until the lock ends.</p>
 
-        <template v-if="comboMode === 'text'">
-          <label class="sr-only" for="combo-text">Combination</label>
-          <input
-            id="combo-text"
-            v-model.trim="form.combination_text"
-            type="text"
-            class="create-input create-input--code"
-            maxlength="10"
-            placeholder="1234"
-            autocomplete="off"
-            autofocus
-          />
-          <p class="create-input-meta">{{ form.combination_text.length }}/10</p>
-        </template>
+          <div class="seg" role="tablist" aria-label="Combination type">
+            <button class="seg__btn" :class="{ 'seg__btn--on': comboMode === 'text' }" type="button" role="tab" :aria-selected="comboMode === 'text'" @click="comboMode = 'text'">Code</button>
+            <button class="seg__btn" :class="{ 'seg__btn--on': comboMode === 'photo' }" type="button" role="tab" :aria-selected="comboMode === 'photo'" @click="comboMode = 'photo'">Photo</button>
+          </div>
 
-        <template v-else>
-          <div class="photo-upload" :class="{ 'photo-upload--filled': !!photoPreview }" @click="triggerFileInput" @dragover.prevent @drop.prevent="onPhotoDrop">
-            <img v-if="photoPreview" :src="photoPreview" class="photo-upload__preview" alt="Combination preview" />
-            <template v-else>
-              <svg class="photo-upload__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
-              <p class="photo-upload__hint">Tap to take or choose a photo</p>
-              <p class="photo-upload__sub">or drag it here</p>
+          <template v-if="comboMode === 'text'">
+            <div class="code-row">
+              <label class="sr-only" for="combo-text">Combination</label>
+              <input
+                id="combo-text"
+                v-model.trim="form.combination_text"
+                type="text"
+                class="create-input create-input--code"
+                maxlength="10"
+                placeholder="1234"
+                autocomplete="off"
+              >
+              <button type="button" class="gen" @click="form.combination_text = randomCode()">🎲 New</button>
+            </div>
+            <p class="create-input-meta create-input-meta--left">Generated for you. Type your own if you prefer. {{ form.combination_text.length }}/10</p>
+          </template>
+
+          <template v-else>
+            <div class="photo-upload" :class="{ 'photo-upload--filled': !!photoPreview }" @click="triggerFileInput" @dragover.prevent @drop.prevent="onPhotoDrop">
+              <img v-if="photoPreview" :src="photoPreview" class="photo-upload__preview" alt="Combination preview">
+              <template v-else>
+                <svg class="photo-upload__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+                <p class="photo-upload__hint">Tap to take or choose a photo</p>
+                <p class="photo-upload__sub">or drag it here</p>
+              </template>
+              <input ref="fileInputRef" type="file" accept="image/*" class="photo-upload__input" @change="onFileChange">
+            </div>
+            <p v-if="uploadError" class="create-error">{{ uploadError }}</p>
+            <p v-if="uploading" class="create-input-meta">Uploading…</p>
+            <p v-else-if="form.combination_photo_url" class="create-input-meta create-input-meta--ok">Photo ready</p>
+          </template>
+
+          <div class="tip"><b>Tip:</b> set the code, close the lock, then scramble the dials before you continue. You will not see it again until the end.</div>
+
+          <p v-if="errors.combination" class="create-error">{{ errors.combination }}</p>
+          <div class="create-actions">
+            <button class="btn btn--primary" :disabled="!combinationReady || uploading" @click="nextStep">Continue</button>
+          </div>
+        </section>
+
+        <!-- Step 3: Start -->
+        <section v-if="step === 3" class="create-step">
+          <h1 class="create-step__title">Who holds the key?</h1>
+
+          <div class="start-list" role="radiogroup" aria-label="How do you want to start?">
+            <button
+              v-for="o in START_OPTIONS"
+              :key="o.id"
+              type="button"
+              role="radio"
+              class="sc"
+              :class="{ 'sc--on': startMode === o.id }"
+              :aria-checked="startMode === o.id"
+              @click="startMode = o.id"
+            >
+              <i aria-hidden="true">{{ o.icon }}</i>
+              <span><b>{{ o.title }}</b><small>{{ o.text }}</small></span>
+            </button>
+          </div>
+
+          <div v-if="startMode === 'self'" class="vis">
+            <h4>Visitors on your link can</h4>
+            <div class="pills">
+              <button v-for="p in PERMS" :key="p.id" type="button" :class="{ on: visitorPermission === p.id }" @click="visitorPermission = p.id">{{ p.label }}</button>
+            </div>
+            <template v-if="visitorPermission !== 'none'">
+              <h4>Each click moves the clock by</h4>
+              <div class="pills">
+                <button v-for="h in HOURS" :key="h" type="button" :class="{ on: visitorHours === h }" @click="visitorHours = h">{{ h }}h</button>
+              </div>
             </template>
-            <input
-              ref="fileInputRef"
-              type="file"
-              accept="image/*"
-              class="photo-upload__input"
-              @change="onFileChange"
-            />
+            <label class="tg">
+              <span>Show my lock in Key Drop</span>
+              <input v-model="listed" type="checkbox" class="sw">
+            </label>
           </div>
-          <p v-if="uploadError" class="create-error">{{ uploadError }}</p>
-          <p v-if="uploading" class="create-input-meta">Uploading…</p>
-          <p v-else-if="form.combination_photo_url" class="create-input-meta create-input-meta--ok">Photo ready</p>
-        </template>
 
-        <p v-if="errors.combination" class="create-error">{{ errors.combination }}</p>
-        <div class="create-actions">
-          <button class="btn btn--ghost" @click="prevStep">Back</button>
-          <button
-            class="btn btn--primary"
-            :disabled="!combinationReady || uploading"
-            @click="nextStep"
-          >
-            Continue
+          <button type="button" class="more" :aria-expanded="moreOpen" @click="moreOpen = !moreOpen">
+            <span>{{ form.emotion || form.reason ? 'Mood and note' : 'Add a mood or a note' }}</span>
+            <span aria-hidden="true">{{ moreOpen ? '−' : '＋' }}</span>
           </button>
-        </div>
-      </section>
-
-      <!-- Step 3: Emotion -->
-      <section v-if="step === 3" class="create-step">
-        <h1 class="create-step__title">How are you feeling?</h1>
-        <p class="create-step__hint">Your keyholder and visitors will see it. You can change it any time.</p>
-        <div class="emotion-grid">
-          <button
-            v-for="e in EMOTIONS"
-            :key="e.emoji"
-            class="emotion-btn"
-            :class="{ 'emotion-btn--active': form.emotion === e.emoji }"
-            type="button"
-            :aria-pressed="form.emotion === e.emoji"
-            @click="toggleEmotion(e.emoji)"
-          >
-            <span class="emotion-btn__emoji">{{ e.emoji }}</span>
-            <span class="emotion-btn__label">{{ e.label }}</span>
-          </button>
-          <!-- TASK-070: type/paste a custom emoji instead of only presets -->
-          <label class="emotion-btn emotion-btn--custom" :class="{ 'emotion-btn--active': !!customEmotion && form.emotion === customEmotion }">
-            <input
-              v-model="customEmotion"
-              class="emotion-btn__input"
-              type="text"
-              maxlength="8"
-              placeholder="＋"
-              aria-label="Custom emoji"
-              @input="form.emotion = customEmotion.trim()"
-            />
-            <span class="emotion-btn__label">your own</span>
-          </label>
-        </div>
-        <div class="create-actions">
-          <button class="btn btn--ghost" @click="prevStep">Back</button>
-          <button class="btn btn--primary" @click="nextStep">{{ form.emotion ? 'Continue' : 'Skip' }}</button>
-        </div>
-      </section>
-
-      <!-- Step 4: Note + start -->
-      <section v-if="step === 4" class="create-step">
-        <h1 class="create-step__title">Almost locked</h1>
-        <p class="create-step__hint">Add a note for your keyholder, then choose how to start.</p>
-
-        <label class="sr-only" for="lock-note">Note</label>
-        <textarea
-          id="lock-note"
-          v-model.trim="form.reason"
-          class="create-textarea"
-          maxlength="100"
-          rows="3"
-          placeholder="First Locktober. Be gentle… or don't."
-        />
-        <p class="create-input-meta">{{ form.reason.length }}/100</p>
-
-        <div class="start-cards" role="radiogroup" aria-label="How do you want to start?">
-          <button
-            type="button"
-            role="radio"
-            class="start-card"
-            :class="{ 'start-card--on': startMode === 'paired' }"
-            :aria-checked="startMode === 'paired'"
-            @click="startMode = 'paired'"
-          >
-            <svg class="start-card__icon" viewBox="0 0 24 24" fill="none" stroke="#FB773C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="4.5" /><path d="M11.2 11.2 20 20" /><path d="m16 16 2-2" /><path d="m18.5 18.5 2-2" /></svg>
-            <span class="start-card__title">Find a keyholder</span>
-            <span class="start-card__text">Ask someone you trust, or drop your key in Key Drop.</span>
-          </button>
-          <button
-            type="button"
-            role="radio"
-            class="start-card"
-            :class="{ 'start-card--on': startMode === 'self' }"
-            :aria-checked="startMode === 'self'"
-            @click="startMode = 'self'"
-          >
-            <svg class="start-card__icon" viewBox="0 0 24 24" fill="none" stroke="#F25A93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /><circle cx="12" cy="16" r="1.4" /></svg>
-            <span class="start-card__title">Lock myself</span>
-            <span class="start-card__text">You hold the timer. Share your link so others can add time.</span>
-          </button>
-        </div>
-
-        <div class="create-summary">
-          <div class="summary-row">
-            <span class="summary-label">Duration</span>
-            <span class="summary-value">{{ formatDuration(form.duration_minutes) }}</span>
+          <div v-if="moreOpen" class="more-body">
+            <div class="emotion-grid">
+              <button
+                v-for="e in EMOTIONS"
+                :key="e.emoji"
+                class="emotion-btn"
+                :class="{ 'emotion-btn--active': form.emotion === e.emoji }"
+                type="button"
+                :aria-pressed="form.emotion === e.emoji"
+                @click="toggleEmotion(e.emoji)"
+              >
+                <span class="emotion-btn__emoji">{{ e.emoji }}</span>
+                <span class="emotion-btn__label">{{ e.label }}</span>
+              </button>
+              <label class="emotion-btn emotion-btn--custom" :class="{ 'emotion-btn--active': !!customEmotion && form.emotion === customEmotion }">
+                <input v-model="customEmotion" class="emotion-btn__input" type="text" maxlength="8" placeholder="＋" aria-label="Custom emoji" @input="form.emotion = customEmotion.trim()">
+                <span class="emotion-btn__label">your own</span>
+              </label>
+            </div>
+            <label class="sr-only" for="lock-note">Note</label>
+            <textarea id="lock-note" v-model.trim="form.reason" class="create-textarea" maxlength="100" rows="2" placeholder="First Locktober. Be gentle… or don't." />
+            <p class="create-input-meta">{{ form.reason.length }}/100</p>
           </div>
-          <div class="summary-row">
-            <span class="summary-label">Combination</span>
-            <span class="summary-value summary-value--secret">{{ form.combination_photo_url ? 'Photo, hidden' : '•••• hidden' }}</span>
+
+          <p v-if="submitError" class="create-error">{{ submitError }}</p>
+          <NuxtLink v-if="showUpgradeCta" to="/subscription/upgrade" class="create-upgrade-cta">See plans →</NuxtLink>
+          <div class="create-actions create-actions--col">
+            <button class="btn btn--primary btn--lock" :disabled="submitting || !minutes" @click="submit">
+              {{ submitting ? 'Locking…' : `🔒 ${lockLabel}` }}
+            </button>
+            <p class="create-input-meta create-input-meta--center">{{ footLine }}</p>
           </div>
-          <div v-if="form.emotion" class="summary-row">
-            <span class="summary-label">Mood</span>
-            <span class="summary-value">{{ form.emotion }}</span>
+        </section>
+      </main>
+
+      <aside class="sum" aria-label="Your lock">
+        <h3>Your lock</h3>
+        <div class="sum__ring">
+          <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
+            <circle cx="28" cy="28" r="23" fill="none" stroke="#34138A" stroke-width="7" />
+            <circle cx="28" cy="28" r="23" fill="none" stroke="url(#sumg)" stroke-width="7" stroke-linecap="round" :stroke-dasharray="`${ringDash} 145`" transform="rotate(-90 28 28)" />
+            <defs><linearGradient id="sumg"><stop offset="0" stop-color="#EB3678" /><stop offset="1" stop-color="#FB773C" /></linearGradient></defs>
+          </svg>
+          <div>
+            <b>{{ minutes ? formatMinutes(minutes) : 'No time yet' }}</b>
+            <small v-if="minutes">Ends {{ fmtEnd(endsAt) }}</small>
           </div>
         </div>
-
-        <p v-if="submitError" class="create-error">{{ submitError }}</p>
-        <NuxtLink v-if="showUpgradeCta" to="/subscription/upgrade" class="create-upgrade-cta">
-          See plans →
-        </NuxtLink>
-        <div class="create-actions">
-          <button class="btn btn--ghost" @click="prevStep">Back</button>
-          <button class="btn btn--primary btn--lock" :disabled="submitting" @click="submit">
-            {{ submitting ? 'Locking…' : 'Lock it' }}
-          </button>
-        </div>
-      </section>
-
-    </main>
+        <div v-if="countsFor" class="sum__row"><span>Counts for</span><b>{{ countsFor }}</b></div>
+        <div class="sum__row"><span>Key</span><b :class="{ todo: step < 2 }">{{ keyLine }}</b></div>
+        <div class="sum__row"><span>Holds the key</span><b :class="{ todo: step < 3 }">{{ step < 3 ? 'Step 3' : holderLine }}</b></div>
+        <div class="sum__row"><span>Visitors</span><b :class="{ todo: step < 3 }">{{ step < 3 ? 'Step 3' : visitorsLine }}</b></div>
+        <div v-if="form.emotion" class="sum__row"><span>Mood</span><b>{{ form.emotion }}</b></div>
+      </aside>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { uploadCombinationPhoto } from '~/composables/useLoq'
+import {
+  presetsFor, choiceMinutes, formatMinutes, randomCode, isOctober,
+  LOCKTOBER_30_MINUTES, MAX_LOCK_DAYS, type TimeChoice,
+} from '~/utils/lockDuration'
 
 definePageMeta({ middleware: ['auth', 'subscription'] })
 
 const router = useRouter()
-const { createLoq } = useLoq()
+const { createLoq, publishLoq } = useLoq()
 
-const TOTAL_STEPS = 4
-const STEP_NAMES = ['Duration', 'Combination', 'Mood', 'Start']
+const STEP_NAMES = ['Time', 'Key', 'Start']
 
-// Keep in sync with server/utils/loqValidation.ts MAX_DURATION_MINUTES
-// (TASK-085) — server files aren't importable from client pages in Nuxt.
-const MAX_CUSTOM_DAYS = 3650
-const MAX_CUSTOM_MINUTES = MAX_CUSTOM_DAYS * 1440
-
-const DURATION_OPTIONS = [
-  { label: '1 hour', value: 60 },
-  { label: '2 hours', value: 120 },
-  { label: '4 hours', value: 240 },
-  { label: '8 hours', value: 480 },
-  { label: '12 hours', value: 720 },
-  { label: '24 hours', value: 1440 },
-  { label: '48 hours', value: 2880 },
-  { label: '72 hours', value: 4320 },
+type StartMode = 'invite' | 'keydrop' | 'self'
+const START_OPTIONS: { id: StartMode; icon: string; title: string; text: string }[] = [
+  { id: 'invite', icon: '🤝', title: 'Invite a keyholder', text: 'Pick someone by name. They accept and take over the timer.' },
+  { id: 'keydrop', icon: '🔑', title: 'Drop it in Key Drop', text: 'Your lock goes public and a keyholder can claim it.' },
+  { id: 'self', icon: '🔒', title: 'Lock myself', text: 'You hold the timer. Share your link and let visitors decide.' },
 ]
+
+type Perm = 'none' | 'add' | 'remove' | 'both'
+const PERMS: { id: Perm; label: string }[] = [
+  { id: 'add', label: 'Only add' },
+  { id: 'both', label: 'Add or remove' },
+  { id: 'remove', label: 'Only remove' },
+  { id: 'none', label: 'Just watch' },
+]
+const HOURS = [1, 2, 4, 8]
 
 const EMOTIONS = [
   { label: 'excited', emoji: '🤭' },
@@ -306,25 +281,75 @@ const EMOTIONS = [
   { label: 'hopeless', emoji: '😭' },
 ] as const
 
-const step = ref(1)
-const customDays = ref(0)
-const customHours = ref(0)
-const customMinutes = ref(0)
-const submitting = ref(false)
-const submitError = ref('')
-const showUpgradeCta = ref(false)
-const errors = reactive({ duration: '', combination: '' })
+// ── Time ────────────────────────────────────────────────────────────────────
+const now = ref(new Date())
+let tick: ReturnType<typeof setInterval> | undefined
+onMounted(() => { tick = setInterval(() => { now.value = new Date() }, 30_000) })
+onBeforeUnmount(() => clearInterval(tick))
 
+const october = computed(() => isOctober(now.value))
+const presets = computed(() => presetsFor(now.value))
+const choiceId = ref<string>(isOctober(new Date()) ? 'l30' : '1d')
+const customMode = ref<'duration' | 'until'>('duration')
+const custom = reactive({ d: 0, h: 0, m: 0 })
+const spinners = [
+  { key: 'd' as const, label: 'Days', max: MAX_LOCK_DAYS },
+  { key: 'h' as const, label: 'Hours', max: 23 },
+  { key: 'm' as const, label: 'Min', max: 59 },
+]
+
+function isoDate(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+const todayIso = computed(() => isoDate(now.value))
+const untilDate = ref(isoDate(new Date(Date.now() + 7 * 86_400_000)))
+const untilTime = ref('20:00')
+
+function pickCustom(mode: 'duration' | 'until') {
+  // Carry the current pick over so switching to "Duration" starts from it.
+  if (mode === 'duration' && choiceId.value !== 'custom' && minutes.value) {
+    custom.d = Math.floor(minutes.value / 1440)
+    custom.h = Math.floor((minutes.value % 1440) / 60)
+    custom.m = minutes.value % 60
+  }
+  customMode.value = mode
+  choiceId.value = 'custom'
+}
+
+function spin(key: 'd' | 'h' | 'm', delta: number, max: number) {
+  custom[key] = Math.max(0, Math.min(max, custom[key] + delta))
+}
+
+function choiceAt(at: Date): TimeChoice | null {
+  if (choiceId.value === 'l30') return { kind: 'minutes', minutes: LOCKTOBER_30_MINUTES }
+  if (choiceId.value === 'custom') {
+    if (customMode.value === 'duration') return { kind: 'minutes', minutes: custom.d * 1440 + custom.h * 60 + custom.m }
+    const t = new Date(`${untilDate.value}T${untilTime.value || '00:00'}`)
+    return Number.isNaN(t.getTime()) ? null : { kind: 'until', at: t }
+  }
+  return presetsFor(at).find(p => p.id === choiceId.value)?.choice(at) ?? null
+}
+
+const minutes = computed(() => choiceMinutes(choiceAt(now.value), now.value))
+const endsAt = computed(() => addMinutes(now.value, minutes.value))
+
+function addMinutes(d: Date, m: number) { return new Date(d.getTime() + m * 60_000) }
+function fmtEnd(d: Date) {
+  const sameYear = d.getFullYear() === now.value.getFullYear()
+  return d.toLocaleString('en-GB', {
+    weekday: 'short', day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }),
+    hour: '2-digit', minute: '2-digit',
+  })
+}
+
+// ── Key ─────────────────────────────────────────────────────────────────────
 const comboMode = ref<'text' | 'photo'>('text')
-const startMode = ref<'paired' | 'self'>('paired')
-const customEmotion = ref('')
 const photoPreview = ref<string | null>(null)
 const uploading = ref(false)
 const uploadError = ref('')
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const form = reactive({
-  duration_minutes: 0,
   combination_text: '',
   combination_photo_url: '',
   emotion: '',
@@ -335,49 +360,7 @@ const combinationReady = computed(() =>
   comboMode.value === 'text' ? !!form.combination_text : !!form.combination_photo_url,
 )
 
-function selectDuration(minutes: number) {
-  form.duration_minutes = minutes
-  customDays.value = Math.floor(minutes / 1440)
-  customHours.value = Math.floor((minutes % 1440) / 60)
-  customMinutes.value = minutes % 60
-}
-
-function onCustomDuration() {
-  const total = customDays.value * 1440 + customHours.value * 60 + customMinutes.value
-  form.duration_minutes = total >= 1 && total <= MAX_CUSTOM_MINUTES ? total : 0
-}
-
-function spinDay(delta: number) {
-  customDays.value = Math.max(0, Math.min(MAX_CUSTOM_DAYS, customDays.value + delta))
-  onCustomDuration()
-}
-
-function spinHour(delta: number) {
-  customHours.value = Math.max(0, Math.min(23, customHours.value + delta))
-  onCustomDuration()
-}
-
-function spinMinute(delta: number) {
-  customMinutes.value = Math.max(0, Math.min(59, customMinutes.value + delta))
-  onCustomDuration()
-}
-
-function toggleEmotion(emoji: string) {
-  form.emotion = form.emotion === emoji ? '' : emoji
-  customEmotion.value = ''
-}
-
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes}m`
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  return m ? `${h}h ${m}m` : `${h}h`
-}
-
-
-function triggerFileInput() {
-  fileInputRef.value?.click()
-}
+function triggerFileInput() { fileInputRef.value?.click() }
 
 async function processFile(file: File) {
   if (!file.type.startsWith('image/')) {
@@ -408,38 +391,106 @@ function onPhotoDrop(e: DragEvent) {
   if (file) processFile(file)
 }
 
+// ── Start ───────────────────────────────────────────────────────────────────
+const startMode = ref<StartMode>('invite')
+const visitorPermission = ref<Perm>('add')
+const visitorHours = ref(1)
+const listed = ref(false)
+const moreOpen = ref(false)
+const customEmotion = ref('')
+
+function toggleEmotion(emoji: string) {
+  form.emotion = form.emotion === emoji ? '' : emoji
+  customEmotion.value = ''
+}
+
+// ── Summary ─────────────────────────────────────────────────────────────────
+const ringDash = computed(() => {
+  // A month fills the ring, anything shorter shows a slice.
+  const p = Math.min(1, minutes.value / LOCKTOBER_30_MINUTES)
+  return (145 * Math.max(p, minutes.value ? 0.04 : 0)).toFixed(1)
+})
+const countsFor = computed(() => {
+  if (!october.value || !minutes.value) return ''
+  return minutes.value >= LOCKTOBER_30_MINUTES ? 'Locktober 30 🏆' : 'Locktober "Most time"'
+})
+const keyLine = computed(() => {
+  if (step.value < 2) return 'Next step'
+  if (comboMode.value === 'photo') return form.combination_photo_url ? 'Photo, hidden' : 'Photo'
+  return form.combination_text ? 'Code, hidden' : 'Not set'
+})
+const holderLine = computed(() => ({ invite: 'Invited keyholder', keydrop: 'From Key Drop', self: 'You' })[startMode.value])
+const visitorsLine = computed(() => {
+  if (startMode.value !== 'self') return 'Keyholder decides'
+  const p = visitorPermission.value
+  if (p === 'none') return 'Can watch'
+  return `${p === 'add' ? '+' : p === 'remove' ? '−' : '±'}${visitorHours.value}h per click`
+})
+const lockLabel = computed(() => {
+  if (startMode.value === 'invite') return 'Lock and invite'
+  if (startMode.value === 'keydrop') return 'Lock and drop the key'
+  return minutes.value ? `Lock until ${endsAt.value.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}` : 'Lock it'
+})
+const footLine = computed(() => {
+  const parts = [minutes.value ? formatMinutes(minutes.value) : '', comboMode.value === 'photo' ? 'photo hidden' : 'code hidden']
+  if (startMode.value === 'self') parts.push(visitorsLine.value.toLowerCase())
+  return parts.filter(Boolean).join(' · ')
+})
+
+// ── Flow ────────────────────────────────────────────────────────────────────
+const step = ref(1)
+const submitting = ref(false)
+const submitError = ref('')
+const showUpgradeCta = ref(false)
+const errors = reactive({ combination: '' })
+
 function nextStep() {
-  if (step.value === 1) {
-    if (!form.duration_minutes) { errors.duration = 'Please select a duration.'; return }
-    errors.duration = ''
-  }
+  if (step.value === 1 && !minutes.value) return
   if (step.value === 2) {
     if (!combinationReady.value) { errors.combination = 'Combination is required.'; return }
     errors.combination = ''
   }
   step.value++
+  if (step.value === 2 && !form.combination_text) form.combination_text = randomCode()
+  if (import.meta.client) window.scrollTo({ top: 0 })
 }
 
-function prevStep() {
-  step.value--
-}
+function prevStep() { if (step.value > 1) step.value-- }
 
 async function submit() {
   submitting.value = true
   submitError.value = ''
   try {
-    await createLoq({
-      duration_minutes: form.duration_minutes,
-      combination_text: form.combination_text || undefined,
-      combination_photo_url: form.combination_photo_url || undefined,
+    // Recompute now: "until Monday 8:00" must end at 8:00, however long this took.
+    const at = new Date()
+    const duration = choiceMinutes(choiceAt(at), at)
+    if (!duration) throw Object.assign(new Error('That end time has passed. Pick a new one.'), { statusCode: 400 })
+    const self = startMode.value === 'self'
+    const loq = await createLoq({
+      duration_minutes: duration,
+      combination_text: comboMode.value === 'text' ? form.combination_text || undefined : undefined,
+      combination_photo_url: comboMode.value === 'photo' ? form.combination_photo_url || undefined : undefined,
       emotion: form.emotion || undefined,
       reason: form.reason || undefined,
-      self: startMode.value === 'self',
+      self,
+      ...(self
+        ? { visitor_permission: visitorPermission.value, visitor_add_hours: visitorHours.value, listed_in_discover: listed.value }
+        : {}),
     })
-    await router.push('/dashboard/wearer')
+    if (startMode.value === 'keydrop') {
+      try { await publishLoq(loq.id) }
+      catch { /* the lock exists; it can still be published from the dashboard */ }
+      await router.push('/dashboard/wearer')
+    }
+    else if (startMode.value === 'invite') {
+      await router.push(`/lock/${loq.id}/find-keyholder`)
+    }
+    else {
+      await router.push('/dashboard/wearer')
+    }
   }
   catch (err: unknown) {
-    const e = err as import('~/composables/useLoq').LoqApiError
+    const e = err as { message: string; statusCode?: number }
     submitError.value = e.message
     showUpgradeCta.value = e.statusCode === 402
   }
@@ -475,7 +526,7 @@ async function submit() {
 
 .create-nav {
   position: relative;
-  max-width: 640px;
+  max-width: 1000px;
   width: 100%;
   box-sizing: border-box;
   margin: 0 auto;
@@ -500,39 +551,62 @@ async function submit() {
     &:hover { color: var(--color-text); text-decoration: none; background: rgba(244, 240, 255, 0.06); }
   }
 
-  &__step { font-size: 14px; color: var(--color-text-muted); font-weight: 500; }
+  &__back { border: 0; background: none; font-family: var(--font-sans); cursor: pointer; }
 }
 
-.create-progress {
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+
+    & + li::before { content: ''; width: 18px; height: 2px; border-radius: 2px; background: var(--color-border); margin-right: 2px; }
+  }
+
+  i {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-border);
+    font-style: normal;
+    font-size: 12px;
+  }
+
+  .on { color: var(--color-text); i { border-color: transparent; background: var(--gradient-brand); color: var(--color-on-accent); } }
+  .done i { border-color: var(--color-accent); color: var(--color-accent); }
+}
+
+.create-grid {
   position: relative;
-  max-width: 640px;
+  max-width: 1000px;
   width: 100%;
   box-sizing: border-box;
   margin: 0 auto;
   padding: 0 20px;
-  display: flex;
-  gap: 6px;
-
-  &__bar {
-    flex: 1;
-    height: 4px;
-    border-radius: 999px;
-    background: var(--color-elevated);
-    transition: background 0.3s;
-    &--on { background: var(--gradient-brand); }
-  }
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 40px;
+  align-items: start;
 }
 
 // ── Step shell ───────────────────────────────────────────────────────────────
 
 .create-main {
   position: relative;
-  flex: 1;
-  max-width: 640px;
-  width: 100%;
-  box-sizing: border-box;
-  margin: 0 auto;
-  padding: 36px 20px 64px;
+  min-width: 0;
+  padding: 28px 0 64px;
 }
 
 .create-step {
@@ -666,11 +740,20 @@ async function submit() {
   &:hover { border-color: var(--color-elevated); }
   &:active { transform: scale(0.97); }
 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+
+  small { font-family: var(--font-sans); font-size: 11px; font-weight: 500; color: var(--color-text-muted); }
+
   &--active {
     border-color: transparent;
     background: var(--gradient-brand);
     color: var(--color-on-accent);
     font-weight: 700;
+    small { color: inherit; opacity: 0.8; }
   }
 }
 
@@ -911,20 +994,23 @@ async function submit() {
   }
 }
 
-// ── Step 4: start + summary ─────────────────────────────────────────────────
 
-.start-cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+// ── New flow pieces ─────────────────────────────────────────────────────────
+
+.lbl {
+  margin: 4px 0 -8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
-.start-card {
+.lt-card {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 20px;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
   border-radius: 20px;
   border: 1.5px solid var(--color-border);
   background: var(--color-surface);
@@ -934,46 +1020,235 @@ async function submit() {
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 
-  &:hover { border-color: var(--color-elevated); }
+  &__ico { font-size: 28px; }
+  &__txt { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  b { font-family: var(--font-display); font-size: 20px; }
+  small { font-size: 14px; color: var(--color-text-muted); line-height: 1.4; }
+  &__chk {
+    display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%;
+    border: 1.5px solid var(--color-border); color: transparent; font-weight: 800;
+  }
 
+  &--on {
+    border-color: var(--color-accent);
+    background: linear-gradient(160deg, rgba(var(--color-brand-rgb), 0.22) 0%, var(--color-surface) 70%);
+    box-shadow: 0 0 0 4px rgba(var(--color-accent-rgb), 0.15);
+    .lt-card__chk { border-color: transparent; background: var(--gradient-brand); color: var(--color-on-accent); }
+  }
+}
+
+.until {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 12px;
+  label { display: flex; flex-direction: column; gap: 6px; }
+  span { font-size: 12px; color: var(--color-text-muted); font-weight: 600; }
+  .create-input { color-scheme: dark; }
+}
+
+.create-preview {
+  margin: 0;
+  font-size: 15px;
+  color: #CFC5F2;
+  strong { color: var(--color-text); font-family: var(--font-display); font-size: 18px; }
+}
+
+.create-input-meta--left { text-align: left; margin-top: -12px; }
+.create-input-meta--center { text-align: center; margin: 0; }
+
+.create-actions--col { flex-direction: column; .btn { width: 100%; } }
+
+.code-row {
+  display: flex;
+  gap: 10px;
+  .create-input--code { flex: 1; }
+}
+
+.gen {
+  flex: 0 0 auto;
+  padding: 0 18px;
+  border-radius: 16px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: 600 15px var(--font-sans);
+  cursor: pointer;
+  &:hover { border-color: var(--color-accent); }
+}
+
+.tip {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(var(--color-cta-rgb), 0.08);
+  border: 1px solid rgba(var(--color-cta-rgb), 0.25);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #FFD9C7;
+  b { color: var(--color-cta); }
+}
+
+.start-list { display: flex; flex-direction: column; gap: 10px; }
+
+.sc {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: left;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  i { font-style: normal; font-size: 26px; }
+  span { display: flex; flex-direction: column; gap: 3px; }
+  b { font-family: var(--font-display); font-size: 18px; }
+  small { font-size: 14px; color: var(--color-text-muted); line-height: 1.4; }
+
+  &:hover { border-color: var(--color-elevated); }
   &--on {
     border-color: var(--color-accent);
     background: linear-gradient(160deg, rgba(var(--color-brand-rgb), 0.18) 0%, var(--color-surface) 70%);
     box-shadow: 0 0 0 4px rgba(var(--color-accent-rgb), 0.15);
   }
-
-  &__icon { width: 32px; height: 32px; }
-  &__title { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
-  &__text { font-size: 14px; line-height: 1.45; color: var(--color-text-muted); }
 }
 
-.create-summary {
-  padding: 8px 20px;
-  border-radius: 20px;
+.vis {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 18px;
   background: rgba(14, 0, 51, 0.55);
   border: 1px solid var(--color-border);
+
+  h4 { margin: 4px 0 0; font-size: 13px; font-weight: 600; color: var(--color-text-muted); }
 }
 
-.summary-row {
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  button {
+    padding: 9px 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: 600 14px var(--font-sans);
+    cursor: pointer;
+    &.on { border-color: transparent; background: var(--gradient-brand); color: var(--color-on-accent); }
+  }
+}
+
+.tg {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.sw {
+  appearance: none;
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 26px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--color-elevated);
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-text);
+    transition: transform 0.15s;
+  }
+
+  &:checked { background: var(--gradient-brand); &::after { transform: translateX(20px); } }
+}
+
+.more {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  & + & { border-top: 1px solid var(--color-border); }
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 1.5px dashed var(--color-border);
+  background: none;
+  color: var(--color-text);
+  font: 600 15px var(--font-sans);
+  cursor: pointer;
+  &:hover { border-color: var(--color-accent); }
 }
-.summary-label { font-size: 14px; color: var(--color-text-muted); }
-.summary-value {
-  font-family: var(--font-display);
-  font-size: 17px;
-  font-weight: 600;
-  &--secret { color: var(--color-accent); }
+
+.more-body { display: flex; flex-direction: column; gap: 16px; }
+
+.sum {
+  position: sticky;
+  top: 24px;
+  margin-top: 28px;
+  padding: 20px;
+  border-radius: 22px;
+  background: rgba(14, 0, 51, 0.55);
+  border: 1px solid var(--color-border);
+
+  h3 {
+    margin: 0 0 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  &__ring {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 14px;
+    b { display: block; font-family: var(--font-display); font-size: 22px; }
+    small { font-size: 13px; color: var(--color-text-muted); }
+  }
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-top: 1px solid var(--color-border);
+    font-size: 14px;
+    span { color: var(--color-text-muted); }
+    b { text-align: right; font-weight: 600; }
+    .todo { color: var(--color-text-muted); font-weight: 500; font-style: italic; }
+  }
+}
+
+@media (max-width: 860px) {
+  .create-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .sum { display: none; }
+  .steps span { display: none; }
+  .steps .on span { display: inline; }
 }
 
 @media (max-width: 560px) {
   .duration-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .start-cards { grid-template-columns: minmax(0, 1fr); }
   .dur-spin { width: 84px; }
-  .create-main { padding-top: 28px; }
+  .create-main { padding-top: 20px; }
+  .until { grid-template-columns: 1fr; }
 }
 </style>
