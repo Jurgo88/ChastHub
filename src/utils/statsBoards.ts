@@ -25,6 +25,12 @@ export const BOARD_META: Record<StatsBoardKey, BoardMeta> = {
   keyholder_holding: { label: 'Holding now', kind: 'count', unit: 'locks right now', periodless: true },
   crowd: { label: 'Crowd favorites', kind: 'hours', unit: 'added by visitors', plus: true },
   locktober_survivors: { label: 'Survivors', kind: 'hours', unit: 'unbroken', periodless: true },
+  locktober_30: { label: 'Locktober 30', kind: 'hours', unit: 'of 30 days', periodless: true },
+}
+
+/** Locktober 30 progress: "Day 12" until 30 days, then "Finished". */
+export function locktober30Label(hours: number): string {
+  return hours >= 720 ? 'Finished ✓' : `Day ${Math.floor(hours / 24) + 1}`
 }
 
 /** 5 → "5h", 283 → "11d 19h". */
@@ -37,6 +43,7 @@ export function formatStatsDuration(hours: number): string {
 }
 
 export function formatBoardValue(board: StatsBoardKey, value: number): string {
+  if (board === 'locktober_30') return locktober30Label(value)
   const meta = BOARD_META[board]
   const text = meta.kind === 'hours' ? formatStatsDuration(value) : Math.round(value).toLocaleString('en-US')
   return meta.plus ? `+${text}` : text

@@ -3,7 +3,7 @@
 export const STATS_BOARDS = [
   'wearer_longest', 'wearer_total', 'wearer_completed', 'wearer_running',
   'keyholder_locks', 'keyholder_hours', 'keyholder_wearers', 'keyholder_holding',
-  'crowd', 'locktober_survivors',
+  'crowd', 'locktober_survivors', 'locktober_30',
 ] as const
 export type StatsBoardKey = typeof STATS_BOARDS[number]
 
@@ -11,7 +11,7 @@ export const STATS_PERIODS = ['all', 'month', 'locktober'] as const
 export type StatsPeriod = typeof STATS_PERIODS[number]
 
 export const ROLE_BOARDS: Record<string, StatsBoardKey[]> = {
-  loqee: ['wearer_longest', 'wearer_total', 'wearer_completed', 'wearer_running', 'crowd', 'locktober_survivors'],
+  loqee: ['wearer_longest', 'wearer_total', 'wearer_completed', 'wearer_running', 'crowd', 'locktober_survivors', 'locktober_30'],
   loqholder: ['keyholder_locks', 'keyholder_hours', 'keyholder_wearers', 'keyholder_holding'],
 }
 

@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   const results = await Promise.all(boards.map(async (board) => {
     // Survivors only exist during Locktober; the other boards follow the
     // period the page is showing.
-    const p = board === 'locktober_survivors' ? 'locktober' : period
+    const p = board === 'locktober_survivors' || board === 'locktober_30' ? 'locktober' : period
     const { data } = await supabase.rpc('stats_board', { p_board: board, p_period: p, p_limit: 0, p_user: user.id })
     const res = data as { total: number; me: unknown } | null
     return [board, { total: res?.total ?? 0, me: res?.me ?? null }] as const

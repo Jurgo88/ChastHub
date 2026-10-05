@@ -232,7 +232,7 @@ export interface ApiError {
 export type StatsBoardKey =
   | 'wearer_longest' | 'wearer_total' | 'wearer_completed' | 'wearer_running'
   | 'keyholder_locks' | 'keyholder_hours' | 'keyholder_wearers' | 'keyholder_holding'
-  | 'crowd' | 'locktober_survivors'
+  | 'crowd' | 'locktober_survivors' | 'locktober_30'
 
 export type StatsPeriod = 'all' | 'month' | 'locktober'
 
@@ -275,6 +275,8 @@ export interface StatsPulse {
     starters: number
     survivors: number
     joined: number
+    /** Locktober 30 (migration 010); absent until that migration runs. */
+    l30?: { active: boolean; open: boolean; joined: number; going: number; finished: number }
   }
 }
 

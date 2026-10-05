@@ -7,6 +7,8 @@ import type { StatsPulse } from '~/types'
 const props = defineProps<{ locktober: StatsPulse['locktober'] }>()
 
 const day = computed(() => props.locktober.day ?? 0)
+const inOctober = computed(() => props.locktober.active)
+const l30 = computed(() => props.locktober.l30 ?? null)
 const left = computed(() => Math.max(0, 31 - day.value))
 const stillGoing = computed(() => {
   const { starters, survivors } = props.locktober
@@ -21,20 +23,30 @@ const stillGoing = computed(() => {
         <p class="lt__kicker">The challenge</p>
         <h2 class="lt__title">Locktober {{ locktober.year }}</h2>
       </div>
-      <div class="lt__day">
+      <div v-if="inOctober" class="lt__day">
         <strong>Day {{ day }}</strong>
         <span>of 31 · {{ left }} {{ left === 1 ? 'day' : 'days' }} to go</span>
       </div>
+      <div v-else class="lt__day">
+        <strong>Locktober 30</strong>
+        <span>finishing through November</span>
+      </div>
     </div>
 
-    <div class="lt__cal" aria-hidden="true">
+    <div v-if="inOctober" class="lt__cal" aria-hidden="true">
       <i v-for="d in 31" :key="d" :class="{ 'lt__d--done': d < day, 'lt__d--today': d === day }" />
     </div>
 
     <div class="lt__stats">
-      <div><strong>{{ locktober.survivors }}</strong><span>Survivors since Oct 1</span></div>
-      <div><strong>{{ locktober.joined }}</strong><span>Joined Locktober</span></div>
-      <div><strong>{{ stillGoing }}%</strong><span>Still going</span></div>
+      <template v-if="inOctober">
+        <div><strong>{{ locktober.survivors }}</strong><span>Survivors since Oct 1</span></div>
+        <div><strong>{{ locktober.joined }}</strong><span>Joined Locktober</span></div>
+        <div><strong>{{ stillGoing }}%</strong><span>Still going</span></div>
+      </template>
+      <template v-if="l30">
+        <div><strong>{{ l30.going }}</strong><span>Locktober 30 going</span></div>
+        <div><strong>{{ l30.finished }}</strong><span>Finished 30 days</span></div>
+      </template>
     </div>
 
     <details class="lt__rules">
@@ -45,6 +57,11 @@ const stillGoing = computed(() => {
         24 hours or ending the lock takes you off the survivors list. Self-locks count here and are
         marked as such. You can still join later in the month: your time counts in
         "Most time" for Locktober.
+      </p>
+      <p v-if="l30">
+        <strong>Locktober 30:</strong> start a lock any day in October and keep it for 30 days.
+        The same pause rule applies. End early and you drop off; reach 30 days and you are a
+        finisher, even if that is in November.
       </p>
     </details>
   </section>

@@ -133,7 +133,7 @@ useSeoMeta({
 type Tab = 'locktober' | 'wearers' | 'keyholders' | 'crowd'
 
 const TAB_BOARDS: Record<Tab, StatsBoardKey[]> = {
-  locktober: ['locktober_survivors', 'wearer_total', 'crowd'],
+  locktober: ['locktober_survivors', 'locktober_30', 'wearer_total', 'crowd'],
   wearers: ['wearer_longest', 'wearer_total', 'wearer_completed', 'wearer_running'],
   keyholders: ['keyholder_locks', 'keyholder_hours', 'keyholder_wearers', 'keyholder_holding'],
   crowd: ['crowd'],
@@ -152,7 +152,9 @@ const me = ref<StatsMe | null>(null)
 const meLoading = ref(false)
 const crowd = ref<StatsRow[]>([])
 
-const locktoberLive = computed(() => !!pulse.value?.locktober.active)
+// The Locktober tab stays up through November while Locktober 30 finishes.
+const l30 = computed(() => pulse.value?.locktober.l30 ?? null)
+const locktoberLive = computed(() => !!pulse.value?.locktober.active || !!l30.value?.active)
 
 const tabs = computed(() => [
   ...(locktoberLive.value ? [{ key: 'locktober' as Tab, label: `Locktober ${pulse.value!.locktober.year}` }] : []),
@@ -165,13 +167,29 @@ const tab = ref<Tab>('wearers')
 const board = ref<StatsBoardKey>('wearer_longest')
 const period = ref<StatsPeriod>('all')
 
-const currentBoards = computed(() => TAB_BOARDS[tab.value])
+const currentBoards = computed(() => TAB_BOARDS[tab.value].filter((b) => {
+  if (b === 'locktober_survivors') return !!pulse.value?.locktober.active
+  if (b === 'locktober_30') return !!l30.value?.active
+  if (tab.value === 'locktober' && (b === 'wearer_total' || b === 'crowd')) return !!pulse.value?.locktober.active
+  return true
+}))
 const showPeriods = computed(() => tab.value !== 'locktober' && !BOARD_META[board.value].periodless)
 // Locktober as a period only makes sense once there has been one.
 const periods = computed<StatsPeriod[]>(() => ['all', 'month', 'locktober'])
 
 // On the Locktober tab every board is scoped to Locktober.
 const effectivePeriod = computed<StatsPeriod>(() => tab.value === 'locktober' ? 'locktober' : period.value)
+
+function currentBoardsFor(t: Tab) {
+  const prev = tab.value
+  if (prev === t) return currentBoards.value
+  return TAB_BOARDS[t].filter((b) => {
+    if (b === 'locktober_survivors') return !!pulse.value?.locktober.active
+    if (b === 'locktober_30') return !!l30.value?.active
+    if (t === 'locktober' && (b === 'wearer_total' || b === 'crowd')) return !!pulse.value?.locktober.active
+    return true
+  })
+}
 
 function boardLabel(b: StatsBoardKey) {
   if (tab.value === 'locktober' && b === 'wearer_total') return 'Most time'
@@ -197,7 +215,7 @@ function syncUrl() {
 function setTab(t: Tab) {
   if (tab.value === t) return
   tab.value = t
-  board.value = TAB_BOARDS[t][0]!
+  board.value = (TAB_BOARDS[t].find(b => currentBoardsFor(t).includes(b)) ?? TAB_BOARDS[t][0])!
   syncUrl()
   loadBoard()
   loadMe()
@@ -270,7 +288,7 @@ onMounted(async () => {
   const valid = tabs.value.some(t => t.key === wanted)
   tab.value = valid ? wanted : locktoberLive.value ? 'locktober' : authStore.profile?.role === 'loqholder' ? 'keyholders' : 'wearers'
   const qb = String(q.board ?? '') as StatsBoardKey
-  board.value = TAB_BOARDS[tab.value].includes(qb) ? qb : TAB_BOARDS[tab.value][0]!
+  board.value = currentBoards.value.includes(qb) ? qb : (currentBoards.value[0] ?? TAB_BOARDS[tab.value][0])!
   const qp = String(q.period ?? '') as StatsPeriod
   period.value = ['all', 'month', 'locktober'].includes(qp) ? qp : 'all'
 

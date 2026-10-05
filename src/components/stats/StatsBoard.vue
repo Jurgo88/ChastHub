@@ -42,6 +42,7 @@ const EMPTY: Record<StatsBoardKey, string> = {
   keyholder_holding: 'No keyholder is holding a lock right now.',
   crowd: 'Visitors have not added time to a Key Drop lock yet.',
   locktober_survivors: 'Nobody has made it through Locktober so far.',
+  locktober_30: 'Nobody has started Locktober 30 yet. Lock for 30 days to be first.',
 }
 </script>
 

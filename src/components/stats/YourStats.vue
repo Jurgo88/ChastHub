@@ -22,7 +22,7 @@ const others = computed(() => {
   if (!props.data) return []
   const mainKey = main.value?.key
   return (Object.entries(props.data.boards) as [StatsBoardKey, { total: number; me: { rank: number; value: number } | null }][])
-    .filter(([k, v]) => k !== mainKey && (k !== 'locktober_survivors' || v.me))
+    .filter(([k, v]) => k !== mainKey && ((k !== 'locktober_survivors' && k !== 'locktober_30') || v.me))
     .map(([k, v]) => ({ key: k, label: BOARD_META[k].label, me: v.me }))
 })
 
