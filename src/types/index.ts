@@ -133,6 +133,7 @@ export interface Loq {
   visitor_permission?: VisitorPermission
   visitor_count?: number
   paused_at: string | null
+  frozen_until?: string | null
   created_at: string
   accepted_at: string | null
   ended_at: string | null

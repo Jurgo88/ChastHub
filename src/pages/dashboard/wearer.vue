@@ -306,6 +306,7 @@
           <LoqChat v-else :loq-id="loq.id" :channel="loqChannel" />
 
           <LoqCheckin :loq-id="loq.id" role="wearer" />
+          <LoqWheel :loq-id="loq.id" role="wearer" />
           <LoqHistory :loq-id="loq.id" />
 
           <p v-if="actionError" class="loq-card__error">{{ actionError }}</p>
