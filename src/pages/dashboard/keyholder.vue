@@ -299,6 +299,9 @@
                   </div>
                 </Transition>
 
+                <LoqCheckin :loq-id="loq.id" role="keyholder" />
+                <LoqHistory :loq-id="loq.id" />
+
               </div>
             </article>
           </template>

@@ -188,6 +188,7 @@
           <span class="combo-reveal__expand">⤢ Click to enlarge</span>
         </button>
       </div>
+      <NuxtLink to="/locks/history" class="btn btn--ghost">See the history of this lock</NuxtLink>
       <button class="btn btn--primary" @click="handleContinue">Continue</button>
 
       <ImageLightbox
@@ -300,6 +301,9 @@
           />
 
           <LoqChat v-else :loq-id="loq.id" :channel="loqChannel" />
+
+          <LoqCheckin :loq-id="loq.id" role="wearer" />
+          <LoqHistory :loq-id="loq.id" />
 
           <p v-if="actionError" class="loq-card__error">{{ actionError }}</p>
         </div>

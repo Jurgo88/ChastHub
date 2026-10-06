@@ -34,6 +34,7 @@
               <div v-if="accountMenuOpen" class="app-nav__menu-panel" role="menu">
                 <span class="app-nav__menu-name">{{ displayName }}</span>
                 <NuxtLink to="/profile" class="app-nav__menu-item" role="menuitem" @click="accountMenuOpen = false">Profile</NuxtLink>
+                <NuxtLink to="/locks/history" class="app-nav__menu-item" role="menuitem" @click="accountMenuOpen = false">Lock history</NuxtLink>
                 <button class="app-nav__menu-item app-nav__menu-item--logout" role="menuitem" @click="logout">Log out</button>
               </div>
             </Transition>
@@ -66,6 +67,7 @@
             <NuxtLink to="/stats" class="app-nav__drawer-link">Stats</NuxtLink>
             <NuxtLink to="/messages" class="app-nav__drawer-link">Messages<span v-if="dmUnread" class="app-nav__badge">{{ dmUnread > 9 ? '9+' : dmUnread }}</span></NuxtLink>
             <NuxtLink to="/profile" class="app-nav__drawer-link">Profile</NuxtLink>
+            <NuxtLink to="/locks/history" class="app-nav__drawer-link">Lock history</NuxtLink>
             <NuxtLink v-if="authStore.isLoqee && !authStore.hasAccess" to="/subscription/upgrade" class="app-nav__drawer-link app-nav__drawer-link--cta">Upgrade to Premium</NuxtLink>
             <NuxtLink v-if="authStore.isAdmin" to="/admin" class="app-nav__drawer-link">Admin</NuxtLink>
             <button class="app-nav__drawer-link app-nav__drawer-link--logout" @click="logout">Log out</button>
