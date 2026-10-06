@@ -300,6 +300,7 @@
                 </Transition>
 
                 <LoqCheckin :loq-id="loq.id" role="keyholder" />
+                <LoqSurprises :loq-id="loq.id" />
                 <LoqHistory :loq-id="loq.id" />
 
               </div>

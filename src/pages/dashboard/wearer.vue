@@ -188,6 +188,7 @@
           <span class="combo-reveal__expand">⤢ Click to enlarge</span>
         </button>
       </div>
+      <LoqFinalCard v-if="loq.status === 'ended'" :loq-id="loq.id" />
       <NuxtLink to="/locks/history" class="btn btn--ghost">See the history of this lock</NuxtLink>
       <button class="btn btn--primary" @click="handleContinue">Continue</button>
 
@@ -213,6 +214,8 @@
       <Transition name="visitor-flash">
         <p v-if="visitorFlash" class="visitor-flash">{{ visitorFlash }}</p>
       </Transition>
+
+      <LoqMilestone :loq-id="loq.id" />
 
       <article class="loq-card" :class="loq.status === 'paused' ? 'loq-card--paused' : 'loq-card--active'">
 

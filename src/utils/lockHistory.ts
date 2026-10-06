@@ -25,7 +25,7 @@ export interface LockSummaryView {
 const MOOD_EMOJI: Record<string, string> = { calm: '😌', teased: '😏', struggling: '😣', desperate: '🥵', proud: '😇' }
 
 /** "6h", "1h 30m", "45m", "2d 4h". */
-export function formatMinutes(minutes: number): string {
+export function spanMinutes(minutes: number): string {
   const m = Math.round(Math.abs(minutes))
   const d = Math.floor(m / 1440)
   const h = Math.floor((m % 1440) / 60)
@@ -36,13 +36,13 @@ export function formatMinutes(minutes: number): string {
 }
 
 /** "11d 19h" for a number of hours. */
-export function formatHours(hours: number): string {
-  return formatMinutes(hours * 60)
+export function spanHours(hours: number): string {
+  return spanMinutes(hours * 60)
 }
 
 export function describeEvent(e: HistoryEventView): { icon: string; text: string } {
   const by = e.actor === 'keyholder' ? 'Keyholder' : e.actor === 'wearer' ? 'Wearer' : 'System'
-  const amount = formatMinutes(e.delta_minutes ?? 0)
+  const amount = spanMinutes(e.delta_minutes ?? 0)
   const n = e.count ?? 1
 
   switch (e.type) {

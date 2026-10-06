@@ -5,7 +5,7 @@
       <template v-if="!state.checked_in_today">
         <h3 class="ci__title">Daily check-in</h3>
         <p v-if="state.required" class="ci__rule">
-          Your keyholder requires it. A missed day adds {{ formatMinutes(state.penalty_minutes) }}.
+          Your keyholder requires it. A missed day adds {{ spanMinutes(state.penalty_minutes) }}.
         </p>
         <div class="ci__moods" role="radiogroup" aria-label="How are you feeling?">
           <button
@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatMinutes } from '~/utils/lockHistory'
+import { spanMinutes } from '~/utils/lockHistory'
 
 const props = defineProps<{ loqId: string; role: 'wearer' | 'keyholder' }>()
 
