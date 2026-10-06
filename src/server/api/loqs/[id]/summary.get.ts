@@ -8,6 +8,10 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'Lock ID required' })
 
-  const { loq, events, visitorCount } = await loadLockHistory(useSupabaseAdmin(), id, user.id, isAdmin)
-  return buildSummary(loq, events, visitorCount)
+  const supabase = useSupabaseAdmin()
+  const { loq, events, visitorCount } = await loadLockHistory(supabase, id, user.id, isAdmin)
+
+  // Reactions on the public page; the table may be missing, then it is just 0.
+  const { count } = await supabase.from('loq_reactions').select('id', { count: 'exact', head: true }).eq('loq_id', id)
+  return { ...buildSummary(loq, events, visitorCount), reactions: count ?? 0 }
 })

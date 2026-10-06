@@ -15,7 +15,7 @@
       <ul v-else class="lh-list">
         <li v-for="l in locks" :key="l.id" class="lh-card">
           <button type="button" class="lh-card__top" :aria-expanded="openId === l.id" @click="toggle(l.id)">
-            <span class="lh-card__big">{{ formatHours(l.summary.total_hours) }}</span>
+            <span class="lh-card__big">{{ spanHours(l.summary.total_hours) }}</span>
             <span class="lh-card__meta">
               <strong>{{ l.role === 'wearer' ? 'Worn' : 'Held' }}<template v-if="l.with"> {{ l.role === 'wearer' ? 'with' : 'for' }} {{ l.with }}</template><template v-else> solo</template></strong>
               <small>{{ formatDate(l.created_at) }}</small>
@@ -25,15 +25,15 @@
 
           <div v-if="openId === l.id" class="lh-detail">
             <dl class="lh-stats">
-              <div><dt>Keyholder added</dt><dd>{{ formatHours(l.summary.keyholder_added_hours) }}</dd></div>
-              <div><dt>Visitors added</dt><dd>{{ formatHours(l.summary.visitor_added_hours) }}</dd></div>
+              <div><dt>Keyholder added</dt><dd>{{ spanHours(l.summary.keyholder_added_hours) }}</dd></div>
+              <div><dt>Visitors added</dt><dd>{{ spanHours(l.summary.visitor_added_hours) }}</dd></div>
               <div><dt>Visitors</dt><dd>{{ l.summary.visitors }}</dd></div>
               <div><dt>Pauses</dt><dd>{{ l.summary.pauses }}</dd></div>
-              <div><dt>Longest stretch</dt><dd>{{ formatHours(l.summary.longest_stretch_hours) }}</dd></div>
+              <div><dt>Longest stretch</dt><dd>{{ spanHours(l.summary.longest_stretch_hours) }}</dd></div>
             </dl>
 
-            <button type="button" class="lh-share" :disabled="sharing === l.id" @click="share(l)">
-              {{ sharing === l.id ? 'Preparing…' : 'Share' }}
+            <button type="button" class="lh-share" :disabled="sharing" @click="shareLock(l.id, l.summary.total_hours)">
+              {{ sharing ? 'Preparing…' : 'Share' }}
             </button>
             <p v-if="shareError" class="lh-note lh-note--err">{{ shareError }}</p>
 
@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { describeEvent, formatHours, OUTCOME_LABEL, whenLabel, type HistoryEventView, type LockSummaryView } from '~/utils/lockHistory'
+import { describeEvent, spanHours, OUTCOME_LABEL, whenLabel, type HistoryEventView, type LockSummaryView } from '~/utils/lockHistory'
 
 definePageMeta({ middleware: 'auth' })
 useHead({ title: 'Lock history · ChastHub' })
@@ -77,8 +77,7 @@ const error = ref('')
 const openId = ref<string | null>(null)
 const timeline = ref<HistoryEventView[]>([])
 const timelineLoading = ref(false)
-const sharing = ref<string | null>(null)
-const shareError = ref('')
+const { shareLock, sharing, error: shareError } = useLockShare()
 
 onMounted(async () => {
   try {
@@ -106,34 +105,6 @@ async function toggle(id: string) {
   }
   finally {
     timelineLoading.value = false
-  }
-}
-
-// The image sits behind the login, so fetch it with the token and hand the
-// bytes to the share sheet (or save them where there is none).
-async function share(l: ArchiveLock) {
-  sharing.value = l.id
-  shareError.value = ''
-  try {
-    const blob = await authFetch<Blob>(`/api/loqs/${l.id}/share-image`, { responseType: 'blob' })
-    const file = new File([blob], 'chasthub-lock.png', { type: 'image/png' })
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], text: `${formatHours(l.summary.total_hours)} locked on ChastHub` })
-    }
-    else {
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = file.name
-      a.click()
-      URL.revokeObjectURL(url)
-    }
-  }
-  catch (e) {
-    if ((e as Error).name !== 'AbortError') shareError.value = 'Could not create the image.'
-  }
-  finally {
-    sharing.value = null
   }
 }
 </script>
