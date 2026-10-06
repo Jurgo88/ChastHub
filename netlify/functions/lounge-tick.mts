@@ -1,9 +1,10 @@
 // Scheduled function: opens Lounge sessions (announcement and "Remind me"
 // pushes), runs the daily check-in reminders and penalties, announces lock
-// milestones and executes the keyholder's scheduled surprises. The work lives
+// milestones, executes the keyholder's scheduled surprises and settles
+// challenge entries. The work lives
 // in the Nuxt routes; this only knocks on them with the service key, which is
 // already in the site environment.
-const ROUTES = ['lounge-tick', 'checkin-tick', 'milestone-tick', 'surprise-tick']
+const ROUTES = ['lounge-tick', 'checkin-tick', 'milestone-tick', 'surprise-tick', 'challenge-tick']
 
 export default async () => {
   const base = process.env.URL || 'https://chasthub.com'

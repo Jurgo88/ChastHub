@@ -11,6 +11,7 @@ export const AUDIT_ACTION_GROUPS = {
     'admin_invited', 'admin_demoted', 'account_deleted',
     'security_report_handled', 'security_report_reopened',
     'lounge_message_deleted', 'lounge_mute', 'lounge_unmute', 'lounge_settings_updated',
+    'challenge_created', 'challenge_updated',
   ],
   loqs: [
     'loq_accepted', 'loq_cancelled', 'loq_ended', 'loq_paused', 'loq_resumed',
@@ -34,6 +35,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   lounge_mute: 'Muted in Lounge',
   lounge_unmute: 'Unmuted in Lounge',
   lounge_settings_updated: 'Changed Lounge settings',
+  challenge_created: 'Created challenge',
+  challenge_updated: 'Changed challenge',
   loq_accepted: 'Lock accepted',
   loq_cancelled: 'Lock cancelled',
   loq_ended: 'Lock ended',
