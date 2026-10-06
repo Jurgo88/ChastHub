@@ -12,6 +12,7 @@
           <NuxtLink to="/keydrop" class="app-nav__link" active-class="app-nav__link--active">Key Drop</NuxtLink>
           <NuxtLink v-if="lounge?.visible" to="/lounge" class="app-nav__link" active-class="app-nav__link--active">Lounge<i v-if="loungeOpen" class="app-nav__live" /></NuxtLink>
           <NuxtLink to="/stats" class="app-nav__link" active-class="app-nav__link--active">Stats</NuxtLink>
+          <NuxtLink to="/challenges" class="app-nav__link" active-class="app-nav__link--active">Challenges</NuxtLink>
           <NuxtLink to="/messages" class="app-nav__link" active-class="app-nav__link--active">Messages<span v-if="dmUnread" class="app-nav__badge">{{ dmUnread > 9 ? '9+' : dmUnread }}</span></NuxtLink>
           <NuxtLink v-if="authStore.isLoqee && !authStore.hasAccess" to="/subscription/upgrade" class="app-nav__link app-nav__link--cta">Upgrade</NuxtLink>
           <NuxtLink v-if="authStore.isAdmin" to="/admin" class="app-nav__link" active-class="app-nav__link--active">Admin</NuxtLink>
@@ -65,6 +66,7 @@
             <NuxtLink to="/keydrop" class="app-nav__drawer-link">Key Drop</NuxtLink>
             <NuxtLink v-if="lounge?.visible" to="/lounge" class="app-nav__drawer-link">Lounge<i v-if="loungeOpen" class="app-nav__live" /></NuxtLink>
             <NuxtLink to="/stats" class="app-nav__drawer-link">Stats</NuxtLink>
+            <NuxtLink to="/challenges" class="app-nav__drawer-link">Challenges</NuxtLink>
             <NuxtLink to="/messages" class="app-nav__drawer-link">Messages<span v-if="dmUnread" class="app-nav__badge">{{ dmUnread > 9 ? '9+' : dmUnread }}</span></NuxtLink>
             <NuxtLink to="/profile" class="app-nav__drawer-link">Profile</NuxtLink>
             <NuxtLink to="/locks/history" class="app-nav__drawer-link">Lock history</NuxtLink>
