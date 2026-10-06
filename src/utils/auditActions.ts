@@ -14,7 +14,7 @@ export const AUDIT_ACTION_GROUPS = {
   ],
   loqs: [
     'loq_accepted', 'loq_cancelled', 'loq_ended', 'loq_paused', 'loq_resumed',
-    'loq_time_added', 'loq_time_removed',
+    'loq_time_added', 'loq_time_removed', 'loq_wheel_spin',
   ],
 } as const
 
@@ -41,4 +41,5 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   loq_resumed: 'Lock resumed',
   loq_time_added: 'Time added',
   loq_time_removed: 'Time removed',
+  loq_wheel_spin: 'Wheel spun',
 }

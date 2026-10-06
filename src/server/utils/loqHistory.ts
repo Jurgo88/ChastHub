@@ -9,7 +9,7 @@ import { lockHours } from '~/server/utils/profileStats'
 export type HistoryType =
   | 'created' | 'accepted' | 'time_added' | 'time_removed' | 'paused' | 'resumed'
   | 'visitors_added' | 'visitors_removed' | 'revealed' | 'ended' | 'cancelled'
-  | 'checkin'
+  | 'checkin' | 'wheel'
 
 export type HistoryFilter = 'all' | 'time' | 'pauses' | 'visitors'
 export const HISTORY_FILTERS: readonly HistoryFilter[] = ['all', 'time', 'pauses', 'visitors']
@@ -24,6 +24,8 @@ export interface HistoryEvent {
   count?: number
   /** Mood of a check-in. */
   mood?: string
+  /** Result of a wheel spin, e.g. "+6h". */
+  label?: string
 }
 
 export interface LockHistoryRow {
@@ -47,7 +49,7 @@ export interface CheckinRow { mood: string; created_at: string }
 export const VISITOR_MERGE_OVER = 3
 
 const FILTER_TYPES: Record<Exclude<HistoryFilter, 'all'>, HistoryType[]> = {
-  time: ['time_added', 'time_removed', 'visitors_added', 'visitors_removed'],
+  time: ['time_added', 'time_removed', 'visitors_added', 'visitors_removed', 'wheel'],
   pauses: ['paused', 'resumed'],
   visitors: ['visitors_added', 'visitors_removed'],
 }
@@ -106,6 +108,17 @@ export function buildHistory(
       case 'loq_resumed': events.push({ type: 'resumed', at: a.created_at, actor }); break
       case 'loq_ended': events.push({ type: 'ended', at: a.created_at, actor }); break
       case 'loq_cancelled': events.push({ type: 'cancelled', at: a.created_at, actor }); break
+      case 'loq_wheel_spin': {
+        const delta = Number(a.details?.delta_minutes)
+        events.push({
+          type: 'wheel',
+          at: a.created_at,
+          actor,
+          label: typeof a.details?.label === 'string' ? a.details.label : undefined,
+          ...(Number.isFinite(delta) && delta !== 0 ? { delta_minutes: delta } : {}),
+        })
+        break
+      }
       case 'loq_time_added':
       case 'loq_time_removed': {
         const raw = Number(a.details?.delta_minutes)

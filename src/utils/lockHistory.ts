@@ -8,6 +8,7 @@ export interface HistoryEventView {
   delta_minutes?: number
   count?: number
   mood?: string
+  label?: string
 }
 
 export interface LockSummaryView {
@@ -55,6 +56,7 @@ export function describeEvent(e: HistoryEventView): { icon: string; text: string
     case 'visitors_added': return { icon: '👀', text: n > 1 ? `${n} visitors added ${amount}` : `A visitor added ${amount}` }
     case 'visitors_removed': return { icon: '🕊️', text: n > 1 ? `${n} visitors took off ${amount}` : `A visitor took off ${amount}` }
     case 'checkin': return { icon: MOOD_EMOJI[e.mood ?? ''] ?? '📝', text: `Check-in: ${e.mood ?? ''}` }
+    case 'wheel': return { icon: '🎡', text: `Spun the wheel: ${e.label ?? 'result'}` }
     case 'revealed': return { icon: '🔑', text: 'Combination revealed' }
     case 'ended': return { icon: '🔓', text: 'Lock ended' }
     case 'cancelled': return { icon: '✖️', text: 'Lock cancelled' }

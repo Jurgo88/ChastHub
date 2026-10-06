@@ -83,6 +83,19 @@ describe('buildHistory', () => {
     expect(JSON.stringify(events)).not.toMatch(/combination_text/)
   })
 
+  it('shows a wheel spin with its result and counts it as a time change', () => {
+    const events = buildHistory(lock({ status: 'active' }), [
+      audit('loq_wheel_spin', '2026-10-02T00:00:00Z', WR, { delta_minutes: 360, label: '+6h' }),
+      audit('loq_wheel_spin', '2026-10-03T00:00:00Z', WR, { delta_minutes: 0, label: 'Nothing' }),
+    ], [])
+    const spins = events.filter(e => e.type === 'wheel')
+    expect(spins).toEqual([
+      { type: 'wheel', at: '2026-10-02T00:00:00Z', actor: 'wearer', label: '+6h', delta_minutes: 360 },
+      { type: 'wheel', at: '2026-10-03T00:00:00Z', actor: 'wearer', label: 'Nothing' },
+    ])
+    expect(filterHistory(events, 'time')).toHaveLength(2)
+  })
+
   it('includes check-ins', () => {
     const events = buildHistory(lock({ status: 'active' }), [], [], [{ mood: 'proud', created_at: '2026-10-02T20:00:00Z' }])
     expect(events.at(-1)).toMatchObject({ type: 'checkin', mood: 'proud', actor: 'wearer' })
