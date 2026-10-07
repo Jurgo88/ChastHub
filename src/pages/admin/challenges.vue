@@ -36,6 +36,7 @@
     <section class="card">
       <h2>All challenges</h2>
       <div v-if="loading" class="admin-loading"><span class="admin-loading__spinner" />Loading…</div>
+      <div v-else-if="loadError" class="admin-error">⚠️ {{ loadError }}</div>
       <p v-else-if="!items.length" class="muted">None yet.</p>
       <table v-else class="admin-table">
         <thead><tr><th>Title</th><th>When</th><th>Entries</th><th>Status</th><th /></tr></thead>
@@ -72,6 +73,7 @@ const items = ref<Item[]>([])
 const loading = ref(true)
 const saving = ref(false)
 const error = ref('')
+const loadError = ref('')
 const form = reactive({ title: '', slug: '', description: '', mode: 'fixed' as 'fixed' | 'duration', starts: '', ends: '', days: 7, pauseHours: 24 })
 let slugTouched = false
 
@@ -87,6 +89,9 @@ watch(() => form.slug, (v, old) => { if (v !== old && v !== form.title.toLowerCa
 async function load() {
   try {
     items.value = (await authFetch<{ challenges: Item[] }>('/api/admin/challenges')).challenges
+  }
+  catch (e) {
+    loadError.value = (e as { data?: { message?: string } }).data?.message ?? 'Could not load the challenges.'
   }
   finally {
     loading.value = false
@@ -130,11 +135,31 @@ onMounted(load)
 </script>
 
 <style scoped lang="scss">
-.card { margin-bottom: 16px; }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; font-size: 13px; }
-.modes { display: flex; gap: 18px; margin-bottom: 12px; }
-.muted { color: var(--color-text-muted); font-size: 13px; }
-.actions { display: flex; align-items: center; gap: 12px; }
-.err { color: var(--color-cta); font-size: 13px; }
+@use './admin-shared';
+@use '~/assets/styles/profile' as *;
+
+.card {
+  max-width: 860px;
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+
+  h2 { margin: 0.4rem 0 0; font-size: 1.05rem; }
+}
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.field { display: flex; flex-direction: column; gap: 0.35rem; span { font-size: 0.85rem; font-weight: 600; } }
+.modes { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+.muted { margin: 0; color: var(--color-text-muted); font-size: 0.85rem; }
+.actions { display: flex; align-items: center; gap: 0.8rem; }
+.err { color: var(--color-danger); font-size: 0.85rem; }
+
+@media (max-width: 800px) {
+  .grid2 { grid-template-columns: 1fr; }
+}
 </style>
