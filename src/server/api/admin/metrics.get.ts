@@ -11,6 +11,11 @@ export default defineEventHandler(async (event) => {
   const since7d = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString()
   const since30d = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString()
 
+  // Admins and test accounts (@test.sk, @chasthub.sk: profiles.is_test_account,
+  // migration 017) are not users for statistics purposes.
+  const real = () => supabase.from('profiles').select('id', { count: 'exact', head: true })
+    .eq('is_admin', false).eq('is_test_account', false)
+
   const count = (query: PromiseLike<{ count: number | null }>) => query.then(r => r.count ?? 0)
 
   const [
@@ -22,10 +27,10 @@ export default defineEventHandler(async (event) => {
     openReports,
     activeSubscriptions,
   ] = await Promise.all([
-    count(supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'loqee')),
-    count(supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'loqholder')),
-    count(supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', since7d)),
-    count(supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', since30d)),
+    count(real().eq('role', 'loqee')),
+    count(real().eq('role', 'loqholder')),
+    count(real().gte('created_at', since7d)),
+    count(real().gte('created_at', since30d)),
     count(supabase.from('loqs').select('id', { count: 'exact', head: true }).eq('status', 'active')),
     count(supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open')),
     count(supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active')),
