@@ -29,8 +29,9 @@ export default defineEventHandler(async (event) => {
   // id stays on the server.
   // `locked` is derived from the status: self-locks were created with the
   // column left at its default (false), which made their public page say
-  // the lock had ended.
+  // the lock had ended. A lock still waiting for a keyholder (pending) is
+  // locked too: its clock has been running since it was created.
   const { id, ...publicLoq } = loq
   const activity = await getPublicLoqActivity(id)
-  return { ...publicLoq, locked: ['active', 'paused'].includes(loq.status), ...activity }
+  return { ...publicLoq, locked: ['pending', 'active', 'paused'].includes(loq.status), ...activity }
 })

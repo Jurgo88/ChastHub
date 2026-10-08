@@ -7,6 +7,7 @@ const props = defineProps<{
   visitorPermission: 'add' | 'remove' | 'both'
   locked: boolean
   isPaused: boolean
+  isPending?: boolean
   adjustTimeLoading: 'add' | 'remove' | null
   lastAction: 'add' | 'remove' | null
   alreadyActed: boolean
@@ -76,6 +77,7 @@ const amount = computed(() => {
         <span class="lc__label">{{ !locked ? 'UNLOCKED' : isPaused ? 'PAUSED' : 'UNLOCKS IN' }}</span>
         <span class="lc__time" :class="timeSize">{{ locked ? (countdown || '…') : 'Free' }}</span>
         <span v-if="locked && isPaused" class="lc__sub">The keyholder paused the clock</span>
+        <span v-else-if="locked && isPending" class="lc__sub">Waiting for a keyholder to take over</span>
       </div>
     </div>
 

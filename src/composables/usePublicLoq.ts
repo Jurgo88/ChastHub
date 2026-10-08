@@ -101,7 +101,7 @@ export async function usePublicLoq(publicId: string) {
           if (loqPatch.paused_at === null || typeof loqPatch.paused_at === 'string') next.paused_at = loqPatch.paused_at
           if (typeof loqPatch.status === 'string') {
             next.status = loqPatch.status
-            next.locked = ['active', 'paused'].includes(loqPatch.status)
+            next.locked = ['pending', 'active', 'paused'].includes(loqPatch.status)
           }
           else if (loqPatch.locked === false) next.locked = false
           loq.value = next
