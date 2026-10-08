@@ -102,6 +102,18 @@ describe('buildHistory', () => {
   })
 })
 
+describe('verification events', () => {
+  it('turns the three audit actions into verification events', () => {
+    const events = buildHistory(lock(), [
+      audit('loq_verification_approved', '2026-10-02T10:00:00Z'),
+      audit('loq_verification_rejected', '2026-10-03T10:00:00Z'),
+      audit('loq_verification_missed', '2026-10-04T10:00:00Z'),
+    ], []).filter(e => e.type === 'verification')
+    expect(events.map(e => e.verification)).toEqual(['approved', 'rejected', 'missed'])
+    expect(events[2]!.actor).toBe('system')
+  })
+})
+
 describe('filterHistory', () => {
   const events = buildHistory(lock({ status: 'active' }), [
     audit('loq_time_added', '2026-10-02T00:00:00Z', KH, { delta_minutes: 60 }),

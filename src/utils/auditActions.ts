@@ -16,6 +16,7 @@ export const AUDIT_ACTION_GROUPS = {
   loqs: [
     'loq_accepted', 'loq_cancelled', 'loq_ended', 'loq_paused', 'loq_resumed',
     'loq_time_added', 'loq_time_removed', 'loq_wheel_spin',
+    'loq_verification_approved', 'loq_verification_rejected', 'loq_verification_missed',
   ],
 } as const
 
@@ -45,4 +46,7 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   loq_time_added: 'Time added',
   loq_time_removed: 'Time removed',
   loq_wheel_spin: 'Wheel spun',
+  loq_verification_approved: 'Verification approved',
+  loq_verification_rejected: 'Verification rejected',
+  loq_verification_missed: 'Verification missed',
 }

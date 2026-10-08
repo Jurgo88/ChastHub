@@ -130,6 +130,23 @@ export default defineEventHandler(async (event) => {
     console.error('[profile/delete] Avatar cleanup failed:', err)
   }
 
+  // ── 3b. Drop their verification photos ───────────────────────────────────
+  // Intimate content: gone right away, not after the 30 day retention.
+  try {
+    const { data: mine } = await supabase.from('loqs').select('id').eq('loqee_id', user.id)
+    const loqIds = (mine ?? []).map(l => l.id as string)
+    if (loqIds.length) {
+      const { data: shots } = await supabase
+        .from('loq_verifications').select('photo_path').in('loq_id', loqIds).not('photo_path', 'is', null)
+      const paths = (shots ?? []).map(s => s.photo_path as string)
+      if (paths.length) await supabase.storage.from('verification-photos').remove(paths)
+      await supabase.from('loq_verifications').update({ photo_path: null }).in('loq_id', loqIds)
+    }
+  }
+  catch (err) {
+    console.error('[profile/delete] Verification photo cleanup failed:', err)
+  }
+
   // ── 4. Stop the notifications ────────────────────────────────────────────
   await supabase.from('push_subscriptions').delete().eq('user_id', user.id)
 
