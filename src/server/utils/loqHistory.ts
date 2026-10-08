@@ -9,7 +9,7 @@ import { lockHours } from '~/server/utils/profileStats'
 export type HistoryType =
   | 'created' | 'accepted' | 'time_added' | 'time_removed' | 'paused' | 'resumed'
   | 'visitors_added' | 'visitors_removed' | 'revealed' | 'ended' | 'cancelled'
-  | 'checkin' | 'wheel'
+  | 'checkin' | 'wheel' | 'verification'
 
 export type HistoryFilter = 'all' | 'time' | 'pauses' | 'visitors'
 export const HISTORY_FILTERS: readonly HistoryFilter[] = ['all', 'time', 'pauses', 'visitors']
@@ -24,6 +24,8 @@ export interface HistoryEvent {
   count?: number
   /** Mood of a check-in. */
   mood?: string
+  /** Outcome of a verification: approved, rejected or missed. */
+  verification?: 'approved' | 'rejected' | 'missed'
   /** Result of a wheel spin, e.g. "+6h". */
   label?: string
 }
@@ -108,6 +110,9 @@ export function buildHistory(
       case 'loq_resumed': events.push({ type: 'resumed', at: a.created_at, actor }); break
       case 'loq_ended': events.push({ type: 'ended', at: a.created_at, actor }); break
       case 'loq_cancelled': events.push({ type: 'cancelled', at: a.created_at, actor }); break
+      case 'loq_verification_approved': events.push({ type: 'verification', at: a.created_at, actor, verification: 'approved' }); break
+      case 'loq_verification_rejected': events.push({ type: 'verification', at: a.created_at, actor, verification: 'rejected' }); break
+      case 'loq_verification_missed': events.push({ type: 'verification', at: a.created_at, actor: 'system', verification: 'missed' }); break
       case 'loq_wheel_spin': {
         const delta = Number(a.details?.delta_minutes)
         events.push({
