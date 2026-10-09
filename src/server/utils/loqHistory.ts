@@ -9,7 +9,7 @@ import { lockHours } from '~/server/utils/profileStats'
 export type HistoryType =
   | 'created' | 'accepted' | 'time_added' | 'time_removed' | 'paused' | 'resumed'
   | 'visitors_added' | 'visitors_removed' | 'revealed' | 'ended' | 'cancelled'
-  | 'checkin' | 'wheel' | 'verification'
+  | 'checkin' | 'wheel' | 'verification' | 'task'
 
 export type HistoryFilter = 'all' | 'time' | 'pauses' | 'visitors'
 export const HISTORY_FILTERS: readonly HistoryFilter[] = ['all', 'time', 'pauses', 'visitors']
@@ -26,6 +26,8 @@ export interface HistoryEvent {
   mood?: string
   /** Outcome of a verification: approved, rejected or missed. */
   verification?: 'approved' | 'rejected' | 'missed'
+  /** Outcome of a keyholder task. */
+  task?: 'done' | 'failed' | 'missed'
   /** Result of a wheel spin, e.g. "+6h". */
   label?: string
 }
@@ -113,6 +115,8 @@ export function buildHistory(
       case 'loq_verification_approved': events.push({ type: 'verification', at: a.created_at, actor, verification: 'approved' }); break
       case 'loq_verification_rejected': events.push({ type: 'verification', at: a.created_at, actor, verification: 'rejected' }); break
       case 'loq_verification_missed': events.push({ type: 'verification', at: a.created_at, actor: 'system', verification: 'missed' }); break
+      case 'loq_task_done': events.push({ type: 'task', at: a.created_at, actor, task: 'done' }); break
+      case 'loq_task_failed': events.push({ type: 'task', at: a.created_at, actor: a.details?.missed ? 'system' : actor, task: a.details?.missed ? 'missed' : 'failed' }); break
       case 'loq_wheel_spin': {
         const delta = Number(a.details?.delta_minutes)
         events.push({

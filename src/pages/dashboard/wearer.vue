@@ -307,6 +307,7 @@
 
           <LoqCheckin :loq-id="loq.id" role="wearer" />
           <LoqVerification :loq-id="loq.id" role="wearer" />
+          <LoqTasks :loq-id="loq.id" role="wearer" />
           <LoqWheel :loq-id="loq.id" role="wearer" />
           <LoqHistory :loq-id="loq.id" />
 

@@ -1,7 +1,6 @@
 import { randomInt } from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { logAudit } from '~/server/utils/auditLog'
-import { MAX_DURATION_MINUTES } from '~/server/utils/loqValidation'
+import { applyTimeDelta } from '~/server/utils/lockTime'
 import { sendPushNotification } from '~/server/utils/sendPushNotification'
 import { generateCode, requestMessage } from '~/server/utils/verification'
 
@@ -87,12 +86,7 @@ export async function addPenalty(
   actorId: string,
 ): Promise<void> {
   if (minutes <= 0) return
-  const { data: fresh } = await supabase.from('loqs').select('loqed_until').eq('id', loq.id).maybeSingle()
-  if (!fresh?.loqed_until) return
-  const cap = Date.now() + MAX_DURATION_MINUTES * 60_000
-  const newUntil = Math.min(new Date(fresh.loqed_until as string).getTime() + minutes * 60_000, cap)
-  await supabase.from('loqs').update({ loqed_until: new Date(newUntil).toISOString() }).eq('id', loq.id)
-  await logAudit(supabase, 'loq_time_added', actorId, loq.loqee_id, { loq_id: loq.id, delta_minutes: minutes, reason })
+  await applyTimeDelta(supabase, loq, minutes, reason, actorId)
 }
 
 /** One line in the lock chat, as the keyholder. No-op for a self-lock. */

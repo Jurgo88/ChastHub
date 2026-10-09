@@ -23,7 +23,7 @@
           <li>Account information (login credentials, profile data)</li>
           <li>Subscription status (via third-party providers)</li>
           <li>Content you create: locks and their settings, lock photos or combinations, messages, and reports</li>
-          <li>Verification photos: if your keyholder asks for one (or you turn it on for yourself), the photo you send is stored privately. Only the keyholder of that lock can see it (on a self-lock, only you), plus an admin if the photo is reported. It is deleted 30 days after the lock ends, or immediately when you delete your account.</li>
+          <li>Verification and task proof photos: if your keyholder asks for one (or you turn it on for yourself), the photo you send is stored privately. Only the keyholder of that lock can see it (on a self-lock, only you), plus an admin if the photo is reported. It is deleted 30 days after the lock ends, or immediately when you delete your account.</li>
           <li>Usage data (interactions, session information)</li>
           <li>Technical data (IP address, browser type, device information)</li>
           <li>Signup origin, recorded once when you create your account: the country and region you signed up from, and how you found us: the domain of the site that linked you here (for example instagram.com, never the full address) and any campaign tags in that link. It is kept with your account, not in your browser, and used only to count where our members come from.</li>
