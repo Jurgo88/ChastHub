@@ -301,6 +301,7 @@
 
                 <LoqCheckin :loq-id="loq.id" role="keyholder" />
                 <LoqVerification :loq-id="loq.id" role="keyholder" />
+                <LoqTasks :loq-id="loq.id" role="keyholder" />
                 <LoqWheel :loq-id="loq.id" role="keyholder" />
                 <LoqSurprises :loq-id="loq.id" />
                 <LoqHistory :loq-id="loq.id" />

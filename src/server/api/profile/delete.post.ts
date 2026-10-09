@@ -130,7 +130,7 @@ export default defineEventHandler(async (event) => {
     console.error('[profile/delete] Avatar cleanup failed:', err)
   }
 
-  // ── 3b. Drop their verification photos ───────────────────────────────────
+  // ── 3b. Drop their verification and task proof photos ────────────────────
   // Intimate content: gone right away, not after the 30 day retention.
   try {
     const { data: mine } = await supabase.from('loqs').select('id').eq('loqee_id', user.id)
@@ -138,9 +138,15 @@ export default defineEventHandler(async (event) => {
     if (loqIds.length) {
       const { data: shots } = await supabase
         .from('loq_verifications').select('photo_path').in('loq_id', loqIds).not('photo_path', 'is', null)
-      const paths = (shots ?? []).map(s => s.photo_path as string)
+      const { data: proofs } = await supabase
+        .from('loq_tasks').select('proof_photo_path').in('loq_id', loqIds).not('proof_photo_path', 'is', null)
+      const paths = [
+        ...(shots ?? []).map(s => s.photo_path as string),
+        ...(proofs ?? []).map(p => p.proof_photo_path as string),
+      ]
       if (paths.length) await supabase.storage.from('verification-photos').remove(paths)
       await supabase.from('loq_verifications').update({ photo_path: null }).in('loq_id', loqIds)
+      await supabase.from('loq_tasks').update({ proof_photo_path: null }).in('loq_id', loqIds)
     }
   }
   catch (err) {

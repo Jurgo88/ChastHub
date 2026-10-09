@@ -10,6 +10,7 @@ export interface HistoryEventView {
   mood?: string
   label?: string
   verification?: 'approved' | 'rejected' | 'missed'
+  task?: 'done' | 'failed' | 'missed'
 }
 
 export interface LockSummaryView {
@@ -63,6 +64,11 @@ export function describeEvent(e: HistoryEventView): { icon: string; text: string
       : e.verification === 'rejected'
         ? { icon: '❌', text: 'Verification photo rejected' }
         : { icon: '⏰', text: 'Missed verification' }
+    case 'task': return e.task === 'done'
+      ? { icon: '✅', text: 'Task done' }
+      : e.task === 'missed'
+        ? { icon: '⏰', text: 'Task missed' }
+        : { icon: '❌', text: 'Task failed' }
     case 'revealed': return { icon: '🔑', text: 'Combination revealed' }
     case 'ended': return { icon: '🔓', text: 'Lock ended' }
     case 'cancelled': return { icon: '✖️', text: 'Lock cancelled' }
