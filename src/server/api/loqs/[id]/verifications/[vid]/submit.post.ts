@@ -1,6 +1,7 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 import { logAudit } from '~/server/utils/auditLog'
+import { broadcastSignals } from '~/server/utils/broadcastLoq'
 import { sendPushNotification } from '~/server/utils/sendPushNotification'
 import { canTransition, isPastDue, photoPath, VERIFICATION_BUCKET, type VerificationStatus } from '~/server/utils/verification'
 import { loadVerificationLock, postChat, VERIFICATION_COLUMNS, type VerificationRow } from '~/server/utils/verificationDb'
@@ -49,5 +50,6 @@ export default defineEventHandler(async (event) => {
   else {
     await logAudit(supabase, 'loq_verification_approved', user.id, loq.loqee_id, { loq_id: id, self: true })
   }
+  await broadcastSignals(id)
   return { status: next }
 })

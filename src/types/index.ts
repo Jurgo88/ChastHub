@@ -141,7 +141,54 @@ export interface Loq {
   pending_request?: { id: string; loqholder: { id: string; display_name: string | null; avatar_url: string | null } } | null
 }
 
-export type LoqRequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'auto_rejected'
+// Issue #24 — per-lock signals the dashboards read from /api/loqholders/active
+// and /api/loqs/current (server/utils/lockSignals.ts builds them).
+export interface LockSignals {
+  pending_verifications: number
+  submitted_tasks: number
+  next_task_due_at: string | null
+  last_checkin_at: string | null
+  checked_in_today: boolean
+  missed_checkin: boolean
+  open_verification: {
+    id: string
+    code: string
+    due_at: string
+    penalty_minutes: number
+    status: 'pending' | 'submitted'
+    submitted_at: string | null
+  } | null
+  open_tasks: {
+    id: string
+    text: string
+    due_at: string | null
+    proof: 'none' | 'text' | 'photo'
+    reward_minutes: number
+    penalty_minutes: number
+    status: 'open' | 'submitted'
+    submitted_at: string | null
+  }[]
+}
+
+// Issue #24 — one row of GET /api/loqholders/attention.
+export interface AttentionItem {
+  kind: 'verification' | 'task' | 'request'
+  id: string
+  loq_id: string
+  loqee: { id: string; display_name: string | null; avatar_url: string | null } | null
+  at: string
+  code?: string
+  penalty_minutes?: number
+  text?: string
+  proof?: 'none' | 'text' | 'photo'
+  proof_text?: string | null
+  reward_minutes?: number
+  photo_url?: string | null
+  duration_minutes?: number
+  reason?: string | null
+}
+
+export type LoqRequestStatus ='pending' | 'accepted' | 'rejected' | 'cancelled' | 'auto_rejected'
 
 export interface LoqRequest {
   id: string

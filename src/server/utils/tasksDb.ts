@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { logAudit } from '~/server/utils/auditLog'
+import { broadcastSignals } from '~/server/utils/broadcastLoq'
 import { applyTimeDelta } from '~/server/utils/lockTime'
 import { sendPushNotification } from '~/server/utils/sendPushNotification'
 import { doneMessage, effectiveReward, failedMessage, type TaskStatus } from '~/server/utils/tasks'
@@ -59,5 +60,6 @@ export async function resolveTask(
     await postChat(supabase, loq, actorId, failedMessage(task.text, applied, !!opts.missed))
     await sendPushNotification(loq.loqee_id, opts.missed ? 'Task missed' : 'Task failed', applied > 0 ? `+${applied} min added` : task.text.slice(0, 80), '/dashboard')
   }
+  await broadcastSignals(loq.id)
   return true
 }

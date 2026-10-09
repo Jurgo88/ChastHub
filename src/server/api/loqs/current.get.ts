@@ -2,6 +2,7 @@ import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 import { maybeExpireLoq } from '~/server/utils/expireLoq'
 import { getVisitorCount } from '~/server/utils/getVisitorCount'
+import { loadLockSignals } from '~/server/utils/lockSignals'
 
 export default defineEventHandler(async (event) => {
   const { user, role } = await requireAuth(event)
@@ -97,8 +98,14 @@ export default defineEventHandler(async (event) => {
   // TASK-090 — only meaningful once there's a link to have visitors at all.
   const visitorCount = hideVisitorLink || !loq.public_link_id ? 0 : await getVisitorCount(supabase, loq.id)
 
+  // Issue #24 — the wearer's "Next up" and "Today", only while it runs.
+  const signals = ['active', 'paused'].includes(loq.status)
+    ? (await loadLockSignals(supabase, [loq])).get(loq.id)
+    : undefined
+
   return {
     ...loq,
+    ...signals,
     combination_text: shouldHide ? null : loq.combination_text,
     combination_photo_url,
     pending_requests: pendingRequests ?? 0,

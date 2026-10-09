@@ -1,0 +1,85 @@
+// Shared pieces of the lock dashboards (issue #24): progress bar, signal
+// chips, compact buttons. @use it inside a component's <style scoped> block,
+// like _loq-card.scss.
+//
+// Signal tones (also told apart by their text, never by colour alone):
+//   ok   – done or running        --color-success
+//   warn – waiting on you         --color-warn
+//   due  – deadline or a problem  --color-accent
+//   idle – paused or inactive     --color-text-muted
+
+@mixin progress-bar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+@mixin progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gradient-brand);
+  transition: width 0.4s ease;
+
+  @media (prefers-reduced-motion: reduce) { transition: none; }
+}
+
+@mixin chip-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+// Compact button, 40px tall so a row of three fits a phone.
+@mixin dash-btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-elevated);
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+
+  &:hover:not(:disabled) { border-color: var(--color-accent); }
+  &:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+.lock-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+
+  &--ok   { color: var(--color-success); }
+  &--warn { color: var(--color-warn); }
+  &--due  { color: var(--color-accent); }
+  &--idle { color: var(--color-text-muted); }
+}
+
+// UserAvatar renders a bare inline span: give it its size and shape here.
+@mixin avatar($size) {
+  display: block;
+  flex-shrink: 0;
+  width: $size;
+  height: $size;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px var(--color-elevated);
+}

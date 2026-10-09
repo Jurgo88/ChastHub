@@ -1,6 +1,7 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 import { checkRateLimit } from '~/server/utils/rateLimit'
+import { broadcastSignals } from '~/server/utils/broadcastLoq'
 import { sendPushNotification } from '~/server/utils/sendPushNotification'
 import { MAX_OPEN_TASKS, newTaskMessage, parseDue, parseTaskInput } from '~/server/utils/tasks'
 import { loadVerificationLock, postChat } from '~/server/utils/verificationDb'
@@ -43,5 +44,6 @@ export default defineEventHandler(async (event) => {
     await postChat(supabase, loq, user.id, newTaskMessage(input.text, due))
     await sendPushNotification(loq.loqee_id, '📝 New task', input.text.slice(0, 80), '/dashboard')
   }
+  await broadcastSignals(id)
   return task
 })
