@@ -7,386 +7,149 @@
       <div class="spinner" />
     </div>
 
-    <template v-else>
-      <div class="dash-body">
+    <div v-else class="kh">
 
-        <!-- Page header + stats -->
-        <div class="dash-header">
-          <div class="dash-header__text">
-            <h1 class="dash-header__title">Your Locks</h1>
-            <p class="dash-header__sub">Every key you hold, in one place.</p>
+      <!-- Narrow screens: an open lock takes the whole page -->
+      <template v-if="selectedLoq && !isWide">
+        <LockDetailPanel
+          v-model:tab="tab"
+          :loq="selectedLoq"
+          :now="now"
+          :channel="loqChannels.get(selectedLoq.id) ?? null"
+          :pending="isPending(selectedLoq.id)"
+          :adjust="(d: number) => adjustTime(selectedLoq!.id, d)"
+          :flash="cardFlash(selectedLoq.id)"
+          :error="cardError(selectedLoq.id)"
+          closable
+          @toggle-pause="togglePause(selectedLoq.id)"
+          @end="endLoq(selectedLoq.id)"
+          @expired="onExpired(selectedLoq.id)"
+          @close="closeLock"
+          @changed="refreshSignals"
+        >
+          <template #share>
+            <LockVisitorShare :loq="selectedLoq" @patch="p => patchLoq(selectedLoq!.id, p)" />
+          </template>
+        </LockDetailPanel>
+      </template>
+
+      <template v-else>
+        <!-- Page header + filter -->
+        <div class="kh__header">
+          <div>
+            <h1 class="kh__title">Your locks</h1>
+            <p class="kh__sub">{{ subline }}</p>
           </div>
-          <!-- Stat cards double as filters: click to filter, click again for all.
-               Paused loqs are active sessions, so they live under "Loqs"
-               (shown as a sub-count), never split into their own group. -->
-          <div class="stats-row">
-            <button
-              class="stat-card"
-              :class="{ 'stat-card--selected': filter === 'loqs' }"
-              :aria-pressed="filter === 'loqs'"
-              @click="toggleFilter('loqs')"
-            >
-              <span class="stat-card__value">{{ activeLoqs.length }}</span>
-              <span class="stat-card__label">Locks</span>
-              <span v-if="pausedCount" class="stat-card__sub">{{ pausedCount }} paused</span>
-            </button>
-            <button
-              class="stat-card"
-              :class="{ 'stat-card--selected': filter === 'requests' }"
-              :aria-pressed="filter === 'requests'"
-              @click="toggleFilter('requests')"
-            >
-              <span class="stat-card__value">{{ requests.length }}</span>
-              <span class="stat-card__label">Requests</span>
-            </button>
+          <div class="kh__tools">
+            <div class="kh__filter" role="group" aria-label="Filter locks">
+              <button
+                v-for="f in filters"
+                :key="f.key"
+                type="button"
+                class="kh__seg"
+                :class="{ 'kh__seg--on': filter === f.key }"
+                :aria-pressed="filter === f.key"
+                @click="filter = f.key"
+              >{{ f.label }} <span class="kh__seg-n">{{ f.count }}</span></button>
+            </div>
+            <NuxtLink to="/keydrop" class="kh__cta">Browse Key Drop</NuxtLink>
           </div>
         </div>
 
-        <!-- Loq cards -->
-        <div class="loq-list">
+        <LockAttentionFeed
+          :items="attention"
+          :busy-request="pendingAction"
+          @open="(item, t) => openLock(item.loq_id, t)"
+          @accept-request="item => acceptRequest(item.loq_id)"
+          @reject-request="item => rejectRequest(item.loq_id)"
+          @changed="refreshSignals"
+        />
 
-          <!-- Active / paused loq cards (paused loqs are still active sessions, always shown together) -->
-          <template v-if="filter !== 'requests'">
-            <article
-              v-for="loq in activeLoqs"
-              :key="loq.id"
-              class="loq-card"
-              :class="[`loq-card--${loq.status}`, { 'loq-card--expanded': isExpanded(loq.id) }]"
-            >
+        <div class="kh__split">
+          <section class="kh__locks" aria-label="Locks">
 
-              <!-- Summary row: compact view on desktop, header on mobile -->
-              <div
-                class="loq-card__summary"
-                role="button"
-                tabindex="0"
-                :aria-expanded="isExpanded(loq.id)"
-                :aria-controls="`loq-detail-${loq.id}`"
-                @click="toggleExpand(loq.id)"
-                @keydown.enter.prevent="toggleExpand(loq.id)"
-                @keydown.space.prevent="toggleExpand(loq.id)"
-              >
-                <div class="loq-card__identity">
-                  <UserAvatar class="loq-card__avatar" :avatar-url="loq.loqee?.avatar_url" :display-name="loq.loqee?.display_name" />
+            <!-- Requests -->
+            <template v-if="filter === 'requests'">
+              <article v-for="req in requests" :key="req.id" class="kh-req">
+                <div class="kh-req__who">
+                  <UserAvatar class="kh-req__avatar" :avatar-url="req.loq.loqee?.avatar_url" :display-name="req.loq.loqee?.display_name" />
                   <div>
-                    <p class="loq-card__name">{{ loq.loqee?.display_name ?? 'Unknown' }}</p>
-                    <p class="loq-card__since">
-                      {{ timeAgo(loq.accepted_at) }}<template v-if="loq.emotion"> · {{ emotionEmoji(loq.emotion) }} {{ loq.emotion }}</template>
-                    </p>
-                    <OnlineIndicator :user-id="loq.loqee?.id" :last-seen-at="loq.loqee?.last_seen_at" />
-                  </div>
-                </div>
-                <LockCountdown
-                  class="loq-card__hero-timer"
-                  hero
-                  :expanded="isExpanded(loq.id)"
-                  :locked-until="loq.loqed_until"
-                  :paused-at="loq.paused_at"
-                  @expired="onExpired(loq.id)"
-                />
-                <div class="loq-card__summary-meta">
-                  <span class="loq-status-pill" :class="`loq-status-pill--${loq.status}`">
-                    <span class="loq-status-pill__dot" />
-                    {{ loq.status.toUpperCase() }}
-                  </span>
-                  <span class="loq-card__chevron" aria-hidden="true">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </span>
-                </div>
-              </div>
-
-              <!-- Detail: collapsed by default, expand via the summary row -->
-              <div :id="`loq-detail-${loq.id}`" class="loq-card__detail">
-
-                <!-- Custom time adjust (only while active — the server rejects
-                     time changes on paused loqs) -->
-                <div class="time-adjust" :class="{ 'time-adjust--locked': loq.status !== 'active' }">
-                  <div class="time-adjust__spinners">
-
-                    <div class="adj-spin">
-                      <button class="adj-spin__arrow" type="button" :disabled="getAdj(loq.id).days >= MAX_ADJUST_DAYS || adjDisabled(loq)" @click="spinAdj(loq.id, 'days', 1)">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      </button>
-                      <span class="adj-spin__val">{{ String(getAdj(loq.id).days).padStart(2, '0') }}</span>
-                      <button class="adj-spin__arrow" type="button" :disabled="getAdj(loq.id).days <= 0 || adjDisabled(loq)" @click="spinAdj(loq.id, 'days', -1)">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      </button>
-                      <span class="adj-spin__label">Days</span>
-                    </div>
-
-                    <span class="time-adjust__sep">:</span>
-
-                    <div class="adj-spin">
-                      <button class="adj-spin__arrow" type="button" :disabled="getAdj(loq.id).hours >= 23 || adjDisabled(loq)" @click="spinAdj(loq.id, 'hours', 1)">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      </button>
-                      <span class="adj-spin__val">{{ String(getAdj(loq.id).hours).padStart(2, '0') }}</span>
-                      <button class="adj-spin__arrow" type="button" :disabled="getAdj(loq.id).hours <= 0 || adjDisabled(loq)" @click="spinAdj(loq.id, 'hours', -1)">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      </button>
-                      <span class="adj-spin__label">Hours</span>
-                    </div>
-
-                    <span class="time-adjust__sep">:</span>
-
-                    <div class="adj-spin">
-                      <button class="adj-spin__arrow" type="button" :disabled="getAdj(loq.id).minutes >= 59 || adjDisabled(loq)" @click="spinAdj(loq.id, 'minutes', 1)">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      </button>
-                      <span class="adj-spin__val">{{ String(getAdj(loq.id).minutes).padStart(2, '0') }}</span>
-                      <button class="adj-spin__arrow" type="button" :disabled="getAdj(loq.id).minutes <= 0 || adjDisabled(loq)" @click="spinAdj(loq.id, 'minutes', -1)">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      </button>
-                      <span class="adj-spin__label">Min</span>
-                    </div>
-
-                  </div>
-
-                  <div class="time-adjust__actions">
-                    <button
-                      class="loq-act loq-act--remove"
-                      :disabled="adjDisabled(loq) || adjTotal(loq.id) < 1"
-                      @click="applyTimeAdjust(loq.id, -1)"
-                    >− Remove {{ adjLabel(loq.id) }}</button>
-                    <button
-                      class="loq-act loq-act--add"
-                      :disabled="adjDisabled(loq) || adjTotal(loq.id) < 1"
-                      @click="applyTimeAdjust(loq.id, 1)"
-                    >+ Add {{ adjLabel(loq.id) }}</button>
-                  </div>
-
-                  <p v-if="loq.status === 'paused'" class="time-adjust__hint">Resume the lock to adjust the timer.</p>
-
-                  <Transition name="flash">
-                    <p v-if="cardFlash(loq.id)" class="time-adjust__flash">{{ cardFlash(loq.id) }}</p>
-                  </Transition>
-                </div>
-
-                <!-- Primary actions -->
-                <div class="loq-actions">
-                  <button
-                    class="loq-act loq-act--pause"
-                    :class="{ 'loq-act--resume': loq.status === 'paused' }"
-                    :disabled="isPending(loq.id)"
-                    @click="togglePause(loq.id)"
-                  >{{ loq.status === 'paused' ? 'Resume' : 'Pause' }}</button>
-                  <button
-                    class="loq-act loq-act--chat"
-                    :class="{ 'loq-act--chat-open': openChatId === loq.id }"
-                    :disabled="isPending(loq.id)"
-                    :aria-pressed="openChatId === loq.id"
-                    :aria-expanded="openChatId === loq.id"
-                    @click="toggleChat(loq.id)"
-                  >Chat</button>
-                  <button class="loq-act loq-act--end" :disabled="isPending(loq.id)" @click="endLoq(loq.id)">End</button>
-                </div>
-
-                <p v-if="cardError(loq.id)" class="loq-card__error">{{ cardError(loq.id) }}</p>
-
-                <!-- Combination -->
-                <div v-if="loq.combination_text || loq.combination_photo_url" class="combo-wrap">
-                  <div v-if="loq.combination_text" class="combo-row">
-                    <code class="combo-row__val">{{ loq.combination_text }}</code>
-                    <button class="loq-act loq-act--copy" @click="copyCombo(loq.id, loq.combination_text!)">
-                      {{ copiedIds.has(loq.id) ? 'Copied' : 'Copy' }}
-                    </button>
-                  </div>
-                  <div v-else-if="loq.combination_photo_url" class="combo-photo">
-                    <img :src="loq.combination_photo_url" alt="Combination photo" class="combo-photo__img" />
-                  </div>
-                </div>
-
-                <!-- Visitor share link — loqholder controls both the link and the amount -->
-                <div class="visitor-link-wrap">
-                  <button
-                    v-if="!loq.public_link_id"
-                    class="loq-act loq-act--ghost"
-                    :disabled="isPending(loq.id)"
-                    @click="handleGenerateLink(loq.id)"
-                  >🔗 Generate visitor link</button>
-
-                  <template v-else>
-                    <div class="visitor-link">
-                      <svg class="visitor-link__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                        <path d="M6.5 9.5L9.5 6.5M7 4H5a3 3 0 000 6h1m2-6h2a3 3 0 010 6h-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <code class="visitor-link__url">{{ visitorLinkUrl(loq) }}</code>
-                      <button class="visitor-link__copy" :class="{ 'visitor-link__copy--done': copiedLinkIds.has(loq.id) }" @click="copyVisitorLink(loq)">
-                        {{ copiedLinkIds.has(loq.id) ? 'Copied' : 'Copy' }}
-                      </button>
-                    </div>
-                    <p class="visitor-count">{{ loq.visitor_count ?? 0 }} visitor{{ (loq.visitor_count ?? 0) !== 1 ? 's' : '' }} interacted</p>
-
-                    <div class="visitor-amount">
-                      <p class="visitor-amount__caption">Each vote changes the timer by</p>
-
-                      <div class="visitor-amount__segmented">
-                        <button
-                          v-for="preset in VISITOR_PRESETS"
-                          :key="preset.hours"
-                          type="button"
-                          class="visitor-amount__seg"
-                          :class="{ 'visitor-amount__seg--active': !showCustomAmount.has(loq.id) && loq.visitor_add_hours === preset.hours }"
-                          :disabled="isPending(loq.id)"
-                          @click="selectPreset(loq.id, preset.hours)"
-                        >{{ preset.label }}</button>
-                        <button
-                          type="button"
-                          class="visitor-amount__seg"
-                          :class="{ 'visitor-amount__seg--active': showCustomAmount.has(loq.id) || isCustomAmount(loq) }"
-                          :disabled="isPending(loq.id)"
-                          @click="toggleCustomAmount(loq.id, loq.visitor_add_hours)"
-                        >Custom</button>
-                      </div>
-
-                      <Transition name="custom-reveal">
-                        <div v-if="showCustomAmount.has(loq.id)" class="visitor-stepper">
-                          <button
-                            type="button"
-                            class="visitor-stepper__btn"
-                            :disabled="isPending(loq.id) || customAmountFor(loq) <= MIN_VISITOR_HOURS"
-                            @click="stepCustomAmount(loq, -1)"
-                          >−</button>
-                          <div class="visitor-stepper__val">{{ formatHours(customAmountFor(loq)) }}</div>
-                          <button
-                            type="button"
-                            class="visitor-stepper__btn"
-                            :disabled="isPending(loq.id) || customAmountFor(loq) >= MAX_VISITOR_HOURS"
-                            @click="stepCustomAmount(loq, 1)"
-                          >+</button>
-                          <button
-                            type="button"
-                            class="visitor-stepper__confirm"
-                            :disabled="isPending(loq.id) || customAmountFor(loq) === loq.visitor_add_hours"
-                            @click="handleSetVisitorAmount(loq.id, customAmountFor(loq))"
-                          >Set</button>
-                        </div>
-                      </Transition>
-                    </div>
-
-                    <!-- TASK-089 -->
-                    <div class="visitor-amount">
-                      <p class="visitor-amount__caption">Visitors can</p>
-                      <div class="visitor-amount__segmented">
-                        <button
-                          v-for="perm in VISITOR_PERMISSIONS"
-                          :key="perm.value"
-                          type="button"
-                          class="visitor-amount__seg"
-                          :class="{ 'visitor-amount__seg--active': (loq.visitor_permission ?? 'both') === perm.value }"
-                          :disabled="isPending(loq.id)"
-                          @click="handleSetVisitorPermission(loq.id, perm.value)"
-                        >{{ perm.label }}</button>
-                      </div>
-                    </div>
-                  </template>
-                </div>
-
-                <!-- Expandable chat: smooth height transition like the card -->
-                <Transition
-                  name="chat-expand"
-                  @enter="onChatEnter"
-                  @after-enter="onChatAfterEnter"
-                  @before-leave="onChatBeforeLeave"
-                  @leave="onChatLeave"
-                >
-                  <div v-if="openChatId === loq.id" class="chat-wrap">
-                    <LoqChat
-                      :loq-id="loq.id"
-                      :channel="loqChannels.get(loq.id) ?? null"
-                      autofocus
-                      @ready="onChatContentReady"
-                    />
-                  </div>
-                </Transition>
-
-                <LoqCheckin :loq-id="loq.id" role="keyholder" />
-                <LoqVerification :loq-id="loq.id" role="keyholder" />
-                <LoqTasks :loq-id="loq.id" role="keyholder" />
-                <LoqWheel :loq-id="loq.id" role="keyholder" />
-                <LoqSurprises :loq-id="loq.id" />
-                <LoqHistory :loq-id="loq.id" />
-
-              </div>
-            </article>
-          </template>
-
-          <!-- Request cards -->
-          <template v-if="filter === 'all' || filter === 'requests'">
-            <article
-              v-for="req in requests"
-              :key="req.id"
-              class="loq-card loq-card--request"
-              :class="{ 'loq-card--expanded': isExpanded(req.id) }"
-            >
-              <!-- Summary row: same 3-col grid as active card -->
-              <div
-                class="loq-card__summary"
-                role="button"
-                tabindex="0"
-                :aria-expanded="isExpanded(req.id)"
-                :aria-controls="`loq-detail-${req.id}`"
-                @click="toggleExpand(req.id)"
-                @keydown.enter.prevent="toggleExpand(req.id)"
-                @keydown.space.prevent="toggleExpand(req.id)"
-              >
-                <div class="loq-card__identity">
-                  <UserAvatar class="loq-card__avatar" :avatar-url="req.loq.loqee?.avatar_url" :display-name="req.loq.loqee?.display_name" />
-                  <div>
-                    <p class="loq-card__name">{{ req.loq.loqee?.display_name ?? 'Unknown' }}</p>
-                    <p class="loq-card__since">
-                      {{ timeAgo(req.created_at) }}<template v-if="req.loq.emotion"> · {{ emotionEmoji(req.loq.emotion) }} {{ req.loq.emotion }}</template>
+                    <p class="kh-req__name">{{ req.loq.loqee?.display_name ?? 'Unknown' }}</p>
+                    <p class="kh-req__meta">
+                      {{ formatDuration(req.loq.duration_minutes) }} · {{ timeAgo(req.created_at) }}<template v-if="req.loq.emotion"> · {{ emotionEmoji(req.loq.emotion) }}</template>
                     </p>
                   </div>
+                  <span class="loq-status-pill loq-status-pill--request"><span class="loq-status-pill__dot" />REQUEST</span>
                 </div>
-                <LockCountdown
-                  class="loq-card__hero-timer"
-                  hero
-                  :expanded="true"
-                  :locked-until="req.loq.loqed_until"
-                />
-                <div class="loq-card__summary-meta">
-                  <span class="loq-status-pill loq-status-pill--request">
-                    <span class="loq-status-pill__dot" />
-                    REQUEST
-                  </span>
-                  <span class="loq-card__chevron" aria-hidden="true">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </span>
+                <p v-if="req.loq.reason" class="card-reason">"{{ req.loq.reason }}"</p>
+                <p v-if="cardError(req.loq.id)" class="loq-card__error">{{ cardError(req.loq.id) }}</p>
+                <div class="kh-req__actions">
+                  <button type="button" class="kh-req__btn" :disabled="pendingAction === req.loq.id" @click="rejectRequest(req.loq.id)">Reject</button>
+                  <button type="button" class="kh-req__btn kh-req__btn--accept" :disabled="pendingAction === req.loq.id" @click="acceptRequest(req.loq.id)">
+                    {{ pendingAction === req.loq.id ? 'Accepting…' : 'Accept lock' }}
+                  </button>
                 </div>
-              </div>
+              </article>
+            </template>
 
-              <!-- Detail: collapsed by default, expand via the summary row -->
-              <div :id="`loq-detail-${req.id}`" class="loq-card__detail">
-                <div v-if="req.loq.reason" class="reason-wrap">
-                  <p class="card-reason">"{{ req.loq.reason }}"</p>
-                </div>
-                <div class="loq-actions">
-                  <button
-                    class="loq-act loq-act--reject"
-                    :disabled="pendingAction === req.loq.id"
-                    @click="rejectRequest(req.loq.id)"
-                  >Reject</button>
-                  <button
-                    class="loq-act loq-act--accept"
-                    :disabled="pendingAction === req.loq.id"
-                    @click="acceptRequest(req.loq.id)"
-                  >{{ pendingAction === req.loq.id ? 'Accepting…' : 'Accept lock' }}</button>
-                </div>
-              </div>
-            </article>
-          </template>
+            <!-- Locks: cards with room, compact rows on a phone -->
+            <template v-else-if="isPhone">
+              <ul class="kh__rows">
+                <li v-for="loq in visibleLoqs" :key="loq.id">
+                  <LockRow :loq="loq" :now="now" @open="openLock(loq.id)" @expired="onExpired(loq.id)" />
+                </li>
+              </ul>
+            </template>
+            <div v-else class="kh__grid">
+              <LockSummaryCard
+                v-for="loq in visibleLoqs"
+                :key="loq.id"
+                :loq="loq"
+                :now="now"
+                :selected="isWide && selectedLoq?.id === loq.id"
+                :pending="isPending(loq.id)"
+                :flash="cardFlash(loq.id)"
+                :error="cardError(loq.id)"
+                @open="openLock(loq.id)"
+                @add-hour="adjustTime(loq.id, 60)"
+                @toggle-pause="togglePause(loq.id)"
+                @expired="onExpired(loq.id)"
+              />
+            </div>
 
-          <!-- Empty state -->
-          <div v-if="nothingVisible" class="empty-state">
-            <p class="empty-state__icon"><img :src="unloqedIcon" class="state-icon" alt="" width="128" height="128" decoding="async"></p>
-            <p class="empty-state__title">{{ emptyStateTitle }}</p>
-            <p class="empty-state__hint">Open Key Drop to pick up a key.</p>
-            <NuxtLink to="/keydrop" class="btn btn--primary">Open Key Drop</NuxtLink>
-          </div>
+            <!-- Empty state -->
+            <div v-if="nothingVisible" class="empty-state">
+              <p class="empty-state__icon"><img :src="unloqedIcon" class="state-icon" alt="" width="128" height="128" decoding="async"></p>
+              <p class="empty-state__title">{{ emptyStateTitle }}</p>
+              <p class="empty-state__hint">Open Key Drop to pick up a key.</p>
+              <NuxtLink to="/keydrop" class="kh__cta">Open Key Drop</NuxtLink>
+            </div>
+          </section>
 
+          <!-- Wide screens: the selected lock sits beside the grid -->
+          <aside v-if="isWide && selectedLoq && filter !== 'requests'" class="kh__detail">
+            <LockDetailPanel
+              v-model:tab="tab"
+              :loq="selectedLoq"
+              :now="now"
+              :channel="loqChannels.get(selectedLoq.id) ?? null"
+              :pending="isPending(selectedLoq.id)"
+              :adjust="(d: number) => adjustTime(selectedLoq!.id, d)"
+              :flash="cardFlash(selectedLoq.id)"
+              :error="cardError(selectedLoq.id)"
+              @toggle-pause="togglePause(selectedLoq.id)"
+              @end="endLoq(selectedLoq.id)"
+              @expired="onExpired(selectedLoq.id)"
+              @changed="refreshSignals"
+            >
+              <template #share>
+                <LockVisitorShare :loq="selectedLoq" @patch="p => patchLoq(selectedLoq!.id, p)" />
+              </template>
+            </LockDetailPanel>
+          </aside>
         </div>
-      </div>
-    </template>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -395,14 +158,16 @@
 // platform, which is a poor thing to hang an empty state on.
 import unloqedIcon from '~/assets/images/icons/state-unloqed.webp'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import type { Loq } from '~/types'
+import type { AttentionItem, LockSignals, Loq } from '~/types'
+import { LOCK_TABS, type LockTab } from '~/utils/lockDashboard'
+import { spanMinutes } from '~/utils/lockHistory'
 
 definePageMeta({ middleware: 'auth' })
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 interface LoqeeProfile { id: string; display_name: string | null; avatar_url: string | null; last_seen_at?: string | null }
-type ActiveLoq = Loq & { loqee: LoqeeProfile | null }
+type ActiveLoq = Loq & Partial<LockSignals> & { loqee: LoqeeProfile | null }
 
 interface IncomingRequest {
   id: string
@@ -420,117 +185,145 @@ interface IncomingRequest {
   }
 }
 
-// Stat cards act as filter toggles; 'all' is the unfiltered default.
-// Paused loqs are still active sessions, so 'loqs' covers active + paused
-// together — they are never split into separate filters.
-type FilterKey = 'all' | 'loqs' | 'requests'
+// Paused locks are still running sessions: "Active" counts them too, "Paused"
+// only narrows the view.
+type FilterKey = 'all' | 'active' | 'paused' | 'requests'
 
 // ─── State ─────────────────────────────────────────────────────────────────
 
 const authStore = useAuthStore()
 const { authFetch } = useAuthFetch()
-const { acceptLoq, rejectLoq, togglePause: pauseLoq, endLoq: endLoqAction, adjustTime: adjustLoqTime, generateVisitorLink, setVisitorAmount, setVisitorPermission } = useLoqholder()
+const { acceptLoq, rejectLoq, togglePause: pauseLoq, endLoq: endLoqAction, adjustTime: adjustLoqTime } = useLoqholder()
 const { $supabase } = useNuxtApp()
 const { confirm } = useConfirm()
+const route = useRoute()
+const router = useRouter()
 
 const initialising = ref(true)
 const activeLoqs = ref<ActiveLoq[]>([])
 const requests = ref<IncomingRequest[]>([])
+const attention = ref<AttentionItem[]>([])
 const filter = ref<FilterKey>('all')
 const pendingAction = ref<string | null>(null)
 
 const pendingIds = ref(new Set<string>())
 const errorMap = ref(new Map<string, string>())
-const copiedIds = ref(new Set<string>())
 const flashMap = ref(new Map<string, string>())
 
-const expandedIds = ref(new Set<string>())
-function toggleExpand(loqId: string) {
-  const s = new Set(expandedIds.value)
-  s.has(loqId) ? s.delete(loqId) : s.add(loqId)
-  expandedIds.value = s
-}
-function isExpanded(loqId: string) { return expandedIds.value.has(loqId) }
+// One clock for every card's progress bar and deadline chips.
+const now = ref(Date.now())
 
-type TimeAdjust = { days: number; hours: number; minutes: number }
-const timeAdjustMap = reactive<Record<string, TimeAdjust>>({})
-
-function getAdj(loqId: string): TimeAdjust {
-  if (!timeAdjustMap[loqId]) timeAdjustMap[loqId] = { days: 0, hours: 0, minutes: 0 }
-  return timeAdjustMap[loqId]
-}
-
-function spinAdj(loqId: string, field: 'days' | 'hours' | 'minutes', delta: number) {
-  const adj = getAdj(loqId)
-  const max = field === 'days' ? 7 : field === 'hours' ? 23 : 59
-  adj[field] = Math.max(0, Math.min(max, adj[field] + delta))
-}
-
-function adjTotal(loqId: string): number {
-  const a = getAdj(loqId)
-  return a.days * 1440 + a.hours * 60 + a.minutes
-}
-
-function adjLabel(loqId: string): string {
-  const a = getAdj(loqId)
-  const parts: string[] = []
-  if (a.days) parts.push(`${a.days}d`)
-  if (a.hours) parts.push(`${a.hours}h`)
-  if (a.minutes) parts.push(`${a.minutes}m`)
-  return parts.join(' ')
-}
-
-// Time changes are only allowed on active loqs (the server rejects paused
-// ones); pending covers the in-flight request.
-function adjDisabled(loq: ActiveLoq): boolean {
-  return isPending(loq.id) || loq.status !== 'active'
-}
-
-async function applyTimeAdjust(loqId: string, dir: 1 | -1) {
-  const total = adjTotal(loqId)
-  if (total < 1) return
-  const label = adjLabel(loqId) // capture before the spinners reset
-  const ok = await adjustTime(loqId, total * dir)
-  if (!ok) return
-  // Reset so a second click can't silently re-apply the same adjustment,
-  // and confirm what just landed.
-  timeAdjustMap[loqId] = { days: 0, hours: 0, minutes: 0 }
-  flashMessage(loqId, `${dir === 1 ? '+' : '−'}${label} ${dir === 1 ? 'added' : 'removed'}`)
-}
-
-const openChatId = ref<string | null>(null)
-
-const loqChannels = new Map<string, RealtimeChannel>()
+// shallow: the channels themselves must not be wrapped in proxies.
+const loqChannels = shallowReactive(new Map<string, RealtimeChannel>())
 let requestChannel: RealtimeChannel | null = null
 let visitorInteractionChannel: RealtimeChannel | null = null
 
-// ─── Computed ───────────────────────────────────────────────────────────────
+// ─── Layout ────────────────────────────────────────────────────────────────
 
-// Active + paused count as one group ("loqs"); paused is surfaced separately
-// only as a sub-count, never as its own filter.
-const pausedCount = computed(() => activeLoqs.value.filter(l => l.status === 'paused').length)
+// Wide: grid + detail beside it. Narrow: the list, and an open lock replaces
+// it. Phone: compact rows instead of cards.
+const isWide = ref(false)
+const isPhone = ref(false)
+let wideQuery: MediaQueryList | null = null
+let phoneQuery: MediaQueryList | null = null
+const syncLayout = () => {
+  isWide.value = !!wideQuery?.matches
+  isPhone.value = !!phoneQuery?.matches
+}
 
-const nothingVisible = computed(() => {
-  if (filter.value === 'requests') return requests.value.length === 0
-  if (filter.value === 'loqs') return activeLoqs.value.length === 0
-  return activeLoqs.value.length === 0 && requests.value.length === 0
+// ─── Selection (kept in the URL: back button and shared links work) ────────
+
+const selectedId = computed(() => (typeof route.query.lock === 'string' ? route.query.lock : null))
+
+const tab = computed<LockTab>({
+  get: () => {
+    const t = route.query.tab
+    return typeof t === 'string' && (LOCK_TABS as readonly string[]).includes(t) ? t as LockTab : 'overview'
+  },
+  set: (t) => { router.replace({ query: { ...route.query, tab: t === 'overview' ? undefined : t } }) },
 })
 
-const emptyStateTitle = computed(() => (filter.value === 'requests' ? 'No requests' : 'No active locks'))
+// On a wide screen the first lock is open by default, so the panel is never empty.
+const selectedLoq = computed<ActiveLoq | null>(() => {
+  const picked = selectedId.value ? activeLoqs.value.find(l => l.id === selectedId.value) : null
+  if (picked) return picked
+  return isWide.value ? visibleLoqs.value[0] ?? null : null
+})
 
-function toggleFilter(key: Exclude<FilterKey, 'all'>) {
-  filter.value = filter.value === key ? 'all' : key
+function openLock(loqId: string, t: LockTab = 'overview') {
+  if (!activeLoqs.value.some(l => l.id === loqId)) return
+  if (filter.value === 'requests') filter.value = 'all'
+  // Push (not replace) on narrow screens so Back returns to the list.
+  const query = { ...route.query, lock: loqId, tab: t === 'overview' ? undefined : t }
+  if (isWide.value) router.replace({ query })
+  else {
+    router.push({ query })
+    if (import.meta.client) window.scrollTo({ top: 0 })
+  }
 }
+
+function closeLock() {
+  // Opened with a push on a narrow screen: step back, so Back doesn't reopen it.
+  const back = import.meta.client ? String(window.history.state?.back ?? '') : ''
+  if (!isWide.value && back.startsWith(route.path)) {
+    router.back()
+    return
+  }
+  router.replace({ query: { ...route.query, lock: undefined, tab: undefined } })
+}
+
+// ─── Computed ───────────────────────────────────────────────────────────────
+
+const pausedCount = computed(() => activeLoqs.value.filter(l => l.status === 'paused').length)
+
+const filters = computed<{ key: FilterKey; label: string; count: number }[]>(() => [
+  { key: 'all', label: 'All', count: activeLoqs.value.length + requests.value.length },
+  { key: 'active', label: 'Active', count: activeLoqs.value.length },
+  { key: 'paused', label: 'Paused', count: pausedCount.value },
+  { key: 'requests', label: 'Requests', count: requests.value.length },
+])
+
+const visibleLoqs = computed(() => (filter.value === 'paused'
+  ? activeLoqs.value.filter(l => l.status === 'paused')
+  : activeLoqs.value))
+
+const subline = computed(() => {
+  const n = activeLoqs.value.length
+  const people = n === 0 ? 'No one is locked with you yet.' : `${n} ${n === 1 ? 'person is' : 'people are'} counting on you.`
+  const waiting = attention.value.length
+  if (!waiting) return people
+  return `${people} ${waiting} ${waiting === 1 ? 'thing needs' : 'things need'} a decision.`
+})
+
+const nothingVisible = computed(() => (filter.value === 'requests' ? requests.value.length === 0 : visibleLoqs.value.length === 0))
+
+const emptyStateTitle = computed(() => (
+  filter.value === 'requests' ? 'No requests' : filter.value === 'paused' ? 'No paused locks' : 'No active locks'
+))
 
 // ─── Init ──────────────────────────────────────────────────────────────────
 
+let clockTimer: ReturnType<typeof setInterval> | null = null
+let pollTimer: ReturnType<typeof setInterval> | null = null
+
 onMounted(async () => {
-  if (import.meta.client) window.addEventListener('online', handleReconnect)
+  if (import.meta.client) {
+    window.addEventListener('online', handleReconnect)
+    document.addEventListener('visibilitychange', onVisible)
+    wideQuery = window.matchMedia('(min-width: 1024px)')
+    phoneQuery = window.matchMedia('(max-width: 639px)')
+    syncLayout()
+    wideQuery.addEventListener('change', syncLayout)
+    phoneQuery.addEventListener('change', syncLayout)
+  }
   try {
-    await Promise.all([fetchActiveLoqs(), fetchRequests()])
+    await Promise.all([fetchActiveLoqs(), fetchRequests(), fetchAttention()])
     subscribeToAll()
   }
   finally { initialising.value = false }
+  clockTimer = setInterval(() => { now.value = Date.now() }, 30_000)
+  // Safety net for anything the realtime broadcasts miss.
+  pollTimer = setInterval(() => { if (document.visibilityState === 'visible') refreshSignals() }, 60_000)
 })
 
 onUnmounted(() => {
@@ -538,8 +331,23 @@ onUnmounted(() => {
   loqChannels.clear()
   requestChannel?.unsubscribe()
   visitorInteractionChannel?.unsubscribe()
-  if (import.meta.client) window.removeEventListener('online', handleReconnect)
+  if (clockTimer) clearInterval(clockTimer)
+  if (pollTimer) clearInterval(pollTimer)
+  if (signalsTimer) clearTimeout(signalsTimer)
+  wideQuery?.removeEventListener('change', syncLayout)
+  phoneQuery?.removeEventListener('change', syncLayout)
+  if (import.meta.client) {
+    window.removeEventListener('online', handleReconnect)
+    document.removeEventListener('visibilitychange', onVisible)
+  }
 })
+
+function onVisible() {
+  if (document.visibilityState === 'visible') {
+    now.value = Date.now()
+    refreshSignals()
+  }
+}
 
 async function handleReconnect() {
   loqChannels.forEach(ch => ch.unsubscribe())
@@ -549,6 +357,7 @@ async function handleReconnect() {
   visitorInteractionChannel?.unsubscribe()
   visitorInteractionChannel = null
   subscribeToAll()
+  refreshSignals()
 }
 
 function subscribeToAll() {
@@ -564,6 +373,7 @@ async function fetchActiveLoqs() {
     activeLoqs.value = await authFetch<ActiveLoq[]>('/api/loqholders/active')
   }
   catch { activeLoqs.value = [] }
+  syncChannels()
 }
 
 async function fetchRequests() {
@@ -574,14 +384,41 @@ async function fetchRequests() {
   catch { requests.value = [] }
 }
 
+async function fetchAttention() {
+  try {
+    attention.value = (await authFetch<{ items: AttentionItem[] }>('/api/loqholders/attention')).items ?? []
+  }
+  catch { /* keep what is shown; the next refresh tries again */ }
+}
+
+// Signals and the feed change together (a photo arrives, a task is settled).
+let signalsTimer: ReturnType<typeof setTimeout> | null = null
+function refreshSignals() {
+  if (signalsTimer) clearTimeout(signalsTimer)
+  signalsTimer = setTimeout(() => {
+    signalsTimer = null
+    Promise.all([fetchActiveLoqs(), fetchAttention()])
+  }, 250)
+}
+
 // ─── Realtime ──────────────────────────────────────────────────────────────
+
+// Join new locks' channels and leave ended ones after a refetch.
+function syncChannels() {
+  if (initialising.value) return
+  const ids = new Set(activeLoqs.value.map(l => l.id))
+  activeLoqs.value.forEach(l => subscribeToLoq(l.id))
+  ;[...loqChannels.keys()].forEach((id) => { if (!ids.has(id)) unsubscribeFromLoq(id) })
+}
 
 function subscribeToLoq(loqId: string) {
   if (loqChannels.has(loqId)) return
   const ch = $supabase
     .channel(`loq:${loqId}`)
-    .on('broadcast', { event: 'loq_updated' }, (payload: { payload: { loq: Partial<ActiveLoq> } }) => {
-      const { loq: updated } = payload.payload
+    .on('broadcast', { event: 'loq_updated' }, (payload: { payload: { loq: Partial<ActiveLoq>; signals?: boolean } }) => {
+      const { loq: updated, signals } = payload.payload
+      // Issue #24 — a verification or task changed: reload what it affects.
+      if (signals) { refreshSignals(); return }
       const idx = activeLoqs.value.findIndex(l => l.id === loqId)
       if (idx !== -1) activeLoqs.value[idx] = { ...activeLoqs.value[idx], ...updated }
     })
@@ -626,7 +463,7 @@ function subscribeToRequests() {
       // (TASK-087) getting approved/rejected by a loqee. The latter needs
       // activeLoqs refreshed too, or an approval never shows up in "Loqs"
       // without a manual reload.
-      async () => { await Promise.all([fetchRequests(), fetchActiveLoqs()]) })
+      async () => { await Promise.all([fetchRequests(), fetchActiveLoqs(), fetchAttention()]) })
     .subscribe()
 }
 
@@ -650,80 +487,20 @@ function subscribeToVisitorInteractions() {
     .subscribe()
 }
 
-// ─── Chat ──────────────────────────────────────────────────────────────────
-
-function toggleChat(loqId: string) {
-  openChatId.value = openChatId.value === loqId ? null : loqId
-}
-
-// Smooth accordion for the chat: animate the real content height so both
-// open and close are fluid (CSS max-height guessing would stall on close).
-//
-// Scrolling the composer into view has to wait for BOTH the expand animation
-// AND the async message load — whichever finishes last. Doing it on just one
-// (as before) scrolled to a stale height and under-shot when the other was
-// still pending. Two flags gate it; onChatContentReady comes from LoqChat's
-// @ready.
-let chatWrapEl: HTMLElement | null = null
-let chatAnimDone = false
-let chatContentReady = false
-
-function onChatEnter(el: Element) {
-  const e = el as HTMLElement
-  chatWrapEl = e
-  chatAnimDone = false
-  chatContentReady = false
-  e.style.height = '0'
-  e.style.opacity = '0'
-  void e.offsetHeight // reflow so the start values commit
-  e.style.height = `${e.scrollHeight}px`
-  e.style.opacity = '1'
-}
-function onChatAfterEnter(el: Element) {
-  const e = el as HTMLElement
-  e.style.height = ''
-  e.style.opacity = ''
-  chatAnimDone = true
-  maybeScrollComposerIntoView()
-}
-function onChatContentReady() {
-  chatContentReady = true
-  maybeScrollComposerIntoView()
-}
-function maybeScrollComposerIntoView() {
-  if (!chatAnimDone || !chatContentReady || !chatWrapEl) return
-  // Align the whole card's bottom to the viewport (not just the composer), so
-  // the input sits a little above the edge — by the card's bottom padding.
-  const target = chatWrapEl.closest('.loq-card') ?? chatWrapEl
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  // rAF so the just-cleared inline height has reflowed to the natural one.
-  requestAnimationFrame(() => target.scrollIntoView({ block: 'end', behavior: reduce ? 'auto' : 'smooth' }))
-}
-function onChatBeforeLeave(el: Element) {
-  const e = el as HTMLElement
-  e.style.height = `${e.scrollHeight}px`
-  e.style.opacity = '1'
-  void e.offsetHeight
-}
-function onChatLeave(el: Element) {
-  const e = el as HTMLElement
-  e.style.height = '0'
-  e.style.opacity = '0'
-}
-
 // ─── Request actions ────────────────────────────────────────────────────────
 
 async function acceptRequest(loqId: string) {
   pendingAction.value = loqId
   try {
     const loq = await acceptLoq(loqId) as ActiveLoq
-    activeLoqs.value.push(loq)
     requests.value = requests.value.filter(r => r.loq.id !== loqId)
     subscribeToLoq(loq.id)
     broadcastLoqUpdate(loq.id, loq, authStore.profile)
+    // The accept response has no signals or wearer profile; take the full row.
+    await Promise.all([fetchActiveLoqs(), fetchAttention()])
   }
   catch (err: unknown) {
-    errorMap.value.set(loqId, (err as Error).message)
+    setError(loqId, (err as Error).message)
   }
   finally { pendingAction.value = null }
 }
@@ -733,8 +510,9 @@ async function rejectRequest(loqId: string) {
   try {
     await rejectLoq(loqId)
     requests.value = requests.value.filter(r => r.loq.id !== loqId)
+    attention.value = attention.value.filter(i => !(i.kind === 'request' && i.loq_id === loqId))
   }
-  catch { /* ignore */ }
+  catch (err: unknown) { setError(loqId, (err as Error).message) }
   finally { pendingAction.value = null }
 }
 
@@ -764,6 +542,8 @@ async function adjustTime(loqId: string, deltaMinutes: number): Promise<boolean>
     patchLoq(loqId, updated)
     broadcastLoqUpdate(loqId, updated)
     broadcastPublicUpdate(updated.public_link_id, { loqed_until: updated.loqed_until })
+    const span = spanMinutes(Math.abs(deltaMinutes))
+    flashMessage(loqId, deltaMinutes > 0 ? `+${span} added` : `−${span} removed`)
     return true
   }
   catch (err: unknown) { setError(loqId, (err as Error).message); return false }
@@ -785,158 +565,18 @@ async function endLoq(loqId: string) {
     await endLoqAction(loqId)
     broadcastLoqUpdate(loqId, { id: loqId, status: 'ended' } as Partial<ActiveLoq>)
     broadcastPublicUpdate(publicLinkId, { status: 'ended', locked: false })
-    if (openChatId.value === loqId) openChatId.value = null
     unsubscribeFromLoq(loqId)
     activeLoqs.value = activeLoqs.value.filter(l => l.id !== loqId)
+    attention.value = attention.value.filter(i => i.loq_id !== loqId)
+    if (selectedId.value === loqId) closeLock()
   }
   catch (err: unknown) { setError(loqId, (err as Error).message) }
   finally { clearLoading(loqId) }
 }
 
 async function onExpired(loqId: string) {
-  await fetchActiveLoqs()
-  if (!activeLoqs.value.find(l => l.id === loqId)) {
-    unsubscribeFromLoq(loqId)
-    if (openChatId.value === loqId) { openChatId.value = null }
-  }
-}
-
-async function copyCombo(loqId: string, text: string) {
-  await navigator.clipboard.writeText(text)
-  copiedIds.value = new Set([...copiedIds.value, loqId])
-  setTimeout(() => {
-    const next = new Set(copiedIds.value)
-    next.delete(loqId)
-    copiedIds.value = next
-  }, 2000)
-}
-
-// ─── Visitor share link ────────────────────────────────────────────────────
-
-const VISITOR_PRESETS = [
-  { label: '15m', hours: 0.25 },
-  { label: '1h', hours: 1 },
-  { label: '6h', hours: 6 },
-  { label: '1d', hours: 24 },
-  { label: '3d', hours: 72 },
-]
-
-// TASK-089
-const VISITOR_PERMISSIONS = [
-  { label: 'Add only', value: 'add' as const },
-  { label: 'Remove only', value: 'remove' as const },
-  { label: 'Both', value: 'both' as const },
-]
-
-const MIN_VISITOR_HOURS = 1 / 60
-// Keep both in sync with server/utils/loqValidation.ts MAX_DURATION_MINUTES
-// (TASK-085) — server files aren't importable from client pages in Nuxt.
-const MAX_VISITOR_HOURS = 3650 * 24
-const MAX_ADJUST_DAYS = 3650
-
-const copiedLinkIds = ref(new Set<string>())
-const customAmountInputs = reactive<Record<string, number>>({})
-const showCustomAmount = ref(new Set<string>())
-
-function isCustomAmount(loq: ActiveLoq): boolean {
-  return !VISITOR_PRESETS.some(p => p.hours === loq.visitor_add_hours)
-}
-
-function customAmountFor(loq: ActiveLoq): number {
-  return customAmountInputs[loq.id] ?? loq.visitor_add_hours
-}
-
-function toggleCustomAmount(loqId: string, seed: number) {
-  const s = new Set(showCustomAmount.value)
-  if (s.has(loqId)) {
-    s.delete(loqId)
-  }
-  else {
-    s.add(loqId)
-    if (customAmountInputs[loqId] === undefined) customAmountInputs[loqId] = seed
-  }
-  showCustomAmount.value = s
-}
-
-// Finer steps for short amounts, coarser once you're into multi-day territory
-// — dragging a slider from 15m to 7 days one hour at a time would be tedious.
-function stepSizeFor(hours: number): number {
-  if (hours < 1) return 0.25
-  if (hours < 6) return 0.5
-  if (hours < 24) return 1
-  return 6
-}
-
-function stepCustomAmount(loq: ActiveLoq, dir: 1 | -1) {
-  const current = customAmountFor(loq)
-  const next = Math.round((current + dir * stepSizeFor(current)) * 100) / 100
-  customAmountInputs[loq.id] = Math.min(MAX_VISITOR_HOURS, Math.max(MIN_VISITOR_HOURS, next))
-}
-
-async function selectPreset(loqId: string, hours: number) {
-  const s = new Set(showCustomAmount.value)
-  s.delete(loqId)
-  showCustomAmount.value = s
-  await handleSetVisitorAmount(loqId, hours)
-}
-
-function formatHours(hours: number): string {
-  if (hours < 1) return `${Math.round(hours * 60)}m`
-  if (hours < 24) return hours % 1 === 0 ? `${hours}h` : `${Math.round(hours * 4) / 4}h`
-  const days = hours / 24
-  return days % 1 === 0 ? `${days}d` : `${Math.round(days * 10) / 10}d`
-}
-
-function visitorLinkUrl(loq: ActiveLoq): string {
-  if (!loq.public_link_id || !import.meta.client) return ''
-  return `${window.location.origin}/lock/${loq.public_link_id}`
-}
-
-async function handleGenerateLink(loqId: string) {
-  setLoading(loqId)
-  try {
-    const { public_link_id } = await generateVisitorLink(loqId)
-    patchLoq(loqId, { public_link_id })
-  }
-  catch (err: unknown) { setError(loqId, (err as Error).message) }
-  finally { clearLoading(loqId) }
-}
-
-async function copyVisitorLink(loq: ActiveLoq) {
-  const url = visitorLinkUrl(loq)
-  if (!url) return
-  await navigator.clipboard.writeText(url)
-  copiedLinkIds.value = new Set([...copiedLinkIds.value, loq.id])
-  setTimeout(() => {
-    const next = new Set(copiedLinkIds.value)
-    next.delete(loq.id)
-    copiedLinkIds.value = next
-  }, 2000)
-}
-
-async function handleSetVisitorAmount(loqId: string, hours: number) {
-  if (!hours || hours <= 0) return
-  setLoading(loqId)
-  try {
-    const { visitor_add_hours } = await setVisitorAmount(loqId, hours)
-    patchLoq(loqId, { visitor_add_hours })
-    const s = new Set(showCustomAmount.value)
-    s.delete(loqId)
-    showCustomAmount.value = s
-  }
-  catch (err: unknown) { setError(loqId, (err as Error).message) }
-  finally { clearLoading(loqId) }
-}
-
-// TASK-089
-async function handleSetVisitorPermission(loqId: string, permission: 'add' | 'remove' | 'both') {
-  setLoading(loqId)
-  try {
-    const { visitor_permission } = await setVisitorPermission(loqId, permission)
-    patchLoq(loqId, { visitor_permission: visitor_permission as 'add' | 'remove' | 'both' })
-  }
-  catch (err: unknown) { setError(loqId, (err as Error).message) }
-  finally { clearLoading(loqId) }
+  await Promise.all([fetchActiveLoqs(), fetchAttention()])
+  if (!activeLoqs.value.find(l => l.id === loqId) && selectedId.value === loqId) closeLock()
 }
 
 // ─── Per-loq loading helpers ───────────────────────────────────────────────
@@ -952,7 +592,12 @@ function flashMessage(id: string, msg: string) {
     flashMap.value = next
   }, 2500)
 }
-function setLoading(id: string) { pendingIds.value = new Set([...pendingIds.value, id]); errorMap.value.delete(id) }
+function setLoading(id: string) {
+  pendingIds.value = new Set([...pendingIds.value, id])
+  const errors = new Map(errorMap.value)
+  errors.delete(id)
+  errorMap.value = errors
+}
 function clearLoading(id: string) { const s = new Set(pendingIds.value); s.delete(id); pendingIds.value = s }
 function setError(id: string, msg: string) { errorMap.value = new Map([...errorMap.value, [id, msg]]) }
 function patchLoq(id: string, patch: Partial<Loq>) {
@@ -965,627 +610,160 @@ function patchLoq(id: string, patch: Partial<Loq>) {
 
 <style scoped lang="scss">
 @use '~/assets/styles/loq-card' as *;
+@use '~/assets/styles/lock-dashboard' as *;
 
-// Shared card/pill/spinner/dash-header styles come from assets/styles/_loq-card.scss
-
-// ── Stats ────────────────────────────────────────────────────────────────────
-
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-// Stat cards double as filter toggles (aria-pressed reflects the state)
-.stat-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  padding: 18px 20px;
+// Wider than the shared .dash-body: the grid and the detail panel sit side by side.
+.kh {
+  flex: 1;
+  width: 100%;
+  max-width: 1360px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.12s, background 0.12s;
+  gap: 24px;
 
-  &:hover { border-color: var(--color-accent); }
+  @media (max-width: 639px) { padding: 20px 16px 48px; }
 
-  &:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
   }
 
-  &--selected {
-    border-color: var(--color-accent);
-    background: linear-gradient(160deg, rgba(var(--color-brand-rgb), 0.18) 0%, var(--color-surface) 70%);
-  }
-
-  &__value {
+  &__title {
+    margin: 0;
     font-family: var(--font-display);
-    font-size: 40px;
+    font-size: clamp(28px, 4vw, 36px);
     font-weight: 700;
     letter-spacing: -0.03em;
-    line-height: 1;
-    background: var(--gradient-brand);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  &__label {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
-  // Paused sub-count: keep the pause orange the client likes
-  &__sub {
-    font-size: 0.625rem;
-    font-weight: 600;
-    color: var(--color-warn);
-    margin-top: 0.125rem;
-  }
-}
-
-// ── Loq cards ───────────────────────────────────────────────────────────────
-
-.loq-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.loq-card {
-  // ── Summary row (page-specific: expandable, mobile-first 2-row grid) ──────
-  &__summary {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto;
-    align-items: center;
-    gap: 0.5rem 0.75rem;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    border-radius: 0.5rem;
-
-    &:focus-visible {
-      outline: 2px solid var(--color-accent);
-      outline-offset: 4px;
-    }
-
-    .loq-card__identity    { grid-column: 1; grid-row: 1; }
-    .loq-card__summary-meta { grid-column: 2; grid-row: 1; align-self: start; }
-    .loq-card__hero-timer  { grid-column: 1 / -1; grid-row: 2; }
-  }
-
-  // Collapsible at every width — with 20-30 loqs on one account, "always
-  // expanded" on mobile stopped being scannable, so mobile now matches
-  // desktop: collapsed by default, tap the summary row to expand.
-  &__summary { cursor: pointer; }
-
-  &__chevron {
-    display: flex;
-    color: var(--color-muted);
-    line-height: 0;
-
-    svg { transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1); }
-  }
-
-  &__detail {
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
-    max-height: 0;
-    overflow: hidden;
-    padding-top: 0;
-    border-top: 1px solid transparent;
-    transition:
-      max-height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-      padding-top 0.28s ease,
-      border-color 0.28s ease;
-  }
-
-  // Collapsed cards: no gap under the summary for the hidden detail.
-  gap: 0;
-
-  &.loq-card--expanded {
-    .loq-card__detail {
-      max-height: 1600px;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top-color: var(--color-border);
-    }
-    .loq-card__chevron svg { transform: rotate(180deg); }
-  }
-
-  // ── Desktop breakpoint: summary row goes from a 2-row mobile stack to a
-  // single 3-column row. Purely a layout change — expand/collapse behavior
-  // above is now the same at every width. ─────────────────────────────────
-  @media (min-width: 768px) {
-    &__summary {
-      grid-template-columns: 1fr auto 1fr;
-      grid-template-rows: auto;
-      align-items: center;
-
-      .loq-card__identity    { grid-column: 1; grid-row: 1; }
-      .loq-card__hero-timer  { grid-column: 2; grid-row: 1; }
-      .loq-card__summary-meta { grid-column: 3; grid-row: 1; justify-self: end; align-self: center; }
-    }
-
-    // Expanded card: the timer tiles get their own full-width row.
-    &.loq-card--expanded .loq-card__summary {
-      grid-template-columns: 1fr auto;
-      grid-template-rows: auto auto;
-
-      .loq-card__identity     { grid-column: 1; grid-row: 1; }
-      .loq-card__summary-meta { grid-column: 2; grid-row: 1; }
-      .loq-card__hero-timer   { grid-column: 1 / -1; grid-row: 2; }
-    }
-  }
-}
-
-// ── Primary actions ──────────────────────────────────────────────────────────
-
-.loq-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.loq-act {
-  &--pause {
-    flex: 1;
-    color: var(--color-muted);
-    &:hover:not(:disabled) {
-      border-color: var(--color-warn);
-      color: var(--color-warn);
-      background: rgba(var(--color-warn-rgb), 0.06);
-    }
-  }
-
-  &--resume {
-    flex: 1;
-    border-color: var(--color-accent);
     color: var(--color-text);
-    background: rgba(var(--color-accent-rgb), 0.08);
-    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.15); }
   }
 
-  &--chat {
-    flex: 1;
-    color: var(--color-muted);
-    &:hover:not(:disabled) {
-      border-color: var(--color-accent);
-      color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb), 0.06);
-    }
-  }
+  &__sub { margin: 6px 0 0; font-size: 15px; color: var(--color-text-muted); }
 
-  // Chat open: mirror the --resume active look so the toggle state is visible
-  &--chat-open {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb), 0.08);
-    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.15); }
-  }
+  &__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
-  // TASK-061: neon orange — this removes time from an active loq.
-  &--remove {
-    flex: 1;
-    color: var(--color-remove);
-    border-color: rgba(var(--color-remove-rgb), 0.35);
-    &:hover:not(:disabled) { background: rgba(var(--color-remove-rgb), 0.08); border-color: var(--color-remove); }
-  }
-
-  &--add {
-    flex: 1;
-    background: var(--gradient-brand);
-    color: var(--color-on-accent);
-    border-color: transparent;
-    font-weight: 700;
-    &:hover:not(:disabled) { filter: brightness(1.06); }
-  }
-
-  &--copy {
-    padding: 0 0.625rem;
-    min-height: 2rem;
-    font-size: 0.75rem;
-    color: var(--color-muted);
-    border-color: var(--color-border);
-    &:hover { color: var(--color-accent); border-color: var(--color-accent); background: rgba(var(--color-accent-rgb), 0.06); }
-  }
-
-  &--reject {
-    flex: 1;
-    color: var(--color-danger);
-    border-color: rgba(255, 107, 107, 0.3);
-    &:hover:not(:disabled) {
-      background: rgba(255, 107, 107, 0.08);
-      border-color: var(--color-danger);
-    }
-  }
-
-  &--accept {
-    flex: 2;
-    background: var(--color-cta);
-    color: var(--color-on-accent);
-    border-color: var(--color-cta);
-    font-weight: 700;
-    box-shadow: 0 8px 24px rgba(var(--color-cta-rgb), 0.3);
-    &:hover:not(:disabled) { filter: brightness(1.06); }
-  }
-
-  &--ghost {
-    color: var(--color-muted);
-    &:hover:not(:disabled) {
-      border-color: var(--color-accent);
-      color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb), 0.06);
-    }
-  }
-
-  &--outline {
-    padding: 0 0.75rem;
-    min-height: 2rem;
-    font-size: 0.8125rem;
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-    background: rgba(var(--color-accent-rgb), 0.08);
-    &:hover:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.15); }
-  }
-}
-
-// ── Visitor share link ───────────────────────────────────────────────────────
-
-.visitor-link-wrap {
-  @include field-group('Share visitor link');
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-// ── Link chip: icon + truncated url + copy ───────────────────────────────────
-
-.visitor-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-  border-radius: 0.625rem;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-
-  &__icon {
-    flex-shrink: 0;
-    color: var(--color-accent);
-  }
-
-  &__url {
-    flex: 1;
-    min-width: 0;
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    color: var(--color-text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  &__copy {
-    flex-shrink: 0;
-    min-height: 1.875rem;
-    padding: 0 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-border);
+  &__filter {
+    display: flex;
+    gap: 2px;
+    padding: 4px;
+    border-radius: 12px;
     background: var(--color-surface);
-    color: var(--color-muted);
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.12s, border-color 0.12s, color 0.12s;
-
-    &:hover { border-color: var(--color-accent); color: var(--color-accent); }
-
-    &--done {
-      border-color: rgba(34, 197, 94, 0.4);
-      color: #22c55e;
-      background: rgba(34, 197, 94, 0.08);
-    }
-  }
-}
-
-.visitor-count {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--color-muted);
-}
-
-// ── Visitor amount: segmented control + custom stepper ───────────────────────
-
-.visitor-amount {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  &__caption {
-    font-size: 0.75rem;
-    color: var(--color-muted);
-    margin: 0;
-  }
-
-  &__segmented {
-    display: flex;
-    background: var(--color-bg);
     border: 1px solid var(--color-border);
-    border-radius: 0.625rem;
-    padding: 0.1875rem;
-    gap: 0.1875rem;
+    overflow-x: auto;
+    max-width: 100%;
   }
 
   &__seg {
-    flex: 1;
-    min-height: 1.875rem;
-    border-radius: 0.4375rem;
-    border: none;
-    background: none;
-    color: var(--color-muted);
-    font-size: 0.75rem;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-text-muted);
+    font: 500 14px var(--font-sans);
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 
-    &:hover:not(:disabled):not(&--active) { color: var(--color-text); }
-    &:disabled { opacity: 0.4; cursor: not-allowed; }
+    &:hover { color: var(--color-text); }
+    &:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
 
-    &--active {
-      background: var(--color-accent);
-      color: var(--color-on-accent);
-      box-shadow: 0 1px 4px rgba(var(--color-accent-rgb), 0.45);
-    }
+    &--on { background: var(--color-elevated); color: var(--color-text); font-weight: 600; }
+  }
+
+  &__seg-n { font-variant-numeric: tabular-nums; opacity: 0.8; }
+
+  &__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 12px;
+    background: var(--color-cta);
+    color: var(--color-on-accent);
+    font-weight: 700;
+    text-decoration: none;
+    &:hover { filter: brightness(1.06); color: var(--color-on-accent); text-decoration: none; }
+    &:focus-visible { outline: 2px solid var(--color-text); outline-offset: 2px; }
+  }
+
+  &__split {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  &__locks {
+    flex: 999 1 560px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  &__rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__detail {
+    flex: 1 1 400px;
+    min-width: 0;
+    max-width: 520px;
+    position: sticky;
+    top: 16px;
   }
 }
 
-// Quantity-stepper card for the custom amount — large centred value flanked
-// by round +/- buttons, matching the "confident, tactile" feel of the
-// segmented control above rather than a bare <input type=number>.
-.visitor-stepper {
+// ── Request card ─────────────────────────────────────────────────────────────
+
+.kh-req {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 0.625rem;
-  border-radius: 0.625rem;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(var(--color-warn-rgb), 0.06) 0%, var(--color-surface) 50%);
+  border: 1px solid rgba(var(--color-warn-rgb), 0.3);
+
+  &__who { display: flex; align-items: center; gap: 12px; }
+  &__who > div { flex: 1; min-width: 0; }
+  &__avatar { @include avatar(44px); }
+  &__name { margin: 0; font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--color-text); }
+  &__meta { margin: 2px 0 0; font-size: 13px; color: var(--color-text-muted); }
+
+  &__actions { display: flex; gap: 8px; }
 
   &__btn {
-    flex-shrink: 0;
-    width: 1.875rem;
-    height: 1.875rem;
-    border-radius: 50%;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-text);
-    font-size: 1.125rem;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.12s, border-color 0.12s, color 0.12s;
-
-    &:hover:not(:disabled) { border-color: var(--color-accent); color: var(--color-accent); }
-    &:disabled { opacity: 0.35; cursor: not-allowed; }
-  }
-
-  &__val {
-    min-width: 3.5rem;
-    text-align: center;
-    font-family: var(--font-mono);
-    font-size: 1rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--color-accent);
-  }
-
-  &__confirm {
-    flex-shrink: 0;
-    margin-left: 0.25rem;
-    min-height: 1.875rem;
-    padding: 0 0.875rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-accent);
-    background: rgba(var(--color-accent-rgb), 0.1);
-    color: var(--color-accent);
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.12s;
-
-    &:hover:not(:disabled) { background: var(--color-accent); color: var(--color-on-accent); }
-    &:disabled { opacity: 0.4; cursor: not-allowed; }
-  }
-}
-
-.custom-reveal-enter-active,
-.custom-reveal-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-.custom-reveal-enter-from,
-.custom-reveal-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
-}
-
-// ── Custom time adjust ───────────────────────────────────────────────────────
-
-.time-adjust {
-  @include field-group('Adjust time');
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-
-  &__spinners {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 0.375rem;
-  }
-
-  &__sep {
-    font-size: 1.75rem;
-    font-weight: 300;
-    color: var(--color-border);
-    line-height: 1;
-    margin-top: 0.5rem;
-    user-select: none;
-  }
-
-  &__actions {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  &__flash {
-    margin: 0;
-    text-align: center;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--color-accent);
-  }
-
-  &__hint {
-    margin: 0;
-    text-align: center;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-warn);
-  }
-
-  // Paused: dim the (disabled) spinners so the hint reads as the active element
-  &--locked .time-adjust__spinners { opacity: 0.4; }
-}
-
-// Success flash: fade + slight rise, respects reduced motion
-.flash-enter-active { transition: opacity 0.2s ease, transform 0.2s ease; }
-.flash-leave-active { transition: opacity 0.3s ease; }
-.flash-enter-from { opacity: 0; transform: translateY(4px); }
-.flash-leave-to { opacity: 0; }
-
-// Chat accordion: height/opacity driven by JS hooks (onChatEnter/Leave),
-// same easing + timing as the card expand so it feels consistent.
-.chat-wrap { overflow: hidden; }
-.chat-expand-enter-active,
-.chat-expand-leave-active {
-  transition:
-    height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.28s ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .flash-enter-active,
-  .flash-leave-active,
-  .chat-expand-enter-active,
-  .chat-expand-leave-active { transition: none; }
-}
-
-.adj-spin {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.125rem;
-
-  &__arrow {
-    width: 2.75rem;
-    height: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--color-muted);
-    border-radius: 0.375rem;
-    transition: color 0.12s, background 0.12s;
-    -webkit-tap-highlight-color: transparent;
-
-    &:hover:not(:disabled) {
-      color: var(--color-accent);
-      background: rgba(var(--color-accent-rgb), 0.07);
-    }
-    &:active:not(:disabled) { background: rgba(var(--color-accent-rgb), 0.14); }
-    &:disabled { opacity: 0.2; cursor: default; }
-    svg { display: block; }
-  }
-
-  &__val {
-    width: 2.75rem;
-    height: 2.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-display);
-    font-size: 30px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--color-text);
-    line-height: 1;
-  }
-
-  &__label {
-    font-size: 0.5625rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-muted);
-    margin-top: 0.125rem;
-  }
-}
-
-// ── Combination wrapper ──────────────────────────────────────────────────────
-
-.combo-wrap {
-  @include field-group('Combination');
-}
-
-// ── Combination row ─────────────────────────────────────────────────────────
-
-.combo-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: rgba(0,0,0,0.2);
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.75rem;
-
-  &__val {
-    font-family: var(--font-display);
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--color-text);
+    @include dash-btn;
     flex: 1;
-    word-break: break-all;
-  }
-}
+    min-height: 44px;
+    color: var(--color-danger);
+    border-color: rgba(var(--color-danger-rgb), 0.35);
 
-// ── Combination photo ────────────────────────────────────────────────────────
-
-.combo-photo {
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  overflow: hidden;
-
-  &__img {
-    display: block;
-    width: 100%;
-    max-height: 12rem;
-    object-fit: contain;
-    background: rgba(0,0,0,0.2);
+    &--accept {
+      flex: 2;
+      background: var(--color-cta);
+      border-color: var(--color-cta);
+      color: var(--color-on-accent);
+      &:hover:not(:disabled) { filter: brightness(1.06); }
+    }
   }
 }
 
@@ -1599,25 +777,8 @@ function patchLoq(id: string, patch: Partial<Loq>) {
   padding: 3rem 1rem;
   text-align: center;
 
-  &__icon { font-size: 64px; }
-  &__title { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--color-text); }
-  &__hint { font-size: 16px; color: var(--color-text-muted); }
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 50px;
-  padding: 0 26px;
-  border-radius: 999px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  text-decoration: none;
-  transition: filter 0.15s;
-
-  &--primary { background: var(--color-cta); color: var(--color-on-accent); &:hover { filter: brightness(1.06); color: var(--color-on-accent); text-decoration: none; } }
+  &__icon { font-size: 64px; margin: 0; }
+  &__title { margin: 0; font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--color-text); }
+  &__hint { margin: 0; font-size: 16px; color: var(--color-text-muted); }
 }
 </style>

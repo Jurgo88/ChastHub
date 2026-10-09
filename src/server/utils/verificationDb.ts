@@ -1,6 +1,7 @@
 import { randomInt } from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { applyTimeDelta } from '~/server/utils/lockTime'
+import { broadcastSignals } from '~/server/utils/broadcastLoq'
 import { sendPushNotification } from '~/server/utils/sendPushNotification'
 import { generateCode, requestMessage } from '~/server/utils/verification'
 
@@ -74,6 +75,7 @@ export async function createVerification(
     })
   }
   await sendPushNotification(loq.loqee_id, 'Verification requested', `Code ${data.code}, due in ${opts.dueMinutes >= 60 ? `${Math.round(opts.dueMinutes / 60 * 10) / 10}h` : `${opts.dueMinutes}m`}`, '/dashboard')
+  await broadcastSignals(loq.id)
   return data
 }
 

@@ -1,6 +1,7 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 import { checkRateLimit } from '~/server/utils/rateLimit'
+import { broadcastSignals } from '~/server/utils/broadcastLoq'
 import { sendPushNotification } from '~/server/utils/sendPushNotification'
 import { isMissed, MAX_PROOF_TEXT, taskPhotoPath } from '~/server/utils/tasks'
 import { VERIFICATION_BUCKET } from '~/server/utils/verification'
@@ -58,5 +59,6 @@ export default defineEventHandler(async (event) => {
 
   await postChat(supabase, loq, user.id, `📨 Task submitted: ${task.text.slice(0, 80)}`)
   if (loq.loqholder_id) await sendPushNotification(loq.loqholder_id, 'Task submitted', task.text.slice(0, 80), '/dashboard')
+  await broadcastSignals(id)
   return { status: 'submitted' }
 })

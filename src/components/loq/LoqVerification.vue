@@ -93,6 +93,8 @@ import { resizeToJpeg } from '~/utils/resizeImage'
 import { spanMinutes, whenLabel } from '~/utils/lockHistory'
 
 const props = defineProps<{ loqId: string; role: 'wearer' | 'keyholder' }>()
+// Issue #24 — lets the dashboard refresh its signals after an action here.
+const emit = defineEmits<{ changed: [] }>()
 
 interface Item {
   id: string
@@ -201,6 +203,7 @@ async function run(fn: () => Promise<unknown>, fallback: string) {
   try {
     await fn()
     await load()
+    emit('changed')
   }
   catch (e) {
     error.value = (e as { data?: { message?: string }; message?: string }).data?.message ?? (e as Error).message ?? fallback

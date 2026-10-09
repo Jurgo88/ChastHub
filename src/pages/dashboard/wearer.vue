@@ -217,7 +217,7 @@
 
       <LoqMilestone :loq-id="loq.id" />
 
-      <article class="loq-card" :class="loq.status === 'paused' ? 'loq-card--paused' : 'loq-card--active'">
+      <article id="lock-top" class="loq-card lock-anchor" :class="loq.status === 'paused' ? 'loq-card--paused' : 'loq-card--active'">
 
         <!-- Summary row -->
         <div class="loq-card__summary">
@@ -237,14 +237,8 @@
             </div>
           </div>
 
-          <LockCountdown
-            class="loq-card__hero-timer"
-            hero
-            :expanded="true"
-            :locked-until="loq.loqed_until"
-            :paused-at="loq.paused_at"
-            @expired="onExpired"
-          />
+          <!-- Issue #24 — the ring shows how much is served, the centre what is left -->
+          <LockProgressRing class="loq-card__hero-timer" :loq="loq" :now="now" @expired="onExpired" />
 
           <div class="loq-card__summary-meta">
             <span class="loq-status-pill" :class="loq.status === 'paused' ? 'loq-status-pill--paused' : 'loq-status-pill--active'">
@@ -258,6 +252,10 @@
         <div class="loq-card__detail">
 
           <div v-if="loq.status === 'paused'" class="paused-banner">{{ isSelfLoq ? 'Paused' : 'Paused by your keyholder' }}</div>
+
+          <!-- Issue #24 — the one thing to do now, then the rest of today -->
+          <WearerNextUp :signals="signals" :checkin-required="!!loq.checkin_required" :now="now" @go="goTo" />
+          <WearerToday :signals="signals" :checkin-required="!!loq.checkin_required" :now="now" @go="goTo" />
 
           <div class="mood-wrap">
             <LoqEmotionPicker
@@ -303,17 +301,24 @@
             @error="actionError = $event"
           />
 
-          <LoqChat v-else :loq-id="loq.id" :channel="loqChannel" />
+          <div v-else id="lock-chat" class="lock-anchor">
+            <LoqChat :loq-id="loq.id" :channel="loqChannel" />
+          </div>
 
-          <LoqCheckin :loq-id="loq.id" role="wearer" />
-          <LoqVerification :loq-id="loq.id" role="wearer" />
-          <LoqTasks :loq-id="loq.id" role="wearer" />
+          <div id="lock-checkin" class="lock-anchor"><LoqCheckin :loq-id="loq.id" role="wearer" @changed="refreshSignals" /></div>
+          <div id="lock-verification" class="lock-anchor"><LoqVerification :loq-id="loq.id" role="wearer" @changed="refreshSignals" /></div>
+          <div id="lock-tasks" class="lock-anchor"><LoqTasks :loq-id="loq.id" role="wearer" @changed="refreshSignals" /></div>
           <LoqWheel :loq-id="loq.id" role="wearer" />
-          <LoqHistory :loq-id="loq.id" />
+          <div id="lock-history" class="lock-anchor"><LoqHistory :loq-id="loq.id" /></div>
 
           <p v-if="actionError" class="loq-card__error">{{ actionError }}</p>
         </div>
       </article>
+
+      <!-- Issue #24 — phone: jump between the sections of a long page -->
+      <nav class="lock-jump" aria-label="Lock sections">
+        <a v-for="j in jumps" :key="j.id" :href="`#${j.id}`" class="lock-jump__link" @click.prevent="scrollToSection(j.id)">{{ j.label }}</a>
+      </nav>
     </div>
 
   </div>
@@ -326,12 +331,13 @@ import loqedIcon from '~/assets/images/icons/state-loqed.webp'
 import unloqedIcon from '~/assets/images/icons/state-unloqed.webp'
 import subscribeIcon from '~/assets/images/icons/state-subscribe.webp'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import type { Loq } from '~/types'
+import type { LockSignals, Loq } from '~/types'
+import type { TodayTarget } from '~/utils/lockDashboard'
 
 definePageMeta({ middleware: 'auth' })
 
 interface LoqholderProfile { id: string; display_name: string | null; avatar_url: string | null; last_seen_at?: string | null }
-type ActiveLoq = Loq & { loqholder?: LoqholderProfile | null }
+type ActiveLoq = Loq & Partial<LockSignals> & { loqholder?: LoqholderProfile | null; checkin_required?: boolean }
 
 const authStore = useAuthStore()
 const {
@@ -369,10 +375,82 @@ let visitorFlashTimer: ReturnType<typeof setTimeout> | null = null
 
 let loqChannel: RealtimeChannel | null = null
 
+// ─── Next up / Today (issue #24) ───────────────────────────────────────────
+
+// Kept apart from `loq`: pause/end responses replace the lock without them.
+const signals = ref<Partial<LockSignals> | null>(null)
+const now = ref(Date.now())
+
+const SIGNAL_KEYS: (keyof LockSignals)[] = [
+  'pending_verifications', 'submitted_tasks', 'next_task_due_at', 'last_checkin_at',
+  'checked_in_today', 'missed_checkin', 'open_verification', 'open_tasks',
+]
+
+// Every full fetch of /api/loqs/current carries the signals; adopt them.
+watch(loq, (l) => {
+  if (l && 'open_tasks' in l) signals.value = Object.fromEntries(SIGNAL_KEYS.map(k => [k, l[k]])) as Partial<LockSignals>
+})
+
+let signalsTimer: ReturnType<typeof setTimeout> | null = null
+function refreshSignals() {
+  if (signalsTimer) clearTimeout(signalsTimer)
+  signalsTimer = setTimeout(async () => {
+    signalsTimer = null
+    if (!loq.value || !['active', 'paused'].includes(loq.value.status)) return
+    try {
+      const fresh = await authFetch<ActiveLoq | null>('/api/loqs/current')
+      if (fresh && loq.value && fresh.id === loq.value.id && 'open_tasks' in fresh) {
+        // Into `loq` as well, or a later broadcast merge would bring the
+        // stale ones back through the watch above.
+        const picked = Object.fromEntries(SIGNAL_KEYS.map(k => [k, fresh[k]])) as Partial<LockSignals>
+        loq.value = { ...loq.value, ...picked }
+      }
+    }
+    catch { /* keep what is shown; the next refresh tries again */ }
+  }, 250)
+}
+
+const jumps = computed(() => [
+  { id: 'lock-top', label: 'Lock' },
+  { id: 'lock-tasks', label: 'Tasks' },
+  ...(loq.value?.loqholder_id ? [{ id: 'lock-chat', label: 'Chat' }] : []),
+  { id: 'lock-history', label: 'History' },
+])
+
+function scrollToSection(id: string) {
+  const el = document.getElementById(id)
+  if (!el) return
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' })
+  // Move focus too, so keyboard and screen reader users land there.
+  el.setAttribute('tabindex', '-1')
+  el.focus({ preventScroll: true })
+}
+
+const TARGET_SECTION: Record<TodayTarget, string> = {
+  verification: 'lock-verification', task: 'lock-tasks', checkin: 'lock-checkin',
+}
+const goTo = (target: TodayTarget) => scrollToSection(TARGET_SECTION[target])
+
+function onVisible() {
+  if (document.visibilityState !== 'visible') return
+  now.value = Date.now()
+  refreshSignals()
+}
+
+let clockTimer: ReturnType<typeof setInterval> | null = null
+let pollTimer: ReturnType<typeof setInterval> | null = null
+
 // ─── Init ──────────────────────────────────────────────────────────────────
 
 onMounted(async () => {
-  if (import.meta.client) window.addEventListener('online', handleReconnect)
+  if (import.meta.client) {
+    window.addEventListener('online', handleReconnect)
+    document.addEventListener('visibilitychange', onVisible)
+  }
+  clockTimer = setInterval(() => { now.value = Date.now() }, 30_000)
+  // Safety net for anything the realtime broadcasts miss.
+  pollTimer = setInterval(() => { if (document.visibilityState === 'visible') refreshSignals() }, 60_000)
   try {
     loq.value = await fetchCurrentLoq()
     if (loq.value?.emotion) currentEmotion.value = loq.value.emotion
@@ -399,7 +477,13 @@ onMounted(async () => {
 onUnmounted(() => {
   loqChannel?.unsubscribe()
   if (visitorFlashTimer) clearTimeout(visitorFlashTimer)
-  if (import.meta.client) window.removeEventListener('online', handleReconnect)
+  if (signalsTimer) clearTimeout(signalsTimer)
+  if (clockTimer) clearInterval(clockTimer)
+  if (pollTimer) clearInterval(pollTimer)
+  if (import.meta.client) {
+    window.removeEventListener('online', handleReconnect)
+    document.removeEventListener('visibilitychange', onVisible)
+  }
 })
 
 async function handleReconnect() {
@@ -413,8 +497,10 @@ async function handleReconnect() {
 function subscribeToLoq(loqId: string) {
   loqChannel = $supabase
     .channel(`loq:${loqId}`)
-    .on('broadcast', { event: 'loq_updated' }, async (payload: { payload: { loq: ActiveLoq & { incoming_request?: boolean }; loqholder?: LoqholderProfile | null } }) => {
-      const { loq: updated, loqholder } = payload.payload
+    .on('broadcast', { event: 'loq_updated' }, async (payload: { payload: { loq: ActiveLoq & { incoming_request?: boolean }; loqholder?: LoqholderProfile | null; signals?: boolean } }) => {
+      const { loq: updated, loqholder, signals: signalsChanged } = payload.payload
+      // Issue #24 — a verification or task changed: reload Next up / Today.
+      if (signalsChanged) { refreshSignals(); return }
       // TASK-102 — a fresh draft/pending -> active transition (the loqee's
       // private request just got accepted) needs the accepting loqholder's
       // joined profile, same reason 'ended'/incoming_request re-fetch
@@ -1004,5 +1090,46 @@ async function onExpired() {
   font-weight: 600;
   color: var(--color-brand-text, var(--color-accent));
   background: rgba(var(--color-brand-rgb, var(--color-accent-rgb)), 0.14);
+}
+
+// ── Section anchors + phone jump bar (issue #24) ─────────────────────────────
+
+.lock-anchor {
+  scroll-margin-top: 16px;
+  &:focus { outline: none; }
+  // An anchor wrapping a module that renders nothing takes no space.
+  &:empty { display: none; }
+}
+
+.lock-jump { display: none; }
+
+@media (max-width: 639px) {
+  .lock-anchor { scroll-margin-bottom: 72px; }
+
+  .lock-jump {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin: 0 -20px -64px;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+    padding-bottom: env(safe-area-inset-bottom);
+
+    &__link {
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      &:hover, &:focus-visible { color: var(--color-accent); text-decoration: none; }
+      &:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+    }
+  }
 }
 </style>

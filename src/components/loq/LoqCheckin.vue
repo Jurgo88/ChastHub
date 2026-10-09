@@ -79,6 +79,8 @@
 import { spanMinutes } from '~/utils/lockHistory'
 
 const props = defineProps<{ loqId: string; role: 'wearer' | 'keyholder' }>()
+// Issue #24 — lets the dashboard refresh its signals after an action here.
+const emit = defineEmits<{ changed: [] }>()
 
 interface CheckinState {
   today: string
@@ -147,6 +149,7 @@ async function submit() {
     mood.value = ''
     note.value = ''
     await load()
+    emit('changed')
   }
   catch (e) {
     const err = e as { statusCode?: number; data?: { message?: string } }
@@ -167,6 +170,7 @@ async function saveSettings() {
       body: { required: requiredDraft.value, penalty_minutes: penaltyDraft.value },
     })
     await load()
+    emit('changed')
   }
   catch (e) {
     error.value = (e as { data?: { message?: string } }).data?.message ?? 'Could not save.'

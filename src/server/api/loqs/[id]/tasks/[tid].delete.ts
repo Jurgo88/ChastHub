@@ -1,6 +1,7 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 import { loadVerificationLock } from '~/server/utils/verificationDb'
+import { broadcastSignals } from '~/server/utils/broadcastLoq'
 
 // DELETE /api/loqs/<id>/tasks/<tid>: the author withdraws a task nobody has
 // submitted yet. It is kept as cancelled, without reward or penalty.
@@ -22,5 +23,6 @@ export default defineEventHandler(async (event) => {
     .eq('status', 'open')
     .select('id')
   if (!data?.length) throw createError({ statusCode: 409, message: 'Only an open task you created can be withdrawn' })
+  await broadcastSignals(id)
   return { status: 'cancelled' }
 })

@@ -1,6 +1,7 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 import { logAudit } from '~/server/utils/auditLog'
+import { broadcastSignals } from '~/server/utils/broadcastLoq'
 import { sendPushNotification } from '~/server/utils/sendPushNotification'
 import { canTransition, MAX_PENALTY_MINUTES, MAX_REVIEW_NOTE, type VerificationStatus } from '~/server/utils/verification'
 import { addPenalty, loadVerificationLock, postChat, VERIFICATION_COLUMNS, type VerificationRow } from '~/server/utils/verificationDb'
@@ -55,5 +56,6 @@ export default defineEventHandler(async (event) => {
     await postChat(supabase, loq, user.id, `❌ Verification rejected${note ? `: ${note}` : '.'}${extra}`)
     await sendPushNotification(loq.loqee_id, 'Verification rejected', note || 'Your keyholder rejected the photo.', '/dashboard')
   }
+  await broadcastSignals(id)
   return { status: next }
 })

@@ -1,6 +1,7 @@
 import { useSupabaseAdmin } from '~/server/utils/supabaseAdmin'
 import { requireAuth } from '~/server/utils/auth'
 import { loadVerificationLock } from '~/server/utils/verificationDb'
+import { broadcastSignals } from '~/server/utils/broadcastLoq'
 
 // POST /api/loqs/<id>/verifications/<vid>/cancel: the keyholder (or the wearer
 // of a self-lock) withdraws a request that is still waiting for a photo.
@@ -22,5 +23,6 @@ export default defineEventHandler(async (event) => {
     .eq('status', 'pending')
     .select('id')
   if (!data?.length) throw createError({ statusCode: 409, message: 'This request is no longer open' })
+  await broadcastSignals(id)
   return { status: 'cancelled' }
 })
