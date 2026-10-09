@@ -8,9 +8,102 @@
     </div>
 
     <div v-else class="kh">
+      <!-- Page header + filter -->
+      <div class="kh__header">
+        <div>
+          <h1 class="kh__title">Your locks</h1>
+          <p class="kh__sub">{{ subline }}</p>
+        </div>
+        <div class="kh__tools">
+          <div class="kh__filter" role="group" aria-label="Filter locks">
+            <button
+              v-for="f in filters"
+              :key="f.key"
+              type="button"
+              class="kh__seg"
+              :class="{ 'kh__seg--on': filter === f.key }"
+              :aria-pressed="filter === f.key"
+              @click="filter = f.key"
+            >{{ f.label }} <span class="kh__seg-n">{{ f.count }}</span></button>
+          </div>
+          <NuxtLink to="/keydrop" class="kh__cta">Browse Key Drop</NuxtLink>
+        </div>
+      </div>
 
-      <!-- Narrow screens: an open lock takes the whole page -->
-      <template v-if="selectedLoq && !isWide">
+      <LockAttentionFeed
+        :items="attention"
+        :busy-request="pendingAction"
+        @open="(item, t) => openLock(item.loq_id, t)"
+        @accept-request="item => acceptRequest(item.loq_id)"
+        @reject-request="item => rejectRequest(item.loq_id)"
+        @changed="refreshSignals"
+      />
+
+      <!-- Requests -->
+      <section v-if="filter === 'requests'" class="kh__requests" aria-label="Requests">
+        <article v-for="req in requests" :key="req.id" class="kh-req">
+          <div class="kh-req__who">
+            <UserAvatar class="kh-req__avatar" :avatar-url="req.loq.loqee?.avatar_url" :display-name="req.loq.loqee?.display_name" />
+            <div>
+              <p class="kh-req__name">{{ req.loq.loqee?.display_name ?? 'Unknown' }}</p>
+              <p class="kh-req__meta">
+                {{ formatDuration(req.loq.duration_minutes) }} · {{ timeAgo(req.created_at) }}<template v-if="req.loq.emotion"> · {{ emotionEmoji(req.loq.emotion) }}</template>
+              </p>
+            </div>
+            <span class="loq-status-pill loq-status-pill--request"><span class="loq-status-pill__dot" />REQUEST</span>
+          </div>
+          <p v-if="req.loq.reason" class="card-reason">"{{ req.loq.reason }}"</p>
+          <p v-if="cardError(req.loq.id)" class="loq-card__error">{{ cardError(req.loq.id) }}</p>
+          <div class="kh-req__actions">
+            <button type="button" class="kh-req__btn" :disabled="pendingAction === req.loq.id" @click="rejectRequest(req.loq.id)">Reject</button>
+            <button type="button" class="kh-req__btn kh-req__btn--accept" :disabled="pendingAction === req.loq.id" @click="acceptRequest(req.loq.id)">
+              {{ pendingAction === req.loq.id ? 'Accepting…' : 'Accept lock' }}
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <!-- Locks: one row of cards that scrolls sideways -->
+      <section v-else-if="visibleLoqs.length" class="kh-strip" aria-labelledby="kh-strip-title">
+        <div class="kh-strip__head">
+          <h2 id="kh-strip-title" class="kh-strip__title">Locks <span class="kh-strip__n">{{ visibleLoqs.length }}</span></h2>
+          <div v-if="overflowing" class="kh-strip__nav">
+            <button type="button" class="kh-strip__arrow" aria-label="Previous locks" :disabled="atStart" @click="scrollStrip(-1)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+            </button>
+            <button type="button" class="kh-strip__arrow" aria-label="Next locks" :disabled="atEnd" @click="scrollStrip(1)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+          </div>
+        </div>
+        <ul ref="trackEl" class="kh-strip__track" tabindex="0" aria-label="Locks, scroll sideways" @scroll.passive="onStripScroll">
+          <li v-for="loq in visibleLoqs" :key="loq.id" class="kh-strip__item" :data-lock="loq.id">
+            <LockSummaryCard
+              :loq="loq"
+              :now="now"
+              :selected="selectedLoq?.id === loq.id"
+              :pending="isPending(loq.id)"
+              :flash="cardFlash(loq.id)"
+              :error="cardError(loq.id)"
+              @open="openLock(loq.id)"
+              @add-hour="adjustTime(loq.id, 60)"
+              @toggle-pause="togglePause(loq.id)"
+              @expired="onExpired(loq.id)"
+            />
+          </li>
+        </ul>
+      </section>
+
+      <!-- Empty state -->
+      <div v-if="nothingVisible" class="empty-state">
+        <p class="empty-state__icon"><img :src="unloqedIcon" class="state-icon" alt="" width="128" height="128" decoding="async"></p>
+        <p class="empty-state__title">{{ emptyStateTitle }}</p>
+        <p class="empty-state__hint">Open Key Drop to pick up a key.</p>
+        <NuxtLink to="/keydrop" class="kh__cta">Open Key Drop</NuxtLink>
+      </div>
+
+      <!-- The selected lock, full width under the strip -->
+      <div v-if="selectedLoq && filter !== 'requests'" ref="detailEl" class="kh__detail">
         <LockDetailPanel
           v-model:tab="tab"
           :loq="selectedLoq"
@@ -20,138 +113,20 @@
           :adjust="(d: number) => adjustTime(selectedLoq!.id, d)"
           :flash="cardFlash(selectedLoq.id)"
           :error="cardError(selectedLoq.id)"
-          closable
           @toggle-pause="togglePause(selectedLoq.id)"
           @end="endLoq(selectedLoq.id)"
           @expired="onExpired(selectedLoq.id)"
-          @close="closeLock"
           @changed="refreshSignals"
         >
           <template #share>
             <LockVisitorShare :loq="selectedLoq" @patch="p => patchLoq(selectedLoq!.id, p)" />
           </template>
         </LockDetailPanel>
-      </template>
-
-      <template v-else>
-        <!-- Page header + filter -->
-        <div class="kh__header">
-          <div>
-            <h1 class="kh__title">Your locks</h1>
-            <p class="kh__sub">{{ subline }}</p>
-          </div>
-          <div class="kh__tools">
-            <div class="kh__filter" role="group" aria-label="Filter locks">
-              <button
-                v-for="f in filters"
-                :key="f.key"
-                type="button"
-                class="kh__seg"
-                :class="{ 'kh__seg--on': filter === f.key }"
-                :aria-pressed="filter === f.key"
-                @click="filter = f.key"
-              >{{ f.label }} <span class="kh__seg-n">{{ f.count }}</span></button>
-            </div>
-            <NuxtLink to="/keydrop" class="kh__cta">Browse Key Drop</NuxtLink>
-          </div>
-        </div>
-
-        <LockAttentionFeed
-          :items="attention"
-          :busy-request="pendingAction"
-          @open="(item, t) => openLock(item.loq_id, t)"
-          @accept-request="item => acceptRequest(item.loq_id)"
-          @reject-request="item => rejectRequest(item.loq_id)"
-          @changed="refreshSignals"
-        />
-
-        <div class="kh__split">
-          <section class="kh__locks" aria-label="Locks">
-
-            <!-- Requests -->
-            <template v-if="filter === 'requests'">
-              <article v-for="req in requests" :key="req.id" class="kh-req">
-                <div class="kh-req__who">
-                  <UserAvatar class="kh-req__avatar" :avatar-url="req.loq.loqee?.avatar_url" :display-name="req.loq.loqee?.display_name" />
-                  <div>
-                    <p class="kh-req__name">{{ req.loq.loqee?.display_name ?? 'Unknown' }}</p>
-                    <p class="kh-req__meta">
-                      {{ formatDuration(req.loq.duration_minutes) }} · {{ timeAgo(req.created_at) }}<template v-if="req.loq.emotion"> · {{ emotionEmoji(req.loq.emotion) }}</template>
-                    </p>
-                  </div>
-                  <span class="loq-status-pill loq-status-pill--request"><span class="loq-status-pill__dot" />REQUEST</span>
-                </div>
-                <p v-if="req.loq.reason" class="card-reason">"{{ req.loq.reason }}"</p>
-                <p v-if="cardError(req.loq.id)" class="loq-card__error">{{ cardError(req.loq.id) }}</p>
-                <div class="kh-req__actions">
-                  <button type="button" class="kh-req__btn" :disabled="pendingAction === req.loq.id" @click="rejectRequest(req.loq.id)">Reject</button>
-                  <button type="button" class="kh-req__btn kh-req__btn--accept" :disabled="pendingAction === req.loq.id" @click="acceptRequest(req.loq.id)">
-                    {{ pendingAction === req.loq.id ? 'Accepting…' : 'Accept lock' }}
-                  </button>
-                </div>
-              </article>
-            </template>
-
-            <!-- Locks: cards with room, compact rows on a phone -->
-            <template v-else-if="isPhone">
-              <ul class="kh__rows">
-                <li v-for="loq in visibleLoqs" :key="loq.id">
-                  <LockRow :loq="loq" :now="now" @open="openLock(loq.id)" @expired="onExpired(loq.id)" />
-                </li>
-              </ul>
-            </template>
-            <div v-else class="kh__grid">
-              <LockSummaryCard
-                v-for="loq in visibleLoqs"
-                :key="loq.id"
-                :loq="loq"
-                :now="now"
-                :selected="isWide && selectedLoq?.id === loq.id"
-                :pending="isPending(loq.id)"
-                :flash="cardFlash(loq.id)"
-                :error="cardError(loq.id)"
-                @open="openLock(loq.id)"
-                @add-hour="adjustTime(loq.id, 60)"
-                @toggle-pause="togglePause(loq.id)"
-                @expired="onExpired(loq.id)"
-              />
-            </div>
-
-            <!-- Empty state -->
-            <div v-if="nothingVisible" class="empty-state">
-              <p class="empty-state__icon"><img :src="unloqedIcon" class="state-icon" alt="" width="128" height="128" decoding="async"></p>
-              <p class="empty-state__title">{{ emptyStateTitle }}</p>
-              <p class="empty-state__hint">Open Key Drop to pick up a key.</p>
-              <NuxtLink to="/keydrop" class="kh__cta">Open Key Drop</NuxtLink>
-            </div>
-          </section>
-
-          <!-- Wide screens: the selected lock sits beside the grid -->
-          <aside v-if="isWide && selectedLoq && filter !== 'requests'" class="kh__detail">
-            <LockDetailPanel
-              v-model:tab="tab"
-              :loq="selectedLoq"
-              :now="now"
-              :channel="loqChannels.get(selectedLoq.id) ?? null"
-              :pending="isPending(selectedLoq.id)"
-              :adjust="(d: number) => adjustTime(selectedLoq!.id, d)"
-              :flash="cardFlash(selectedLoq.id)"
-              :error="cardError(selectedLoq.id)"
-              @toggle-pause="togglePause(selectedLoq.id)"
-              @end="endLoq(selectedLoq.id)"
-              @expired="onExpired(selectedLoq.id)"
-              @changed="refreshSignals"
-            >
-              <template #share>
-                <LockVisitorShare :loq="selectedLoq" @patch="p => patchLoq(selectedLoq!.id, p)" />
-              </template>
-            </LockDetailPanel>
-          </aside>
-        </div>
-      </template>
+      </div>
     </div>
   </div>
 </template>
+
 
 <script setup lang="ts">
 // TASK-151 — see LockCountdown: 🔓 rendered as a different padlock on every
@@ -218,18 +193,45 @@ const loqChannels = shallowReactive(new Map<string, RealtimeChannel>())
 let requestChannel: RealtimeChannel | null = null
 let visitorInteractionChannel: RealtimeChannel | null = null
 
-// ─── Layout ────────────────────────────────────────────────────────────────
+// ─── Lock strip (one row of cards, scrolls sideways) ───────────────────────
 
-// Wide: grid + detail beside it. Narrow: the list, and an open lock replaces
-// it. Phone: compact rows instead of cards.
-const isWide = ref(false)
-const isPhone = ref(false)
-let wideQuery: MediaQueryList | null = null
-let phoneQuery: MediaQueryList | null = null
-const syncLayout = () => {
-  isWide.value = !!wideQuery?.matches
-  isPhone.value = !!phoneQuery?.matches
+const trackEl = ref<HTMLElement | null>(null)
+const detailEl = ref<HTMLElement | null>(null)
+const atStart = ref(true)
+const atEnd = ref(true)
+const overflowing = computed(() => !(atStart.value && atEnd.value))
+
+function onStripScroll() {
+  const el = trackEl.value
+  if (!el) return
+  atStart.value = el.scrollLeft <= 4
+  atEnd.value = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4
 }
+
+const reducedMotion = () => import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+// Pages by what is visible, minus one card so the next page starts with context.
+function scrollStrip(dir: 1 | -1) {
+  const el = trackEl.value
+  if (!el) return
+  const card = el.querySelector<HTMLElement>('.kh-strip__item')
+  const step = Math.max(card?.offsetWidth ?? 300, el.clientWidth - (card?.offsetWidth ?? 0))
+  el.scrollBy({ left: dir * step, behavior: reducedMotion() ? 'auto' : 'smooth' })
+}
+
+function revealCard(loqId: string) {
+  const card = trackEl.value?.querySelector<HTMLElement>(`[data-lock="${loqId}"]`)
+  card?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' })
+}
+
+let resizeObserver: ResizeObserver | null = null
+watch(trackEl, (el, old) => {
+  if (old) resizeObserver?.unobserve(old)
+  if (el) {
+    resizeObserver?.observe(el)
+    nextTick(onStripScroll)
+  }
+})
 
 // ─── Selection (kept in the URL: back button and shared links work) ────────
 
@@ -243,32 +245,27 @@ const tab = computed<LockTab>({
   set: (t) => { router.replace({ query: { ...route.query, tab: t === 'overview' ? undefined : t } }) },
 })
 
-// On a wide screen the first lock is open by default, so the panel is never empty.
+// The first lock is open by default, so the panel under the strip is never empty.
 const selectedLoq = computed<ActiveLoq | null>(() => {
-  const picked = selectedId.value ? activeLoqs.value.find(l => l.id === selectedId.value) : null
-  if (picked) return picked
-  return isWide.value ? visibleLoqs.value[0] ?? null : null
+  const picked = selectedId.value ? visibleLoqs.value.find(l => l.id === selectedId.value) : null
+  return picked ?? visibleLoqs.value[0] ?? null
 })
 
 function openLock(loqId: string, t: LockTab = 'overview') {
   if (!activeLoqs.value.some(l => l.id === loqId)) return
-  if (filter.value === 'requests') filter.value = 'all'
-  // Push (not replace) on narrow screens so Back returns to the list.
-  const query = { ...route.query, lock: loqId, tab: t === 'overview' ? undefined : t }
-  if (isWide.value) router.replace({ query })
-  else {
-    router.push({ query })
-    if (import.meta.client) window.scrollTo({ top: 0 })
-  }
+  if (filter.value === 'requests' || (filter.value === 'paused' && !visibleLoqs.value.some(l => l.id === loqId))) filter.value = 'all'
+  router.replace({ query: { ...route.query, lock: loqId, tab: t === 'overview' ? undefined : t } })
+  nextTick(() => {
+    revealCard(loqId)
+    // The panel sits under the strip: bring it up when it is out of sight.
+    const panel = detailEl.value
+    if (panel && panel.getBoundingClientRect().top > window.innerHeight * 0.6) {
+      panel.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' })
+    }
+  })
 }
 
 function closeLock() {
-  // Opened with a push on a narrow screen: step back, so Back doesn't reopen it.
-  const back = import.meta.client ? String(window.history.state?.back ?? '') : ''
-  if (!isWide.value && back.startsWith(route.path)) {
-    router.back()
-    return
-  }
   router.replace({ query: { ...route.query, lock: undefined, tab: undefined } })
 }
 
@@ -286,6 +283,8 @@ const filters = computed<{ key: FilterKey; label: string; count: number }[]>(() 
 const visibleLoqs = computed(() => (filter.value === 'paused'
   ? activeLoqs.value.filter(l => l.status === 'paused')
   : activeLoqs.value))
+
+watch(() => visibleLoqs.value.length, () => nextTick(onStripScroll))
 
 const subline = computed(() => {
   const n = activeLoqs.value.length
@@ -310,17 +309,15 @@ onMounted(async () => {
   if (import.meta.client) {
     window.addEventListener('online', handleReconnect)
     document.addEventListener('visibilitychange', onVisible)
-    wideQuery = window.matchMedia('(min-width: 1024px)')
-    phoneQuery = window.matchMedia('(max-width: 639px)')
-    syncLayout()
-    wideQuery.addEventListener('change', syncLayout)
-    phoneQuery.addEventListener('change', syncLayout)
+    resizeObserver = new ResizeObserver(onStripScroll)
   }
   try {
     await Promise.all([fetchActiveLoqs(), fetchRequests(), fetchAttention()])
     subscribeToAll()
   }
   finally { initialising.value = false }
+  // A shared link to a lock further along the strip: scroll it into view.
+  if (selectedId.value) nextTick(() => revealCard(selectedId.value!))
   clockTimer = setInterval(() => { now.value = Date.now() }, 30_000)
   // Safety net for anything the realtime broadcasts miss.
   pollTimer = setInterval(() => { if (document.visibilityState === 'visible') refreshSignals() }, 60_000)
@@ -334,8 +331,7 @@ onUnmounted(() => {
   if (clockTimer) clearInterval(clockTimer)
   if (pollTimer) clearInterval(pollTimer)
   if (signalsTimer) clearTimeout(signalsTimer)
-  wideQuery?.removeEventListener('change', syncLayout)
-  phoneQuery?.removeEventListener('change', syncLayout)
+  resizeObserver?.disconnect()
   if (import.meta.client) {
     window.removeEventListener('online', handleReconnect)
     document.removeEventListener('visibilitychange', onVisible)
@@ -692,42 +688,81 @@ function patchLoq(id: string, patch: Partial<Loq>) {
     &:focus-visible { outline: 2px solid var(--color-text); outline-offset: 2px; }
   }
 
-  &__split {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 24px;
-  }
-
-  &__locks {
-    flex: 999 1 560px;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  &__grid {
+  &__requests {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 16px;
   }
 
-  &__rows {
-    list-style: none;
+  &__detail {
+    min-width: 0;
+    scroll-margin-top: 16px;
+  }
+}
+
+// ── Lock strip: one row of cards, swipe or arrows ────────────────────────────
+
+.kh-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+
+  &__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+  &__title {
     margin: 0;
-    padding: 0;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text);
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 8px;
   }
 
-  &__detail {
-    flex: 1 1 400px;
-    min-width: 0;
-    max-width: 520px;
-    position: sticky;
-    top: 16px;
+  &__n { font-size: 14px; font-weight: 500; color: var(--color-text-muted); }
+
+  &__nav { display: flex; gap: 6px; }
+
+  &__arrow {
+    @include dash-btn;
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  &__track {
+    list-style: none;
+    margin: 0 -20px;
+    padding: 4px 20px 12px;
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-elevated) transparent;
+
+    &:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; border-radius: 12px; }
+
+    @media (max-width: 639px) {
+      margin: 0 -16px;
+      padding-inline: 16px;
+      scroll-padding-inline: 16px;
+    }
+  }
+
+  &__item {
+    flex: 0 0 320px;
+    scroll-snap-align: start;
+    display: flex;
+
+    > * { flex: 1; min-width: 0; }
+
+    // A phone shows one card and a sliver of the next, so it reads as swipeable.
+    @media (max-width: 639px) { flex-basis: 84%; }
   }
 }
 
