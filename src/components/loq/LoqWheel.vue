@@ -4,21 +4,31 @@
 
     <p v-if="state?.frozen_until" class="wh__frozen">❄️ Frozen until {{ timeLabel(state.frozen_until) }}</p>
 
-    <!-- Wearer: spin -->
-    <template v-if="role === 'wearer' && wheel?.enabled">
-      <WheelDisc :segments="wheel.segments" :rotation="rotation" />
-      <div class="wh__spin">
+    <!-- The wheel: the wearer spins it, the keyholder watches the spins -->
+    <div v-if="showDisc && wheel" class="wh__stage">
+      <WheelDisc ref="disc" :segments="wheel.segments" />
+
+      <div v-if="canSpin" class="wh__spin">
         <button type="button" class="wh__btn" :disabled="spinning || waitMs > 0" @click="spin">
           {{ spinning ? 'Spinning…' : 'Spin the wheel' }}
         </button>
         <p v-if="waitMs > 0 && !spinning" class="wh__next">Next spin in {{ countdown }}</p>
       </div>
+      <div v-else-if="lastSpin" class="wh__spin">
+        <p class="wh__next">
+          {{ replaying ? 'Your wearer’s last spin…' : `Last spin ${whenLabel(lastSpin.created_at)}` }}
+        </p>
+        <button type="button" class="wh__chip" :disabled="replaying" @click="replay">Watch it again</button>
+      </div>
+      <p v-else class="wh__next">No spins yet.</p>
+    </div>
 
+    <Transition name="wh-pop">
       <p v-if="result" class="wh__result" :class="{ 'wh__result--none': !result.applied }" role="status">
         <strong>{{ labelOf(result.segment) }}</strong>
         <span>{{ result.note }}</span>
       </p>
-    </template>
+    </Transition>
 
     <!-- Editor: keyholder, or the wearer of a self-lock -->
     <details v-if="state?.can_edit" class="wh__edit" :open="!wheel">
@@ -33,7 +43,7 @@
         <button v-for="(t, key) in WHEEL_TEMPLATES" :key="key" type="button" class="wh__chip" @click="useTemplate(key)">{{ t.label }}</button>
       </div>
 
-      <WheelDisc v-if="draft.length >= 4" :segments="draft" :spin-ms="1" class="wh__preview" />
+      <WheelDisc v-if="draft.length >= 4" :segments="draft" class="wh__preview" />
 
       <ul class="wh__rows">
         <li v-for="(s, i) in draft" :key="i" class="wh__row">
@@ -79,8 +89,9 @@
 <script setup lang="ts">
 import { whenLabel } from '~/utils/lockHistory'
 import {
-  segmentArcs, segmentLabel, WHEEL_TEMPLATES, type WheelSegment, type WheelSegmentType,
+  segmentLabel, WHEEL_TEMPLATES, type WheelSegment, type WheelSegmentType,
 } from '~/utils/wheel'
+import WheelDisc from '~/components/loq/WheelDisc.vue'
 
 const props = defineProps<{ loqId: string; role: 'wearer' | 'keyholder' }>()
 
@@ -91,7 +102,7 @@ interface WheelState {
   locked_config: boolean
   next_spin_at: string | null
 }
-interface Spin { id: string; segment: WheelSegment; created_at: string }
+interface Spin { id: string; segment_index: number; segment: WheelSegment; created_at: string }
 interface State {
   can_edit: boolean
   wheel: WheelState | null
@@ -124,8 +135,9 @@ const saving = ref(false)
 const error = ref('')
 const spinning = ref(false)
 const result = ref<SpinResult | null>(null)
-const rotation = ref(0)
 const now = ref(Date.now())
+const disc = ref<InstanceType<typeof WheelDisc> | null>(null)
+const replaying = ref(false)
 let timer: ReturnType<typeof setInterval> | null = null
 
 const wheel = computed(() => state.value?.wheel ?? null)
@@ -193,21 +205,28 @@ async function save() {
   }
 }
 
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
+
 async function spin() {
   if (!wheel.value || spinning.value) return
   spinning.value = true
   error.value = ''
   result.value = null
+  // The wheel starts turning at once; the server draws the result meanwhile.
+  // Give it a moment to reach full speed, so even a fast reply still spins.
+  disc.value?.spin()
   try {
-    const res = await authFetch<SpinResult>(`/api/loqs/${props.loqId}/wheel/spin`, { method: 'POST' })
-    // Land the middle of the drawn segment under the pointer, always turning forward.
-    const mid = segmentArcs(wheel.value.segments)[res.segment_index]!.mid
-    rotation.value = Math.ceil(rotation.value / 360) * 360 + 360 * 4 + (360 - mid)
-    await new Promise(r => setTimeout(r, 3900))
+    const [res] = await Promise.all([
+      authFetch<SpinResult>(`/api/loqs/${props.loqId}/wheel/spin`, { method: 'POST' }),
+      sleep(700),
+    ])
+    await disc.value?.land(res.segment_index)
     result.value = res
     await load()
+    markSeen()
   }
   catch (e) {
+    await disc.value?.stop()
     const err = e as { statusCode?: number; data?: { message?: string; data?: { next_spin_at?: string } } }
     error.value = err.data?.message ?? 'Could not spin the wheel.'
     if (err.statusCode === 429) await load()
@@ -216,6 +235,52 @@ async function spin() {
     spinning.value = false
   }
 }
+
+// ─── Showing past spins ────────────────────────────────────────────────────
+
+const canSpin = computed(() => props.role === 'wearer' && !!wheel.value?.enabled)
+// The keyholder sees the wheel whenever there is one; the wearer while it is on.
+const showDisc = computed(() => !!wheel.value && (props.role === 'keyholder' || canSpin.value))
+const lastSpin = computed(() => state.value?.spins[0] ?? null)
+
+/** The last spin's segment on the current wheel, or null when the wheel was edited since. */
+const lastIndex = computed(() => {
+  const s = lastSpin.value
+  const seg = s && wheel.value?.segments[s.segment_index]
+  return seg && segmentLabel(seg) === segmentLabel(s.segment) ? s.segment_index : null
+})
+
+const seenKey = () => `chasthub:wheel-seen:${props.loqId}`
+function wasSeen(id: string): boolean {
+  try { return localStorage.getItem(seenKey()) === id }
+  catch { return true }
+}
+function markSeen() {
+  try { if (lastSpin.value) localStorage.setItem(seenKey(), lastSpin.value.id) }
+  catch { /* private mode: it just replays again next time */ }
+}
+
+/** Plays the last spin again on the disc. */
+async function replay() {
+  if (lastIndex.value === null || replaying.value || spinning.value) return
+  replaying.value = true
+  disc.value?.spin()
+  await sleep(700)
+  await disc.value?.land(lastIndex.value)
+  replaying.value = false
+  markSeen()
+}
+
+// First load: the keyholder watches a spin they have not seen yet; otherwise
+// the wheel just rests on the last result.
+let primed = false
+watch(disc, (d) => {
+  if (!d || primed) return
+  primed = true
+  if (lastIndex.value === null) return
+  if (props.role === 'keyholder' && lastSpin.value && !wasSeen(lastSpin.value.id)) replay()
+  else d.show(lastIndex.value)
+})
 
 onMounted(() => {
   load()
@@ -240,6 +305,7 @@ onBeforeUnmount(() => { if (timer) clearInterval(timer) })
   &__err { margin: 0; font-size: 13px; color: var(--color-cta); }
   &__frozen { margin: 0; padding: 8px 12px; border-radius: 12px; background: rgba(60, 125, 224, 0.2); font-size: 13px; font-weight: 600; }
 
+  &__stage { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 8px 0; }
   &__spin { display: flex; flex-direction: column; align-items: center; gap: 6px; }
   &__next { margin: 0; font-size: 13px; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
 
@@ -266,7 +332,7 @@ onBeforeUnmount(() => { if (timer) clearInterval(timer) })
     flex-direction: column;
     gap: 2px;
 
-    strong { font: 700 22px var(--font-display); }
+    strong { font: 700 24px var(--font-display); }
     span { font-size: 13px; color: var(--color-text-muted); }
     &--none { background: var(--color-elevated); }
   }
@@ -324,5 +390,17 @@ onBeforeUnmount(() => { if (timer) clearInterval(timer) })
     li { display: flex; justify-content: space-between; gap: 10px; }
     time { color: var(--color-text-muted); }
   }
+}
+</style>
+
+<style scoped lang="scss">
+// The result pops in once the wheel has stopped.
+.wh-pop-enter-active { transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.wh-pop-leave-active { transition: opacity 0.15s ease; }
+.wh-pop-enter-from { opacity: 0; transform: scale(0.85); }
+.wh-pop-leave-to { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wh-pop-enter-active, .wh-pop-leave-active { transition: none; }
 }
 </style>
